@@ -26,8 +26,7 @@ import {
   Banknote, 
   ArrowLeft,
   ShoppingBag,
-  Loader2,
-  CheckCircle2
+  Loader2
 } from 'lucide-react';
 
 // Romanian counties
@@ -56,7 +55,6 @@ interface CheckoutForm {
   city: string;
   county: string;
   postalCode: string;
-  billingPhone: string;
   notes: string;
 }
 
@@ -80,7 +78,6 @@ const Checkout = () => {
     city: '',
     county: '',
     postalCode: '',
-    billingPhone: '',
     notes: '',
   });
 
@@ -131,7 +128,6 @@ const Checkout = () => {
             city: form.city,
             county: form.county,
             postalCode: form.postalCode,
-            phone: form.billingPhone,
           } : null,
           pickup_location: form.deliveryMethod === 'pickup' ? 'Brașov, România' : null,
           subtotal: totalPrice,
@@ -162,17 +158,10 @@ const Checkout = () => {
 
       // Handle payment based on method
       if (form.paymentMethod === 'cash_on_delivery') {
-        // Order is complete for COD
         clearCart();
         navigate(`/comanda-confirmata?order=${order.order_number}`);
       } else if (form.paymentMethod === 'stripe') {
-        // TODO: Integrate Stripe
         toast.info(language === 'ro' ? 'Plata cu card va fi disponibilă în curând' : 'Card payment coming soon');
-        clearCart();
-        navigate(`/comanda-confirmata?order=${order.order_number}`);
-      } else if (form.paymentMethod === 'netopia') {
-        // TODO: Integrate Netopia
-        toast.info(language === 'ro' ? 'Netopia va fi disponibil în curând' : 'Netopia coming soon');
         clearCart();
         navigate(`/comanda-confirmata?order=${order.order_number}`);
       }
@@ -235,13 +224,28 @@ const Checkout = () => {
             <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
               {/* Left Column - Form */}
               <div className="lg:col-span-2 space-y-8 opacity-0 animate-fade-up animation-delay-100">
-                {/* Contact Info */}
+                
+                {/* Billing / Shipping Info */}
                 <div className="card-premium p-6 space-y-5">
                   <h2 className="font-display text-xl tracking-wide flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-primary" />
-                    {language === 'ro' ? 'Date contact' : 'Contact info'}
+                    <Truck className="w-5 h-5 text-primary" />
+                    {language === 'ro' ? 'Date facturare și livrare' : 'Billing & shipping info'}
                   </h2>
                   
+                  {/* Country */}
+                  <div className="space-y-2">
+                    <Label htmlFor="country">
+                      {language === 'ro' ? 'Țară/regiune' : 'Country/Region'} *
+                    </Label>
+                    <Input
+                      id="country"
+                      value={form.country}
+                      onChange={(e) => updateForm('country', e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Name row */}
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">
@@ -267,6 +271,7 @@ const Checkout = () => {
                     </div>
                   </div>
 
+                  {/* Email & Phone */}
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="email">Email *</Label>
@@ -291,242 +296,183 @@ const Checkout = () => {
                       />
                     </div>
                   </div>
-                </div>
 
-                {/* Delivery Method */}
-                <div className="card-premium p-6 space-y-5">
-                  <h2 className="font-display text-xl tracking-wide flex items-center gap-2">
-                    <Truck className="w-5 h-5 text-primary" />
-                    {language === 'ro' ? 'Metoda de livrare' : 'Delivery method'}
-                  </h2>
-
-                  <RadioGroup
-                    value={form.deliveryMethod}
-                    onValueChange={(value) => updateForm('deliveryMethod', value)}
-                    className="space-y-3"
-                  >
-                    <label 
-                      className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
-                        form.deliveryMethod === 'shipping' 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <RadioGroupItem value="shipping" id="shipping" />
-                      <Truck className="w-5 h-5 text-primary" />
-                      <div className="flex-1">
-                        <p className="font-medium">
-                          {language === 'ro' ? 'Livrare la adresă' : 'Home delivery'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {language === 'ro' ? '1-3 zile lucrătoare' : '1-3 business days'}
-                        </p>
-                      </div>
-                      <span className="font-medium">
-                        {totalPrice >= 150 
-                          ? (language === 'ro' ? 'Gratuit' : 'Free')
-                          : '19.99 lei'}
-                      </span>
-                    </label>
-
-                    <label 
-                      className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
-                        form.deliveryMethod === 'pickup' 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <RadioGroupItem value="pickup" id="pickup" />
-                      <MapPin className="w-5 h-5 text-primary" />
-                      <div className="flex-1">
-                        <p className="font-medium">
-                          {language === 'ro' ? 'Ridicare personală - Brașov' : 'Pickup - Brașov'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {language === 'ro' ? 'Disponibil în 24h' : 'Available in 24h'}
-                        </p>
-                      </div>
-                      <span className="font-medium text-primary">
-                        {language === 'ro' ? 'Gratuit' : 'Free'}
-                      </span>
-                    </label>
-
-                    <label 
-                      className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all opacity-60 ${
-                        form.deliveryMethod === 'locker' 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border'
-                      }`}
-                    >
-                      <RadioGroupItem value="locker" id="locker" disabled />
-                      <Package className="w-5 h-5 text-muted-foreground" />
-                      <div className="flex-1">
-                        <p className="font-medium">
-                          {language === 'ro' ? 'Easybox / Locker' : 'Easybox / Locker'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {language === 'ro' ? 'În curând - Ecolet' : 'Coming soon - Ecolet'}
-                        </p>
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        {language === 'ro' ? 'În curând' : 'Soon'}
-                      </span>
-                    </label>
-                  </RadioGroup>
-
-                  {/* Shipping Address */}
-                  {form.deliveryMethod === 'shipping' && (
-                    <div className="space-y-4 pt-4 border-t border-border">
-                      {/* Country */}
-                      <div className="space-y-2">
-                        <Label htmlFor="country">
-                          {language === 'ro' ? 'Țară/regiune' : 'Country/Region'} *
-                        </Label>
-                        <Input
-                          id="country"
-                          value={form.country}
-                          onChange={(e) => updateForm('country', e.target.value)}
-                          required
-                        />
-                      </div>
-
-                      {/* Name row */}
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="billingFirstName">
-                            {language === 'ro' ? 'Prenume' : 'First name'} *
-                          </Label>
-                          <Input
-                            id="billingFirstName"
-                            value={form.firstName}
-                            onChange={(e) => updateForm('firstName', e.target.value)}
-                            placeholder={language === 'ro' ? 'Prenume' : 'First name'}
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="billingLastName">
-                            {language === 'ro' ? 'Nume' : 'Last name'} *
-                          </Label>
-                          <Input
-                            id="billingLastName"
-                            value={form.lastName}
-                            onChange={(e) => updateForm('lastName', e.target.value)}
-                            placeholder={language === 'ro' ? 'Nume' : 'Last name'}
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      {/* Address */}
-                      <div className="space-y-2">
-                        <Label htmlFor="address">
-                          {language === 'ro' ? 'Adresă' : 'Address'} *
-                        </Label>
-                        <Input
-                          id="address"
-                          value={form.address}
-                          onChange={(e) => updateForm('address', e.target.value)}
-                          placeholder={language === 'ro' ? 'Strada, număr' : 'Street, number'}
-                          required
-                        />
-                      </div>
-
-                      {/* Address Line 2 */}
-                      <div className="space-y-2">
-                        <Label htmlFor="addressLine2">
-                          {language === 'ro' ? 'Apartament, complex etc.' : 'Apartment, suite, etc.'} ({language === 'ro' ? 'opțional' : 'optional'})
-                        </Label>
-                        <Input
-                          id="addressLine2"
-                          value={form.addressLine2}
-                          onChange={(e) => updateForm('addressLine2', e.target.value)}
-                          placeholder={language === 'ro' ? 'Apartament, bloc, scară' : 'Apartment, building, entrance'}
-                        />
-                      </div>
-
-                      {/* City & County */}
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="city">
-                            {language === 'ro' ? 'Localitate' : 'City'} *
-                          </Label>
-                          <Input
-                            id="city"
-                            value={form.city}
-                            onChange={(e) => updateForm('city', e.target.value)}
-                            placeholder={language === 'ro' ? 'Localitate' : 'City'}
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="county">
-                            {language === 'ro' ? 'Județ' : 'County'} *
-                          </Label>
-                          <Select
-                            value={form.county}
-                            onValueChange={(value) => updateForm('county', value)}
-                          >
-                            <SelectTrigger className="bg-background">
-                              <SelectValue placeholder={language === 'ro' ? 'Selectează un județ' : 'Select county'} />
-                            </SelectTrigger>
-                            <SelectContent className="bg-background z-50 max-h-60">
-                              {ROMANIAN_COUNTIES.map((county) => (
-                                <SelectItem key={county} value={county}>
-                                  {county}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      {/* Postal & Phone */}
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="postalCode">
-                            {language === 'ro' ? 'Cod poștal' : 'Postal code'} *
-                          </Label>
-                          <Input
-                            id="postalCode"
-                            value={form.postalCode}
-                            onChange={(e) => updateForm('postalCode', e.target.value)}
-                            placeholder={language === 'ro' ? 'Cod poștal' : 'Postal code'}
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="billingPhone">
-                            {language === 'ro' ? 'Telefon' : 'Phone'} ({language === 'ro' ? 'opțional' : 'optional'})
-                          </Label>
-                          <Input
-                            id="billingPhone"
-                            type="tel"
-                            value={form.billingPhone}
-                            onChange={(e) => updateForm('billingPhone', e.target.value)}
-                            placeholder={language === 'ro' ? 'Telefon' : 'Phone'}
-                          />
-                        </div>
-                      </div>
+                  {/* City & County */}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">
+                        {language === 'ro' ? 'Localitate' : 'City'} *
+                      </Label>
+                      <Input
+                        id="city"
+                        value={form.city}
+                        onChange={(e) => updateForm('city', e.target.value)}
+                        placeholder={language === 'ro' ? 'Localitate' : 'City'}
+                        required
+                      />
                     </div>
-                  )}
-
-                  {/* Pickup Info */}
-                  {form.deliveryMethod === 'pickup' && (
-                    <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
-                      <p className="font-medium mb-1">
-                        {language === 'ro' ? 'Adresa de ridicare:' : 'Pickup address:'}
-                      </p>
-                      <p className="text-muted-foreground">
-                        Brașov, România
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        {language === 'ro' 
-                          ? 'Vei primi un email cu detalii exacte după plasarea comenzii.'
-                          : 'You will receive an email with exact details after placing the order.'}
-                      </p>
+                    <div className="space-y-2">
+                      <Label htmlFor="county">
+                        {language === 'ro' ? 'Județ' : 'County'} *
+                      </Label>
+                      <Select
+                        value={form.county}
+                        onValueChange={(value) => updateForm('county', value)}
+                      >
+                        <SelectTrigger className="bg-background">
+                          <SelectValue placeholder={language === 'ro' ? 'Selectează un județ' : 'Select county'} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background z-50 max-h-60">
+                          {ROMANIAN_COUNTIES.map((county) => (
+                            <SelectItem key={county} value={county}>
+                              {county}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  )}
+                  </div>
+
+                  {/* Postal Code */}
+                  <div className="space-y-2 max-w-xs">
+                    <Label htmlFor="postalCode">
+                      {language === 'ro' ? 'Cod poștal' : 'Postal code'}
+                    </Label>
+                    <Input
+                      id="postalCode"
+                      value={form.postalCode}
+                      onChange={(e) => updateForm('postalCode', e.target.value)}
+                      placeholder={language === 'ro' ? 'Cod poștal' : 'Postal code'}
+                    />
+                  </div>
+
+                  {/* Delivery Method Section */}
+                  <div className="pt-4 border-t border-border space-y-4">
+                    <h3 className="font-medium">
+                      {language === 'ro' ? 'Metoda de livrare' : 'Delivery method'}
+                    </h3>
+
+                    <RadioGroup
+                      value={form.deliveryMethod}
+                      onValueChange={(value) => updateForm('deliveryMethod', value)}
+                      className="space-y-3"
+                    >
+                      <label 
+                        className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                          form.deliveryMethod === 'shipping' 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <RadioGroupItem value="shipping" id="shipping" />
+                        <Truck className="w-5 h-5 text-primary" />
+                        <div className="flex-1">
+                          <p className="font-medium">
+                            {language === 'ro' ? 'Livrare la adresă' : 'Home delivery'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {language === 'ro' ? '1-3 zile lucrătoare' : '1-3 business days'}
+                          </p>
+                        </div>
+                        <span className="font-medium">
+                          {totalPrice >= 150 
+                            ? (language === 'ro' ? 'Gratuit' : 'Free')
+                            : '19.99 lei'}
+                        </span>
+                      </label>
+
+                      <label 
+                        className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                          form.deliveryMethod === 'pickup' 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <RadioGroupItem value="pickup" id="pickup" />
+                        <MapPin className="w-5 h-5 text-primary" />
+                        <div className="flex-1">
+                          <p className="font-medium">
+                            {language === 'ro' ? 'Ridicare personală - Brașov' : 'Pickup - Brașov'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {language === 'ro' ? 'Disponibil în 24h' : 'Available in 24h'}
+                          </p>
+                        </div>
+                        <span className="font-medium text-primary">
+                          {language === 'ro' ? 'Gratuit' : 'Free'}
+                        </span>
+                      </label>
+
+                      <label 
+                        className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all opacity-60 ${
+                          form.deliveryMethod === 'locker' 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border'
+                        }`}
+                      >
+                        <RadioGroupItem value="locker" id="locker" disabled />
+                        <Package className="w-5 h-5 text-muted-foreground" />
+                        <div className="flex-1">
+                          <p className="font-medium">
+                            {language === 'ro' ? 'Easybox / Locker' : 'Easybox / Locker'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {language === 'ro' ? 'În curând - Ecolet' : 'Coming soon - Ecolet'}
+                          </p>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {language === 'ro' ? 'În curând' : 'Soon'}
+                        </span>
+                      </label>
+                    </RadioGroup>
+
+                    {/* Shipping Address - only for shipping */}
+                    {form.deliveryMethod === 'shipping' && (
+                      <div className="space-y-4 pt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="address">
+                            {language === 'ro' ? 'Adresă' : 'Address'} *
+                          </Label>
+                          <Input
+                            id="address"
+                            value={form.address}
+                            onChange={(e) => updateForm('address', e.target.value)}
+                            placeholder={language === 'ro' ? 'Strada, număr' : 'Street, number'}
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="addressLine2">
+                            {language === 'ro' ? 'Apartament, complex etc.' : 'Apartment, suite, etc.'} ({language === 'ro' ? 'opțional' : 'optional'})
+                          </Label>
+                          <Input
+                            id="addressLine2"
+                            value={form.addressLine2}
+                            onChange={(e) => updateForm('addressLine2', e.target.value)}
+                            placeholder={language === 'ro' ? 'Apartament, bloc, scară' : 'Apartment, building, entrance'}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Pickup Info */}
+                    {form.deliveryMethod === 'pickup' && (
+                      <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
+                        <p className="font-medium mb-1">
+                          {language === 'ro' ? 'Adresa de ridicare:' : 'Pickup address:'}
+                        </p>
+                        <p className="text-muted-foreground">
+                          Brașov, România
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          {language === 'ro' 
+                            ? 'Vei primi un email cu detalii exacte după plasarea comenzii.'
+                            : 'You will receive an email with exact details after placing the order.'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Payment Method */}
@@ -578,7 +524,6 @@ const Checkout = () => {
                         </p>
                       </div>
                     </label>
-
                   </RadioGroup>
                 </div>
 
