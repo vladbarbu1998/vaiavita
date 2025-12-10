@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Loader2, Tag, Percent, Trash2, Edit, Copy } from 'lucide-react';
+import { Plus, Loader2, Tag, Percent, Trash2, Edit, Copy, Package, FolderOpen, Globe } from 'lucide-react';
 
 interface Coupon {
   id: string;
@@ -33,10 +33,27 @@ interface Coupon {
   valid_until: string | null;
   is_active: boolean;
   created_at: string;
+  scope: string;
+  product_id: string | null;
+  category_id: string | null;
+  products?: { name_ro: string } | null;
+  categories?: { name_ro: string } | null;
+}
+
+interface Product {
+  id: string;
+  name_ro: string;
+}
+
+interface Category {
+  id: string;
+  name_ro: string;
 }
 
 const AdminCoupons = () => {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
@@ -52,16 +69,25 @@ const AdminCoupons = () => {
     valid_from: '',
     valid_until: '',
     is_active: true,
+    scope: 'all',
+    product_id: '',
+    category_id: '',
   });
 
   useEffect(() => {
     fetchCoupons();
+    fetchProducts();
+    fetchCategories();
   }, []);
 
   const fetchCoupons = async () => {
     const { data, error } = await supabase
       .from('coupons')
-      .select('*')
+      .select(`
+        *,
+        products:product_id(name_ro),
+        categories:category_id(name_ro)
+      `)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -70,6 +96,23 @@ const AdminCoupons = () => {
       setCoupons(data || []);
     }
     setLoading(false);
+  };
+
+  const fetchProducts = async () => {
+    const { data } = await supabase
+      .from('products')
+      .select('id, name_ro')
+      .eq('status', 'active')
+      .order('name_ro');
+    setProducts(data || []);
+  };
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from('categories')
+      .select('id, name_ro')
+      .order('name_ro');
+    setCategories(data || []);
   };
 
   const resetForm = () => {
@@ -83,6 +126,9 @@ const AdminCoupons = () => {
       valid_from: '',
       valid_until: '',
       is_active: true,
+      scope: 'all',
+      product_id: '',
+      category_id: '',
     });
     setEditingCoupon(null);
   };
@@ -104,6 +150,9 @@ const AdminCoupons = () => {
       valid_from: coupon.valid_from ? coupon.valid_from.split('T')[0] : '',
       valid_until: coupon.valid_until ? coupon.valid_until.split('T')[0] : '',
       is_active: coupon.is_active ?? true,
+      scope: coupon.scope || 'all',
+      product_id: coupon.product_id || '',
+      category_id: coupon.category_id || '',
     });
     setDialogOpen(true);
   };
@@ -111,6 +160,16 @@ const AdminCoupons = () => {
   const saveCoupon = async () => {
     if (!form.code || form.discount_value <= 0) {
       toast.error('Completează codul și valoarea reducerii');
+      return;
+    }
+
+    if (form.scope === 'product' && !form.product_id) {
+      toast.error('Selectează un produs');
+      return;
+    }
+
+    if (form.scope === 'category' && !form.category_id) {
+      toast.error('Selectează o categorie');
       return;
     }
 
@@ -126,6 +185,9 @@ const AdminCoupons = () => {
       valid_from: form.valid_from || null,
       valid_until: form.valid_until || null,
       is_active: form.is_active,
+      scope: form.scope,
+      product_id: form.scope === 'product' ? form.product_id : null,
+      category_id: form.scope === 'category' ? form.category_id : null,
     };
 
     let error;
@@ -191,6 +253,22 @@ const AdminCoupons = () => {
     return new Date(date).toLocaleDateString('ro-RO');
   };
 
+  const getScopeLabel = (coupon: Coupon) => {
+    if (coupon.scope === 'product' && coupon.products) {
+      return coupon.products.name_ro;
+    }
+    if (coupon.scope === 'category' && coupon.categories) {
+      return coupon.categories.name_ro;
+    }
+    return 'Toate produsele';
+  };
+
+  const getScopeIcon = (scope: string) => {
+    if (scope === 'product') return <Package className="w-3 h-3" />;
+    if (scope === 'category') return <FolderOpen className="w-3 h-3" />;
+    return <Globe className="w-3 h-3" />;
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
@@ -254,6 +332,10 @@ const AdminCoupons = () => {
                       <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                         {coupon.discount_type === 'percentage' ? `${coupon.discount_value}%` : `${coupon.discount_value} lei`}
                       </span>
+                      <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 flex items-center gap-1">
+                        {getScopeIcon(coupon.scope)}
+                        {getScopeLabel(coupon)}
+                      </span>
                       {coupon.min_order_value && (
                         <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                           Min. {coupon.min_order_value} lei
@@ -291,7 +373,7 @@ const AdminCoupons = () => {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display text-xl">
               {editingCoupon ? 'Editează cupon' : 'Adaugă cupon'}
@@ -341,6 +423,74 @@ const AdminCoupons = () => {
                 />
               </div>
             </div>
+
+            {/* Scope Selection */}
+            <div className="space-y-2">
+              <Label>Se aplică pentru</Label>
+              <Select value={form.scope} onValueChange={(v) => setForm({ ...form, scope: v, product_id: '', category_id: '' })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4" />
+                      Toate produsele
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="product">
+                    <div className="flex items-center gap-2">
+                      <Package className="w-4 h-4" />
+                      Produs specific
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="category">
+                    <div className="flex items-center gap-2">
+                      <FolderOpen className="w-4 h-4" />
+                      Categorie
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Product Selection */}
+            {form.scope === 'product' && (
+              <div className="space-y-2">
+                <Label>Selectează produsul *</Label>
+                <Select value={form.product_id} onValueChange={(v) => setForm({ ...form, product_id: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Alege un produs" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {products.map((product) => (
+                      <SelectItem key={product.id} value={product.id}>
+                        {product.name_ro}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Category Selection */}
+            {form.scope === 'category' && (
+              <div className="space-y-2">
+                <Label>Selectează categoria *</Label>
+                <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Alege o categorie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name_ro}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
