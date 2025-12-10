@@ -54,6 +54,8 @@ interface RelatedProduct {
   slug: string;
   name_ro: string;
   name_en: string;
+  short_description_ro: string | null;
+  short_description_en: string | null;
   price: number;
   images: string[] | null;
 }
@@ -168,7 +170,7 @@ const ProductPage = () => {
         if (data.related_products && (data.related_products as string[]).length > 0) {
           const { data: relatedData } = await supabase
             .from('products')
-            .select('id, slug, name_ro, name_en, price, images')
+            .select('id, slug, name_ro, name_en, short_description_ro, short_description_en, price, images')
             .in('id', data.related_products as string[])
             .eq('status', 'active');
           
@@ -585,36 +587,45 @@ const ProductPage = () => {
                 {relatedProducts.map((relProd) => (
                   <div
                     key={relProd.id}
-                    className="group card-premium overflow-hidden hover:shadow-sm transition-all duration-300 relative"
+                    className="group card-premium overflow-hidden hover:shadow-sm transition-all duration-300"
                   >
-                    <a href={`/produse/${relProd.slug}`} className="block">
-                      <div className="aspect-square overflow-hidden bg-muted">
-                        {relProd.images?.[0] ? (
-                          <img
-                            src={relProd.images[0]}
-                            alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <ShoppingCart className="w-4 h-4 text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
-                    </a>
-                    {/* Quick Add Button */}
-                    <button
-                      onClick={() => handleQuickAddRelated(relProd)}
-                      className="absolute top-[calc(100%-4rem)] right-2 w-7 h-7 md:w-8 md:h-8 rounded-full bg-primary text-primary-foreground shadow-md flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
-                      title={language === 'ro' ? 'Adaugă în coș' : 'Add to cart'}
-                    >
-                      <ShoppingCart className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                    </button>
-                    <a href={`/produse/${relProd.slug}`} className="block p-2 pt-3">
+                    {/* Image with Quick Add button */}
+                    <div className="relative">
+                      <a href={`/produse/${relProd.slug}`} className="block">
+                        <div className="aspect-square overflow-hidden bg-muted">
+                          {relProd.images?.[0] ? (
+                            <img
+                              src={relProd.images[0]}
+                              alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ShoppingCart className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                      </a>
+                      {/* Quick Add Button */}
+                      <button
+                        onClick={() => handleQuickAddRelated(relProd)}
+                        className="absolute bottom-0 right-2 translate-y-1/2 w-7 h-7 md:w-8 md:h-8 rounded-full bg-primary text-primary-foreground shadow-md flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
+                        title={language === 'ro' ? 'Adaugă în coș' : 'Add to cart'}
+                      >
+                        <ShoppingCart className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                      </button>
+                    </div>
+                    <a href={`/produse/${relProd.slug}`} className="block p-2 pt-5">
                       {/* Title - fixed height for 2 lines */}
                       <h5 className="font-medium text-xs leading-snug line-clamp-2 h-8 group-hover:text-primary transition-colors">
                         {language === 'ro' ? relProd.name_ro : relProd.name_en}
                       </h5>
+                      {/* Short description - fixed height */}
+                      <p className="text-[10px] text-muted-foreground line-clamp-2 h-6 mt-1">
+                        {language === 'ro' 
+                          ? (relProd.short_description_ro || '') 
+                          : (relProd.short_description_en || '')}
+                      </p>
                       {/* Price - always at bottom */}
                       <p className="text-primary font-semibold text-sm pt-1.5">
                         {formatPrice(relProd.price)}
