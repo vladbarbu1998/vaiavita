@@ -104,7 +104,6 @@ const Cart = () => {
                     <p className="font-bold text-xl">
                       {formatPrice(item.price * item.quantity)}
                     </p>
-                    </p>
                   </div>
                 </div>
               ))}
