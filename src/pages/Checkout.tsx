@@ -333,6 +333,33 @@ const Checkout = () => {
                     </div>
                   </div>
 
+                  {/* Address */}
+                  <div className="space-y-2">
+                    <Label htmlFor="address">
+                      {language === 'ro' ? 'Adresă' : 'Address'} *
+                    </Label>
+                    <Input
+                      id="address"
+                      value={form.address}
+                      onChange={(e) => updateForm('address', e.target.value)}
+                      placeholder={language === 'ro' ? 'Strada, număr' : 'Street, number'}
+                      required={form.deliveryMethod === 'shipping'}
+                    />
+                  </div>
+
+                  {/* Address Line 2 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="addressLine2">
+                      {language === 'ro' ? 'Apartament, complex etc.' : 'Apartment, suite, etc.'} ({language === 'ro' ? 'opțional' : 'optional'})
+                    </Label>
+                    <Input
+                      id="addressLine2"
+                      value={form.addressLine2}
+                      onChange={(e) => updateForm('addressLine2', e.target.value)}
+                      placeholder={language === 'ro' ? 'Apartament, bloc, scară' : 'Apartment, building, entrance'}
+                    />
+                  </div>
+
                   {/* Postal Code */}
                   <div className="space-y-2 max-w-xs">
                     <Label htmlFor="postalCode">
@@ -425,36 +452,6 @@ const Checkout = () => {
                         </span>
                       </label>
                     </RadioGroup>
-
-                    {/* Shipping Address - only for shipping */}
-                    {form.deliveryMethod === 'shipping' && (
-                      <div className="space-y-4 pt-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="address">
-                            {language === 'ro' ? 'Adresă' : 'Address'} *
-                          </Label>
-                          <Input
-                            id="address"
-                            value={form.address}
-                            onChange={(e) => updateForm('address', e.target.value)}
-                            placeholder={language === 'ro' ? 'Strada, număr' : 'Street, number'}
-                            required
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="addressLine2">
-                            {language === 'ro' ? 'Apartament, complex etc.' : 'Apartment, suite, etc.'} ({language === 'ro' ? 'opțional' : 'optional'})
-                          </Label>
-                          <Input
-                            id="addressLine2"
-                            value={form.addressLine2}
-                            onChange={(e) => updateForm('addressLine2', e.target.value)}
-                            placeholder={language === 'ro' ? 'Apartament, bloc, scară' : 'Apartment, building, entrance'}
-                          />
-                        </div>
-                      </div>
-                    )}
 
                     {/* Pickup Info */}
                     {form.deliveryMethod === 'pickup' && (
