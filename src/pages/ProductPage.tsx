@@ -604,9 +604,19 @@ const ProductPage = () => {
               <TabsContent value="reviews" className="mt-0 space-y-6">
                   {/* Reviews Overview - Separate Card */}
                   <div className="card-premium p-6 bg-gradient-to-br from-primary/5 to-transparent">
-                    <h3 className="font-display text-lg mb-4">
-                      {language === 'ro' ? 'Sumar Recenzii' : 'Reviews Summary'}
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-display text-lg">
+                        {language === 'ro' ? 'Sumar Recenzii' : 'Reviews Summary'}
+                      </h3>
+                      {!reviewSubmitted && !showReviewForm && (
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setShowReviewForm(true)}
+                        >
+                          {language === 'ro' ? 'Scrie o recenzie' : 'Write a review'}
+                        </Button>
+                      )}
+                    </div>
                     <div className="flex flex-col md:flex-row gap-8 items-start">
                       {/* Average Rating */}
                       <div className="flex flex-col items-center text-center min-w-[100px]">
@@ -662,17 +672,6 @@ const ProductPage = () => {
 
                   {/* Reviews Content Card */}
                   <div className="card-premium p-8">
-                    {/* Add Review Button */}
-                    {!reviewSubmitted && !showReviewForm && (
-                      <div className="mb-6">
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setShowReviewForm(true)}
-                        >
-                          {language === 'ro' ? 'Scrie o recenzie' : 'Write a review'}
-                        </Button>
-                      </div>
-                    )}
 
                     {/* Review Submitted Message */}
                     {reviewSubmitted && (
