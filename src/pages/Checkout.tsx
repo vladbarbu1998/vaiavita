@@ -33,10 +33,13 @@ interface CheckoutForm {
   phone: string;
   deliveryMethod: DeliveryMethod;
   paymentMethod: PaymentMethod;
+  country: string;
   address: string;
+  addressLine2: string;
   city: string;
   county: string;
   postalCode: string;
+  billingPhone: string;
   notes: string;
 }
 
@@ -53,10 +56,13 @@ const Checkout = () => {
     phone: '',
     deliveryMethod: 'shipping',
     paymentMethod: 'cash_on_delivery',
+    country: 'România',
     address: '',
+    addressLine2: '',
     city: '',
     county: '',
     postalCode: '',
+    billingPhone: '',
     notes: '',
   });
 
@@ -101,10 +107,13 @@ const Checkout = () => {
           delivery_method: form.deliveryMethod as 'shipping' | 'pickup' | 'locker',
           payment_method: form.paymentMethod as 'stripe' | 'netopia' | 'cash_on_delivery',
           shipping_address: form.deliveryMethod === 'shipping' ? {
+            country: form.country,
             address: form.address,
+            addressLine2: form.addressLine2,
             city: form.city,
             county: form.county,
             postalCode: form.postalCode,
+            phone: form.billingPhone,
           } : null,
           pickup_location: form.deliveryMethod === 'pickup' ? 'Brașov, România' : null,
           subtotal: totalPrice,
@@ -350,6 +359,48 @@ const Checkout = () => {
                   {/* Shipping Address */}
                   {form.deliveryMethod === 'shipping' && (
                     <div className="space-y-4 pt-4 border-t border-border">
+                      {/* Country */}
+                      <div className="space-y-2">
+                        <Label htmlFor="country">
+                          {language === 'ro' ? 'Țară/regiune' : 'Country/Region'} *
+                        </Label>
+                        <Input
+                          id="country"
+                          value={form.country}
+                          onChange={(e) => updateForm('country', e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      {/* Name row */}
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="billingFirstName">
+                            {language === 'ro' ? 'Prenume' : 'First name'} *
+                          </Label>
+                          <Input
+                            id="billingFirstName"
+                            value={form.firstName}
+                            onChange={(e) => updateForm('firstName', e.target.value)}
+                            placeholder={language === 'ro' ? 'Prenume' : 'First name'}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="billingLastName">
+                            {language === 'ro' ? 'Nume' : 'Last name'} *
+                          </Label>
+                          <Input
+                            id="billingLastName"
+                            value={form.lastName}
+                            onChange={(e) => updateForm('lastName', e.target.value)}
+                            placeholder={language === 'ro' ? 'Nume' : 'Last name'}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      {/* Address */}
                       <div className="space-y-2">
                         <Label htmlFor="address">
                           {language === 'ro' ? 'Adresă' : 'Address'} *
@@ -358,19 +409,35 @@ const Checkout = () => {
                           id="address"
                           value={form.address}
                           onChange={(e) => updateForm('address', e.target.value)}
-                          placeholder={language === 'ro' ? 'Strada, număr, bloc, scară, apartament' : 'Street, number, building, apartment'}
+                          placeholder={language === 'ro' ? 'Strada, număr' : 'Street, number'}
                           required
                         />
                       </div>
-                      <div className="grid sm:grid-cols-3 gap-4">
+
+                      {/* Address Line 2 */}
+                      <div className="space-y-2">
+                        <Label htmlFor="addressLine2">
+                          {language === 'ro' ? 'Apartament, complex etc.' : 'Apartment, suite, etc.'} ({language === 'ro' ? 'opțional' : 'optional'})
+                        </Label>
+                        <Input
+                          id="addressLine2"
+                          value={form.addressLine2}
+                          onChange={(e) => updateForm('addressLine2', e.target.value)}
+                          placeholder={language === 'ro' ? 'Apartament, bloc, scară' : 'Apartment, building, entrance'}
+                        />
+                      </div>
+
+                      {/* City & County */}
+                      <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="city">
-                            {language === 'ro' ? 'Oraș' : 'City'} *
+                            {language === 'ro' ? 'Localitate' : 'City'} *
                           </Label>
                           <Input
                             id="city"
                             value={form.city}
                             onChange={(e) => updateForm('city', e.target.value)}
+                            placeholder={language === 'ro' ? 'Localitate' : 'City'}
                             required
                           />
                         </div>
@@ -382,17 +449,36 @@ const Checkout = () => {
                             id="county"
                             value={form.county}
                             onChange={(e) => updateForm('county', e.target.value)}
+                            placeholder={language === 'ro' ? 'Selectează un județ' : 'Select county'}
                             required
                           />
                         </div>
+                      </div>
+
+                      {/* Postal & Phone */}
+                      <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="postalCode">
-                            {language === 'ro' ? 'Cod poștal' : 'Postal code'}
+                            {language === 'ro' ? 'Cod poștal' : 'Postal code'} *
                           </Label>
                           <Input
                             id="postalCode"
                             value={form.postalCode}
                             onChange={(e) => updateForm('postalCode', e.target.value)}
+                            placeholder={language === 'ro' ? 'Cod poștal' : 'Postal code'}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="billingPhone">
+                            {language === 'ro' ? 'Telefon' : 'Phone'} ({language === 'ro' ? 'opțional' : 'optional'})
+                          </Label>
+                          <Input
+                            id="billingPhone"
+                            type="tel"
+                            value={form.billingPhone}
+                            onChange={(e) => updateForm('billingPhone', e.target.value)}
+                            placeholder={language === 'ro' ? 'Telefon' : 'Phone'}
                           />
                         </div>
                       </div>

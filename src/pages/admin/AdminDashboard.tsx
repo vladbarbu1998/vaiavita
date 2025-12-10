@@ -123,8 +123,11 @@ const AdminDashboard = () => {
       `}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="h-16 flex items-center px-6 border-b border-border">
+          <div className="h-16 flex items-center justify-between px-6 border-b border-border">
             <img src={logo} alt="VAIAVITA" className="h-8" />
+            <Link to="/" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+              ← Site
+            </Link>
           </div>
 
           {/* Navigation */}
