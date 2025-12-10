@@ -896,8 +896,8 @@ const AdminProducts = () => {
                   maxLength={150}
                 />
                 {(form.card_description_ro?.length || 0) > 72 && (
-                  <p className="text-xs text-amber-500">
-                    ⚠️ Textul va fi trunchiat pe carduri după 72 de caractere
+                  <p className="text-xs text-destructive">
+                    ⚠️ Textul depășește 72 de caractere
                   </p>
                 )}
               </div>
