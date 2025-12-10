@@ -450,7 +450,7 @@ const AdminProducts = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toate categoriile</SelectItem>
-            {categories.map(c => (
+            {categories.filter(c => c.id).map(c => (
               <SelectItem key={c.id} value={c.id}>{c.name_ro}</SelectItem>
             ))}
           </SelectContent>
