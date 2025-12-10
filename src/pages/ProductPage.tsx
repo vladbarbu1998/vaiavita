@@ -559,11 +559,51 @@ const ProductPage = () => {
             </div>
           </div>
 
+          {/* Related Products Section */}
+          {relatedProducts.length > 0 && (
+            <div className="mt-16 opacity-0 animate-fade-up animation-delay-300">
+              <h2 className="font-display text-2xl md:text-3xl tracking-wide mb-8">
+                {language === 'ro' ? 'Clienții au cumpărat și' : 'Customers also bought'}
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                {relatedProducts.map((relProd) => (
+                  <a
+                    key={relProd.id}
+                    href={`/produse/${relProd.slug}`}
+                    className="group card-premium overflow-hidden hover:shadow-lg transition-all duration-300"
+                  >
+                    <div className="aspect-square overflow-hidden bg-muted">
+                      {relProd.images?.[0] ? (
+                        <img
+                          src={relProd.images[0]}
+                          alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ShoppingCart className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                        {language === 'ro' ? relProd.name_ro : relProd.name_en}
+                      </h3>
+                      <p className="text-primary font-semibold mt-2">
+                        {formatPrice(relProd.price)}
+                      </p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Tabs Section */}
-          <div ref={tabsRef} className="mt-16 opacity-0 animate-fade-up animation-delay-300">
+          <div ref={tabsRef} className="mt-16 opacity-0 animate-fade-up animation-delay-400">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="w-full justify-start border-b border-border rounded-none bg-transparent h-auto p-0 mb-8 overflow-x-auto">
-                <TabsTrigger 
+                <TabsTrigger
                   value="description" 
                   className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary px-6 py-3 font-display text-base whitespace-nowrap"
                 >
@@ -924,46 +964,6 @@ const ProductPage = () => {
               </TabsContent>
             </Tabs>
           </div>
-
-          {/* Related Products Section */}
-          {relatedProducts.length > 0 && (
-            <div className="mt-16 opacity-0 animate-fade-up animation-delay-500">
-              <h2 className="font-display text-2xl md:text-3xl tracking-wide mb-8">
-                {language === 'ro' ? 'Clienții au cumpărat și' : 'Customers also bought'}
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                {relatedProducts.map((relProd) => (
-                  <a
-                    key={relProd.id}
-                    href={`/produse/${relProd.slug}`}
-                    className="group card-premium overflow-hidden hover:shadow-lg transition-all duration-300"
-                  >
-                    <div className="aspect-square overflow-hidden bg-muted">
-                      {relProd.images?.[0] ? (
-                        <img
-                          src={relProd.images[0]}
-                          alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ShoppingCart className="w-8 h-8 text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                        {language === 'ro' ? relProd.name_ro : relProd.name_en}
-                      </h3>
-                      <p className="text-primary font-semibold mt-2">
-                        {formatPrice(relProd.price)}
-                      </p>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </section>
     </MainLayout>
