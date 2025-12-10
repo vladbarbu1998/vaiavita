@@ -572,7 +572,7 @@ const ProductPage = () => {
                     href={`/produse/${relProd.slug}`}
                     className="group card-premium overflow-hidden hover:shadow-sm transition-all duration-300"
                   >
-                    <div className="aspect-square overflow-hidden bg-muted">
+                    <div className="aspect-[4/3] overflow-hidden bg-muted">
                       {relProd.images?.[0] ? (
                         <img
                           src={relProd.images[0]}
@@ -585,7 +585,7 @@ const ProductPage = () => {
                         </div>
                       )}
                     </div>
-                    <div className="p-1.5 flex flex-col">
+                    <div className="p-1.5 pt-2.5 flex flex-col">
                       {/* Title - fixed height for 2 lines */}
                       <h5 className="font-medium text-[10px] leading-tight line-clamp-2 h-6 group-hover:text-primary transition-colors">
                         {language === 'ro' ? relProd.name_ro : relProd.name_en}
