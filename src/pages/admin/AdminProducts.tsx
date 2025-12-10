@@ -65,8 +65,14 @@ const emptyProduct = {
   specifications: { items: [] } as ProductSpecifications,
 };
 
+interface Category {
+  id: string;
+  name_ro: string;
+}
+
 const AdminProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -79,7 +85,16 @@ const AdminProducts = () => {
 
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from('categories')
+      .select('id, name_ro')
+      .order('sort_order');
+    setCategories(data || []);
+  };
 
   const fetchProducts = async () => {
     const { data, error } = await supabase
@@ -194,14 +209,44 @@ const AdminProducts = () => {
     if (galleryInputRef.current) galleryInputRef.current.value = '';
   };
 
-  const removeCoverImage = () => {
+  // Helper to extract file path from URL for storage deletion
+  const getStoragePathFromUrl = (url: string): string | null => {
+    try {
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split('/storage/v1/object/public/products/');
+      if (pathParts.length > 1) {
+        return pathParts[1];
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Delete image from storage
+  const deleteImageFromStorage = async (url: string) => {
+    const path = getStoragePathFromUrl(url);
+    if (path) {
+      await supabase.storage.from('products').remove([path]);
+    }
+  };
+
+  const removeCoverImage = async () => {
+    const imageToRemove = form.images[0];
+    if (imageToRemove) {
+      await deleteImageFromStorage(imageToRemove);
+    }
     setForm(prev => ({
       ...prev,
       images: prev.images.slice(1)
     }));
   };
 
-  const removeGalleryImage = (index: number) => {
+  const removeGalleryImage = async (index: number) => {
+    const imageToRemove = form.images[index + 1];
+    if (imageToRemove) {
+      await deleteImageFromStorage(imageToRemove);
+    }
     setForm(prev => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index + 1)
@@ -309,6 +354,10 @@ const AdminProducts = () => {
   const handleDelete = async (id: string) => {
     if (!confirm('Ești sigur că vrei să ștergi acest produs?')) return;
 
+    // Find product to get images
+    const productToDelete = products.find(p => p.id === id);
+    
+    // Delete product from database first
     const { error } = await supabase
       .from('products')
       .delete()
@@ -316,10 +365,22 @@ const AdminProducts = () => {
 
     if (error) {
       toast.error('Eroare la ștergere');
-    } else {
-      toast.success('Produs șters');
-      fetchProducts();
+      return;
     }
+
+    // Delete all images from storage
+    if (productToDelete?.images && productToDelete.images.length > 0) {
+      const pathsToDelete = productToDelete.images
+        .map(url => getStoragePathFromUrl(url))
+        .filter((path): path is string => path !== null);
+      
+      if (pathsToDelete.length > 0) {
+        await supabase.storage.from('products').remove(pathsToDelete);
+      }
+    }
+
+    toast.success('Produs șters');
+    fetchProducts();
   };
 
   const filteredProducts = products.filter(p => 
@@ -672,19 +733,35 @@ const AdminProducts = () => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select value={form.status} onValueChange={(value) => setForm({ ...form, status: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">✅ Activ</SelectItem>
-                  <SelectItem value="out_of_stock">🚫 Stoc epuizat</SelectItem>
-                  <SelectItem value="inactive">⏸️ Inactiv</SelectItem>
-                  <SelectItem value="coming_soon">🔜 În curând</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={form.status} onValueChange={(value) => setForm({ ...form, status: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">✅ Activ</SelectItem>
+                    <SelectItem value="out_of_stock">🚫 Stoc epuizat</SelectItem>
+                    <SelectItem value="inactive">⏸️ Inactiv</SelectItem>
+                    <SelectItem value="coming_soon">🔜 În curând</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Categorie</Label>
+                <Select value={form.category_id || ''} onValueChange={(value) => setForm({ ...form, category_id: value || null })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selectează categorie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Fără categorie</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name_ro}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Specifications Editor */}

@@ -17,7 +17,8 @@ import {
   X,
   Loader2,
   Tag,
-  Lock
+  Lock,
+  FolderOpen
 } from 'lucide-react';
 import logoLight from '@/assets/logo-light.png';
 import logoDark from '@/assets/logo-dark.png';
@@ -123,6 +124,7 @@ const AdminDashboard = () => {
   const navItems = [
     { path: '/admin', icon: LayoutDashboard, label: 'Prezentare generală', exact: true },
     { path: '/admin/products', icon: Package, label: 'Produse' },
+    { path: '/admin/categories', icon: FolderOpen, label: 'Categorii' },
     { path: '/admin/orders', icon: ShoppingCart, label: 'Comenzi' },
     { path: '/admin/customers', icon: Users, label: 'Clienți' },
     { path: '/admin/reviews', icon: Star, label: 'Recenzii' },
