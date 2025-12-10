@@ -3,3 +3,7 @@ export { default as AdminDashboard } from './AdminDashboard';
 export { default as AdminOverview } from './AdminOverview';
 export { default as AdminProducts } from './AdminProducts';
 export { default as AdminOrders } from './AdminOrders';
+export { default as AdminCustomers } from './AdminCustomers';
+export { default as AdminReviews } from './AdminReviews';
+export { default as AdminCoupons } from './AdminCoupons';
+export { default as AdminSettings } from './AdminSettings';

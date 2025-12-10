@@ -2,11 +2,13 @@ import { Link } from 'react-router-dom';
 import { MainLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/context/LanguageContext';
+import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Package, Truck } from 'lucide-react';
 
 const Cart = () => {
   const { language, t } = useLanguage();
+  const { formatPrice } = useCurrency();
   const { items, updateQuantity, removeItem, totalPrice } = useCart();
 
   if (items.length === 0) {
@@ -71,7 +73,7 @@ const Cart = () => {
                         {language === 'ro' ? item.name : item.nameEn}
                       </h3>
                       <p className="text-primary font-bold text-xl mt-1">
-                        {item.price.toFixed(2)} lei
+                        {formatPrice(item.price)}
                       </p>
                     </div>
                     <div className="flex items-center gap-4 mt-3">
@@ -100,7 +102,8 @@ const Cart = () => {
                   </div>
                   <div className="text-right shrink-0">
                     <p className="font-bold text-xl">
-                      {(item.price * item.quantity).toFixed(2)} lei
+                      {formatPrice(item.price * item.quantity)}
+                    </p>
                     </p>
                   </div>
                 </div>
@@ -117,7 +120,7 @@ const Cart = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">{language === 'ro' ? 'Subtotal' : 'Subtotal'}</span>
-                    <span className="font-medium">{totalPrice.toFixed(2)} lei</span>
+                    <span className="font-medium">{formatPrice(totalPrice)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground flex items-center gap-2">
@@ -148,7 +151,7 @@ const Cart = () => {
                 <div className="border-t border-border pt-4">
                   <div className="flex justify-between text-lg">
                     <span className="font-display">{language === 'ro' ? 'Total' : 'Total'}</span>
-                    <span className="font-bold text-primary text-xl">{totalPrice.toFixed(2)} lei</span>
+                    <span className="font-bold text-primary text-xl">{formatPrice(totalPrice)}</span>
                   </div>
                 </div>
 

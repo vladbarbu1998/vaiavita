@@ -18,6 +18,7 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.cart': 'Coș',
     
     // Hero
+    'hero.badge': 'Produse premium',
     'hero.title': 'VAIAVITA – Vitalitate, Energie și Echilibru',
     'hero.subtitle': 'Descoperă produsele exclusive VAIAVITA, selectate riguros din SUA și Hong Kong pentru rezultate excepționale. Formule premium, inaccesibile pe piața locală, create să îți aducă produse de cea mai înaltă calitate.',
     'hero.cta.products': 'Descoperă produsele',
@@ -90,6 +91,7 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.cart': 'Cart',
     
     // Hero
+    'hero.badge': 'Premium products',
     'hero.title': 'VAIAVITA – Vitality, Energy and Balance',
     'hero.subtitle': 'Discover exclusive VAIAVITA products, carefully selected from the USA and Hong Kong for exceptional results. Premium formulas, unavailable on the local market, created to bring you the highest quality products.',
     'hero.cta.products': 'Discover products',

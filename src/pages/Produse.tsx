@@ -3,6 +3,7 @@ import { MainLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/context/LanguageContext';
+import { useCurrency } from '@/context/CurrencyContext';
 import { ArrowRight } from 'lucide-react';
 import dentTasticImage from '@/assets/dent-tastic-product.webp';
 import qivaroImage from '@/assets/qivaro.webp';
@@ -49,6 +50,7 @@ const products: Product[] = [
 
 const Produse = () => {
   const { language, t } = useLanguage();
+  const { formatPrice } = useCurrency();
 
   const getStatusBadge = (status: Product['status']) => {
     switch (status) {
@@ -123,7 +125,7 @@ const Produse = () => {
                     <div className="flex items-center justify-between pt-3">
                       {product.price > 0 ? (
                         <span className="text-2xl font-bold text-primary">
-                          {product.price.toFixed(2)} lei
+                          {formatPrice(product.price)}
                         </span>
                       ) : (
                         <span className="text-muted-foreground">

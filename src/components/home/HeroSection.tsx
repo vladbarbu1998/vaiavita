@@ -19,7 +19,7 @@ export function HeroSection() {
           <div className="space-y-6 opacity-0 animate-fade-up">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
               <Sparkles className="w-4 h-4" />
-              <span>{t('hero.badge') || 'Produse Premium'}</span>
+              <span>{t('hero.badge')}</span>
             </div>
             
             <h1 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-wide leading-[1.1]">

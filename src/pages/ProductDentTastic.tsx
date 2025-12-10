@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/context/LanguageContext';
+import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
 import { Star, Minus, Plus, ShoppingCart, Check, Quote, Upload, Send, AlertCircle } from 'lucide-react';
@@ -35,6 +36,7 @@ const testimonials = [
 
 const ProductDentTastic = () => {
   const { language, t } = useLanguage();
+  const { formatPrice } = useCurrency();
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
@@ -181,7 +183,7 @@ const ProductDentTastic = () => {
                 <Badge variant="outline" className="gap-1"><Check className="w-3 h-3" />{language === 'ro' ? 'Ingrediente clinice' : 'Clinical ingredients'}</Badge>
               </div>
 
-              <div className="text-4xl font-bold text-primary">29,99 lei</div>
+              <div className="text-4xl font-bold text-primary">{formatPrice(29.99)}</div>
 
               {/* Quantity & Add to Cart */}
               <div className="flex flex-col sm:flex-row gap-4">
