@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Search, Eye, Loader2, Package, Truck, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Search, Eye, Loader2, Package, Truck, CheckCircle, Clock, XCircle, Filter, Calendar, CreditCard } from 'lucide-react';
 
 interface Order {
   id: string;
@@ -42,9 +42,21 @@ interface Order {
 interface OrderItem {
   id: string;
   product_name: string;
+  product_id: string | null;
   quantity: number;
   unit_price: number;
   total_price: number;
+}
+
+interface Product {
+  id: string;
+  name_ro: string;
+  category_id: string | null;
+}
+
+interface Category {
+  id: string;
+  name_ro: string;
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
@@ -69,40 +81,67 @@ const paymentLabels: Record<string, string> = {
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [orderItemsMap, setOrderItemsMap] = useState<Record<string, OrderItem[]>>({});
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [productFilter, setProductFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [deliveryFilter, setDeliveryFilter] = useState<string>('all');
+  const [paymentFilter, setPaymentFilter] = useState<string>('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    fetchOrders();
+    fetchData();
   }, []);
 
-  const fetchOrders = async () => {
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false });
+  const fetchData = async () => {
+    const [ordersRes, productsRes, categoriesRes, orderItemsRes] = await Promise.all([
+      supabase.from('orders').select('*').order('created_at', { ascending: false }),
+      supabase.from('products').select('id, name_ro, category_id'),
+      supabase.from('categories').select('id, name_ro').order('sort_order'),
+      supabase.from('order_items').select('*'),
+    ]);
 
-    if (error) {
+    if (ordersRes.error) {
       toast.error('Eroare la încărcarea comenzilor');
     } else {
-      setOrders(data || []);
+      setOrders(ordersRes.data || []);
     }
+    
+    setProducts(productsRes.data || []);
+    setCategories(categoriesRes.data || []);
+    
+    // Group order items by order_id
+    const itemsMap: Record<string, OrderItem[]> = {};
+    (orderItemsRes.data || []).forEach((item: OrderItem) => {
+      if (!itemsMap[item.product_id || '']) {
+        itemsMap[item.product_id || ''] = [];
+      }
+    });
+    // Actually group by order_id
+    const orderItemsGrouped: Record<string, OrderItem[]> = {};
+    (orderItemsRes.data || []).forEach((item: any) => {
+      if (!orderItemsGrouped[item.order_id]) {
+        orderItemsGrouped[item.order_id] = [];
+      }
+      orderItemsGrouped[item.order_id].push(item);
+    });
+    setOrderItemsMap(orderItemsGrouped);
+    
     setLoading(false);
   };
 
   const viewOrder = async (order: Order) => {
     setSelectedOrder(order);
-    
-    const { data } = await supabase
-      .from('order_items')
-      .select('*')
-      .eq('order_id', order.id);
-    
-    setOrderItems(data || []);
+    setOrderItems(orderItemsMap[order.id] || []);
     setDialogOpen(true);
   };
 
@@ -116,7 +155,7 @@ const AdminOrders = () => {
       toast.error('Eroare la actualizare');
     } else {
       toast.success('Status actualizat');
-      fetchOrders();
+      fetchData();
       if (selectedOrder?.id === orderId) {
         setSelectedOrder({ ...selectedOrder, status: newStatus });
       }
@@ -131,8 +170,30 @@ const AdminOrders = () => {
       order.customer_last_name.toLowerCase().includes(search.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    const matchesDelivery = deliveryFilter === 'all' || order.delivery_method === deliveryFilter;
+    const matchesPayment = paymentFilter === 'all' || order.payment_method === paymentFilter;
     
-    return matchesSearch && matchesStatus;
+    // Date filters
+    const orderDate = new Date(order.created_at);
+    const matchesDateFrom = !dateFrom || orderDate >= new Date(dateFrom);
+    const matchesDateTo = !dateTo || orderDate <= new Date(dateTo + 'T23:59:59');
+    
+    // Product/Category filter - check if order contains the product or products from category
+    let matchesProduct = productFilter === 'all';
+    let matchesCategory = categoryFilter === 'all';
+    
+    const items = orderItemsMap[order.id] || [];
+    
+    if (productFilter !== 'all') {
+      matchesProduct = items.some(item => item.product_id === productFilter);
+    }
+    
+    if (categoryFilter !== 'all') {
+      const categoryProductIds = products.filter(p => p.category_id === categoryFilter).map(p => p.id);
+      matchesCategory = items.some(item => item.product_id && categoryProductIds.includes(item.product_id));
+    }
+    
+    return matchesSearch && matchesStatus && matchesDelivery && matchesPayment && matchesDateFrom && matchesDateTo && matchesProduct && matchesCategory;
   });
 
   const formatDate = (date: string) => {
@@ -145,6 +206,19 @@ const AdminOrders = () => {
     });
   };
 
+  const clearFilters = () => {
+    setStatusFilter('all');
+    setProductFilter('all');
+    setCategoryFilter('all');
+    setDeliveryFilter('all');
+    setPaymentFilter('all');
+    setDateFrom('');
+    setDateTo('');
+    setSearch('');
+  };
+
+  const activeFiltersCount = [statusFilter, productFilter, categoryFilter, deliveryFilter, paymentFilter].filter(f => f !== 'all').length + (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
@@ -152,7 +226,7 @@ const AdminOrders = () => {
         <p className="text-muted-foreground mt-1">Gestionează comenzile primite</p>
       </div>
 
-      {/* Filters */}
+      {/* Search and Filter Toggle */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -163,20 +237,126 @@ const AdminOrders = () => {
             className="pl-10"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Toate statusurile" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Toate</SelectItem>
-            <SelectItem value="pending">În așteptare</SelectItem>
-            <SelectItem value="processing">În procesare</SelectItem>
-            <SelectItem value="shipped">Expediată</SelectItem>
-            <SelectItem value="delivered">Finalizată</SelectItem>
-            <SelectItem value="cancelled">Anulată</SelectItem>
-          </SelectContent>
-        </Select>
+        <Button 
+          variant={showFilters ? "default" : "outline"} 
+          onClick={() => setShowFilters(!showFilters)}
+          className="gap-2"
+        >
+          <Filter className="w-4 h-4" />
+          Filtre
+          {activeFiltersCount > 0 && (
+            <span className="bg-primary-foreground text-primary w-5 h-5 rounded-full text-xs flex items-center justify-center">
+              {activeFiltersCount}
+            </span>
+          )}
+        </Button>
+        {activeFiltersCount > 0 && (
+          <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground">
+            Resetează
+          </Button>
+        )}
       </div>
+
+      {/* Filters Panel */}
+      {showFilters && (
+        <div className="card-premium p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Status</label>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Toate" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toate</SelectItem>
+                <SelectItem value="pending">În așteptare</SelectItem>
+                <SelectItem value="processing">În procesare</SelectItem>
+                <SelectItem value="shipped">Expediată</SelectItem>
+                <SelectItem value="delivered">Finalizată</SelectItem>
+                <SelectItem value="cancelled">Anulată</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Produs</label>
+            <Select value={productFilter} onValueChange={setProductFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Toate" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toate produsele</SelectItem>
+                {products.map(p => (
+                  <SelectItem key={p.id} value={p.id}>{p.name_ro}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Categorie</label>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Toate" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toate categoriile</SelectItem>
+                {categories.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.name_ro}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Livrare</label>
+            <Select value={deliveryFilter} onValueChange={setDeliveryFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Toate" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toate</SelectItem>
+                <SelectItem value="shipping">Livrare</SelectItem>
+                <SelectItem value="pickup">Ridicare</SelectItem>
+                <SelectItem value="locker">Locker</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Plată</label>
+            <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Toate" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toate</SelectItem>
+                <SelectItem value="stripe">Card</SelectItem>
+                <SelectItem value="cash_on_delivery">Ramburs</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">Perioadă</label>
+            <div className="flex gap-2">
+              <Input 
+                type="date" 
+                value={dateFrom} 
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="text-xs"
+                placeholder="De la"
+              />
+              <Input 
+                type="date" 
+                value={dateTo} 
+                onChange={(e) => setDateTo(e.target.value)}
+                className="text-xs"
+                placeholder="Până la"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Orders Table */}
       <div className="card-premium overflow-hidden">
