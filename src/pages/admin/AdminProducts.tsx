@@ -48,6 +48,7 @@ interface Product {
   tags: string[];
   images: string[];
   specifications: ProductSpecifications | null;
+  related_products: string[] | null;
   created_at: string;
 }
 
@@ -70,6 +71,7 @@ const emptyProduct = {
   tags: [] as string[],
   images: [] as string[],
   specifications: { items: [] } as ProductSpecifications,
+  related_products: [] as string[],
 };
 
 interface Category {
@@ -181,6 +183,7 @@ const AdminProducts = () => {
       tags: product.tags || [],
       images: product.images || [],
       specifications: product.specifications || { items: [] },
+      related_products: product.related_products || [],
     });
     setDialogOpen(true);
   };
@@ -453,6 +456,7 @@ const AdminProducts = () => {
         tags: form.tags,
         images: form.images,
         specifications: JSON.parse(JSON.stringify(form.specifications)),
+        related_products: form.related_products,
       };
 
       let productId: string;
@@ -1092,6 +1096,105 @@ const AdminProducts = () => {
               productNameRo={form.name_ro}
               productDescriptionRo={form.description_ro}
             />
+
+            {/* Related Products / Clienții au cumpărat și */}
+            <div className="space-y-3 p-4 rounded-xl bg-muted/30 border border-border">
+              <Label className="flex items-center gap-2">
+                🛒 Clienții au cumpărat și
+                <span className="text-xs text-muted-foreground font-normal">(afișat pe pagina produsului)</span>
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between font-normal"
+                  >
+                    {form.related_products.length > 0
+                      ? `${form.related_products.length} produs${form.related_products.length === 1 ? '' : 'e'} selectat${form.related_products.length === 1 ? '' : 'e'}`
+                      : "Selectează produse conexe"}
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[350px] p-0 bg-background border border-border shadow-lg z-50" align="start">
+                  <div className="max-h-60 overflow-y-auto p-2 space-y-1">
+                    {products.filter(p => p.id !== editingProduct?.id).length === 0 ? (
+                      <p className="text-sm text-muted-foreground p-2 text-center">Nu există alte produse</p>
+                    ) : (
+                      products.filter(p => p.id !== editingProduct?.id).map((prod) => {
+                        const isSelected = form.related_products.includes(prod.id);
+                        return (
+                          <div
+                            key={prod.id}
+                            className="flex items-center gap-2 p-2 rounded-md hover:bg-muted cursor-pointer transition-colors"
+                            onClick={() => {
+                              setForm(prev => ({
+                                ...prev,
+                                related_products: isSelected
+                                  ? prev.related_products.filter(id => id !== prod.id)
+                                  : [...prev.related_products, prod.id]
+                              }));
+                            }}
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              className="pointer-events-none"
+                            />
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              {prod.images?.[0] && (
+                                <img src={prod.images[0]} alt="" className="w-8 h-8 rounded object-cover" />
+                              )}
+                              <span className="text-sm truncate">{prod.name_ro}</span>
+                            </div>
+                            {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                  {form.related_products.length > 0 && (
+                    <div className="border-t border-border p-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full text-muted-foreground"
+                        onClick={() => setForm(prev => ({ ...prev, related_products: [] }))}
+                      >
+                        Șterge selecția
+                      </Button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+              {form.related_products.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {form.related_products.map(prodId => {
+                    const prod = products.find(p => p.id === prodId);
+                    return prod ? (
+                      <span
+                        key={prodId}
+                        className="inline-flex items-center gap-2 px-2 py-1.5 rounded-lg bg-primary/10 text-sm"
+                      >
+                        {prod.images?.[0] && (
+                          <img src={prod.images[0]} alt="" className="w-5 h-5 rounded object-cover" />
+                        )}
+                        <span className="text-primary">{prod.name_ro}</span>
+                        <button
+                          type="button"
+                          onClick={() => setForm(prev => ({
+                            ...prev,
+                            related_products: prev.related_products.filter(id => id !== prodId)
+                          }))}
+                          className="hover:bg-primary/20 rounded-full p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ) : null;
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           <DialogFooter>
