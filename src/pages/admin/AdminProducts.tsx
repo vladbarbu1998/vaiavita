@@ -415,7 +415,7 @@ const AdminProducts = () => {
     setSaving(true);
 
     try {
-      // Auto-translate Romanian fields to English if English fields are empty OR if Romanian changed
+      // Auto-translate Romanian fields to English only if English fields are empty
       let translations = {
         name_en: form.name_en,
         short_description_en: form.short_description_en,
@@ -423,15 +423,10 @@ const AdminProducts = () => {
         description_en: form.description_en,
       };
 
-      // Check if card_description_ro changed (for auto-update of EN)
-      const cardDescriptionRoChanged = editingProduct && 
-        form.card_description_ro !== (editingProduct.card_description_ro || '');
-
       const needsTranslation = 
         (!form.name_en && form.name_ro) ||
         (!form.short_description_en && form.short_description_ro) ||
         (!form.card_description_en && form.card_description_ro) ||
-        (cardDescriptionRoChanged && form.card_description_ro) ||
         (!form.description_en && form.description_ro);
 
       if (needsTranslation) {
@@ -440,9 +435,7 @@ const AdminProducts = () => {
         const textsToTranslate: { name?: string; short_description?: string; card_description?: string; description?: string } = {};
         if (!form.name_en && form.name_ro) textsToTranslate.name = form.name_ro;
         if (!form.short_description_en && form.short_description_ro) textsToTranslate.short_description = form.short_description_ro;
-        if ((!form.card_description_en && form.card_description_ro) || (cardDescriptionRoChanged && form.card_description_ro)) {
-          textsToTranslate.card_description = form.card_description_ro;
-        }
+        if (!form.card_description_en && form.card_description_ro) textsToTranslate.card_description = form.card_description_ro;
         if (!form.description_en && form.description_ro) textsToTranslate.description = form.description_ro;
 
         const translatedTexts = await translateToEnglish(textsToTranslate);
