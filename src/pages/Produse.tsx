@@ -152,7 +152,7 @@ const Produse = () => {
                       {/* Price and CTA - fixed position */}
                       <div className="flex items-center justify-between pt-3 mt-3 border-t border-border/50">
                         {product.status !== 'coming_soon' && product.price > 0 ? (
-                          <span className="text-lg md:text-xl font-bold text-primary">
+                          <span className="text-base md:text-lg font-bold text-primary">
                             {formatPrice(Number(product.price))}
                           </span>
                         ) : (
