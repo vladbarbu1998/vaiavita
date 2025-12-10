@@ -13,7 +13,10 @@ import Produse from "./pages/Produse";
 import ProductDentTastic from "./pages/ProductDentTastic";
 import Contact from "./pages/Contact";
 import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import OrderConfirmation from "./pages/OrderConfirmation";
 import NotFound from "./pages/NotFound";
+import { AdminLogin, AdminDashboard, AdminOverview, AdminProducts, AdminOrders } from "./pages/admin";
 
 const queryClient = new QueryClient();
 
@@ -33,7 +36,14 @@ const App = () => (
                 <Route path="/produse/dent-tastic" element={<ProductDentTastic />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/cos" element={<Cart />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/comanda-confirmata" element={<OrderConfirmation />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin" element={<AdminDashboard />}>
+                  <Route index element={<AdminOverview />} />
+                  <Route path="products" element={<AdminProducts />} />
+                  <Route path="orders" element={<AdminOrders />} />
+                </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <ChatWidget />
