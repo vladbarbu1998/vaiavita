@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Dialog, 
   DialogContent, 
@@ -19,8 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Search, Loader2, Upload, X, Image as ImageIcon, Languages, Download } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Loader2, Upload, X, Image as ImageIcon, Languages, Download, ChevronDown, Check } from 'lucide-react';
 import { SpecificationsEditor, ProductSpecifications } from '@/components/admin/SpecificationsEditor';
 
 interface Product {
@@ -60,6 +65,7 @@ const emptyProduct = {
   status: 'active',
   featured: false,
   category_id: null as string | null,
+  category_ids: [] as string[],
   tags: [] as string[],
   images: [] as string[],
   specifications: { items: [] } as ProductSpecifications,
@@ -141,6 +147,7 @@ const AdminProducts = () => {
       status: product.status,
       featured: product.featured,
       category_id: product.category_id,
+      category_ids: product.category_id ? [product.category_id] : [],
       tags: product.tags || [],
       images: product.images || [],
       specifications: product.specifications || { items: [] },
@@ -322,7 +329,7 @@ const AdminProducts = () => {
         sku: form.sku || null,
         status: form.status,
         featured: form.featured,
-        category_id: form.category_id,
+        category_id: form.category_ids.length > 0 ? form.category_ids[0] : null,
         tags: form.tags,
         images: form.images,
         specifications: JSON.parse(JSON.stringify(form.specifications)),
@@ -825,18 +832,90 @@ const AdminProducts = () => {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Categorie</Label>
-                <Select value={form.category_id || 'none'} onValueChange={(value) => setForm({ ...form, category_id: value === 'none' ? null : value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selectează categorie" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Fără categorie</SelectItem>
-                    {categories.filter(cat => cat.id).map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>{cat.name_ro}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Categorii</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full justify-between font-normal"
+                    >
+                      {form.category_ids.length > 0
+                        ? `${form.category_ids.length} categori${form.category_ids.length === 1 ? 'e' : 'i'} selectat${form.category_ids.length === 1 ? 'ă' : 'e'}`
+                        : "Selectează categorii"}
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] p-0 bg-background border border-border shadow-lg z-50" align="start">
+                    <div className="max-h-60 overflow-y-auto p-2 space-y-1">
+                      {categories.length === 0 ? (
+                        <p className="text-sm text-muted-foreground p-2 text-center">Nu există categorii</p>
+                      ) : (
+                        categories.filter(cat => cat.id).map((category) => {
+                          const isSelected = form.category_ids.includes(category.id);
+                          return (
+                            <div
+                              key={category.id}
+                              className="flex items-center gap-2 p-2 rounded-md hover:bg-muted cursor-pointer transition-colors"
+                              onClick={() => {
+                                setForm(prev => ({
+                                  ...prev,
+                                  category_ids: isSelected
+                                    ? prev.category_ids.filter(id => id !== category.id)
+                                    : [...prev.category_ids, category.id]
+                                }));
+                              }}
+                            >
+                              <Checkbox
+                                checked={isSelected}
+                                className="pointer-events-none"
+                              />
+                              <span className="flex-1 text-sm">{category.name_ro}</span>
+                              {isSelected && <Check className="h-4 w-4 text-primary" />}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                    {form.category_ids.length > 0 && (
+                      <div className="border-t border-border p-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full text-muted-foreground"
+                          onClick={() => setForm(prev => ({ ...prev, category_ids: [] }))}
+                        >
+                          Șterge selecția
+                        </Button>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
+                {form.category_ids.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {form.category_ids.map(catId => {
+                      const cat = categories.find(c => c.id === catId);
+                      return cat ? (
+                        <span
+                          key={catId}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs"
+                        >
+                          {cat.name_ro}
+                          <button
+                            type="button"
+                            onClick={() => setForm(prev => ({
+                              ...prev,
+                              category_ids: prev.category_ids.filter(id => id !== catId)
+                            }))}
+                            className="hover:bg-primary/20 rounded-full p-0.5"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
