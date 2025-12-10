@@ -64,6 +64,7 @@ const Produse = () => {
         const { data, error } = await supabase
           .from('products')
           .select('id, slug, name_ro, name_en, card_description_ro, card_description_en, price, status, images, stock')
+          .eq('status', 'active')
           .order('created_at', { ascending: true });
 
         if (error) throw error;
