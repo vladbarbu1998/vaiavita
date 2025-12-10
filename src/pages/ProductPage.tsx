@@ -585,11 +585,13 @@ const ProductPage = () => {
                         </div>
                       )}
                     </div>
-                    <div className="p-2.5">
-                      <h4 className="font-medium text-xs line-clamp-2 group-hover:text-primary transition-colors">
+                    <div className="p-2.5 flex flex-col">
+                      {/* Title - fixed height for 2 lines */}
+                      <h4 className="font-medium text-xs line-clamp-2 h-8 group-hover:text-primary transition-colors">
                         {language === 'ro' ? relProd.name_ro : relProd.name_en}
                       </h4>
-                      <p className="text-primary font-semibold text-sm mt-1.5">
+                      {/* Price - always at bottom */}
+                      <p className="text-primary font-semibold text-sm mt-auto pt-1.5">
                         {formatPrice(relProd.price)}
                       </p>
                     </div>

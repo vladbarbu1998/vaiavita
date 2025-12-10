@@ -131,26 +131,26 @@ const Produse = () => {
                       />
                     </div>
                     
-                    <div className="p-6 space-y-3">
-                      {/* Badge */}
-                      <div>
+                    <div className="p-6 flex flex-col">
+                      {/* Badge - fixed height */}
+                      <div className="h-6 mb-3">
                         {getStatusBadge(product)}
                       </div>
                       
-                      {/* Title */}
-                      <h3 className="font-display text-xl tracking-wide">
+                      {/* Title - fixed height for 2 lines */}
+                      <h3 className="font-display text-xl tracking-wide line-clamp-2 h-14 mb-3">
                         {language === 'ro' ? product.name_ro : product.name_en}
                       </h3>
                       
-                      {/* Description */}
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 whitespace-pre-line">
+                      {/* Description - fixed height for 2 lines */}
+                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 h-10 mb-4 whitespace-pre-line">
                         {language === 'ro' 
                           ? (product.short_description_ro || '') 
                           : (product.short_description_en || '')}
                       </p>
                       
-                      {/* Price and CTA */}
-                      <div className="flex items-center justify-between pt-3">
+                      {/* Price and CTA - always at bottom */}
+                      <div className="flex items-center justify-between pt-3 mt-auto border-t border-border/50">
                         {product.status !== 'coming_soon' && product.price > 0 ? (
                           <span className="text-2xl font-bold text-primary">
                             {formatPrice(Number(product.price))}
