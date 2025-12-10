@@ -33,14 +33,14 @@ export function GoogleReviewsSection() {
           <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
             Google Reviews
           </span>
-          <h2 className="font-display text-3xl md:text-4xl tracking-wide mb-6">
+          <h2 className="font-display text-2xl md:text-3xl lg:text-4xl tracking-wide mb-6">
             {t('reviews.title')}
           </h2>
           <div className="flex items-center justify-center gap-2 mb-3">
             {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-7 h-7 fill-yellow-400 text-yellow-400" />
+              <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
             ))}
-            <span className="text-3xl font-bold ml-3">5.0</span>
+            <span className="text-2xl font-bold ml-3">5.0</span>
           </div>
           <p className="text-muted-foreground">
             {language === 'ro' ? '3 recenzii verificate' : '3 verified reviews'}

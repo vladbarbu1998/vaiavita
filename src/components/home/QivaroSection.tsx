@@ -21,16 +21,16 @@ export function QivaroSection() {
       <div className="container-custom relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Content */}
-          <div className="space-y-6 opacity-0 animate-fade-up">
+          <div className="space-y-5 opacity-0 animate-fade-up">
             <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
               {language === 'ro' ? 'În Curând' : 'Coming Soon'}
             </span>
             
-            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-wide">
+            <h2 className="font-display text-2xl md:text-3xl lg:text-4xl tracking-wide">
               {t('qivaro.title')}
             </h2>
             
-            <div className="space-y-4 text-muted-foreground leading-relaxed text-lg">
+            <div className="space-y-3 text-muted-foreground leading-relaxed">
               <p>{t('qivaro.description')}</p>
               <p>{t('qivaro.description2')}</p>
             </div>
@@ -53,12 +53,12 @@ export function QivaroSection() {
           {/* Image - Equal size container */}
           <div className="opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center">
             <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl blur-2xl scale-105 opacity-50" />
-              <div className="relative bg-card/50 backdrop-blur-sm rounded-3xl p-8 w-full h-full flex items-center justify-center border border-border/30 shadow-card">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-[2rem] blur-2xl scale-105 opacity-50" />
+              <div className="relative bg-card/50 backdrop-blur-sm rounded-[2rem] p-8 w-full h-full flex items-center justify-center border border-border/30 shadow-card overflow-hidden">
                 <img 
                   src={qivaroImage} 
                   alt="Qivaro Supplements" 
-                  className="w-full h-auto max-h-[85%] object-contain hover:scale-105 transition-transform duration-500"
+                  className="w-full h-auto max-h-[85%] object-contain hover:scale-105 transition-transform duration-500 rounded-2xl"
                 />
               </div>
             </div>

@@ -27,24 +27,24 @@ export function WhyChooseUsSection() {
           {/* Image - Equal size container */}
           <div className="opacity-0 animate-fade-up flex items-center justify-center">
             <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
-              <div className="absolute -inset-4 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl blur-2xl opacity-60" />
-              <div className="relative bg-card/50 backdrop-blur-sm rounded-3xl p-8 w-full h-full flex items-center justify-center border border-border/30 shadow-card overflow-hidden">
+              <div className="absolute -inset-4 bg-gradient-to-br from-primary/10 to-transparent rounded-[2rem] blur-2xl opacity-60" />
+              <div className="relative bg-card/50 backdrop-blur-sm rounded-[2rem] p-8 w-full h-full flex items-center justify-center border border-border/30 shadow-card overflow-hidden">
                 <img 
                   src={despreImage} 
                   alt="VAIAVITA Products" 
-                  className="w-full h-auto max-h-[85%] object-contain hover:scale-105 transition-transform duration-700"
+                  className="w-full h-auto max-h-[85%] object-contain hover:scale-105 transition-transform duration-700 rounded-2xl"
                 />
               </div>
             </div>
           </div>
 
           {/* Content */}
-          <div className="space-y-6 opacity-0 animate-fade-up animation-delay-200">
-            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-wide">
+          <div className="space-y-5 opacity-0 animate-fade-up animation-delay-200">
+            <h2 className="font-display text-2xl md:text-3xl lg:text-4xl tracking-wide">
               {t('why.title')}
             </h2>
             
-            <div className="space-y-4 text-muted-foreground leading-relaxed text-lg">
+            <div className="space-y-3 text-muted-foreground leading-relaxed">
               <p>{t('why.description')}</p>
               <p>{t('why.description2')}</p>
             </div>

@@ -16,45 +16,47 @@ export function HeroSection() {
       <div className="container-custom section-padding relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Text Content */}
-          <div className="space-y-8 opacity-0 animate-fade-up">
+          <div className="space-y-6 opacity-0 animate-fade-up">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
               <Sparkles className="w-4 h-4" />
               <span>{t('hero.badge') || 'Produse Premium'}</span>
             </div>
             
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl tracking-wide leading-[1.1]">
+            <h1 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-wide leading-[1.1]">
               {t('hero.title')}
             </h1>
             
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl">
               {t('hero.subtitle')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
-              <Button variant="hero" size="xl" asChild className="group">
+              <Button variant="hero" size="lg" asChild className="group">
                 <Link to="/produse">
                   {t('hero.cta.products')}
                   <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button variant="heroOutline" size="xl" asChild>
+              <Button variant="heroOutline" size="lg" asChild>
                 <Link to="/despre">{t('hero.cta.about')}</Link>
               </Button>
             </div>
           </div>
 
-          {/* Hero Image - Just the image with border-radius, no card */}
+          {/* Hero Image - with border-radius */}
           <div className="relative opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center">
             <div className="relative w-full max-w-md">
               {/* Glow effect behind image */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-3xl blur-3xl scale-110" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-[2rem] blur-3xl scale-110" />
               
-              {/* Image with border-radius directly */}
-              <img 
-                src={heroImage} 
-                alt="Dent-Tastic Toothpaste" 
-                className="relative w-full h-auto rounded-3xl drop-shadow-2xl hover:scale-105 transition-transform duration-500"
-              />
+              {/* Image with overflow hidden for border-radius */}
+              <div className="relative overflow-hidden rounded-[2rem]">
+                <img 
+                  src={heroImage} 
+                  alt="Dent-Tastic Toothpaste" 
+                  className="w-full h-auto drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+                />
+              </div>
             </div>
           </div>
         </div>
