@@ -22,25 +22,25 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/30 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
       <div className="container-custom">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-18 items-center justify-between py-3">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex items-center transition-transform hover:scale-105">
             <img 
               src={theme === 'dark' ? logoLight : logoDark} 
               alt="VAIAVITA" 
-              className="h-10 w-auto"
+              className="h-11 w-auto"
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-10">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all hover:after:w-full"
+                className="nav-link py-1"
               >
                 {link.label}
               </Link>
@@ -48,22 +48,27 @@ export function Header() {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {/* Language Toggle */}
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setLanguage(language === 'ro' ? 'en' : 'ro')}
-              className="relative"
+              className="relative rounded-full hover:bg-primary/10"
             >
               <Globe className="h-5 w-5" />
-              <span className="absolute -bottom-1 right-0 text-[10px] font-bold uppercase">
+              <span className="absolute -bottom-0.5 right-0.5 text-[9px] font-bold uppercase text-primary">
                 {language}
               </span>
             </Button>
 
             {/* Theme Toggle */}
-            <Button variant="ghost" size="icon" onClick={toggleTheme}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleTheme}
+              className="rounded-full hover:bg-primary/10"
+            >
               {theme === 'dark' ? (
                 <Sun className="h-5 w-5" />
               ) : (
@@ -72,11 +77,11 @@ export function Header() {
             </Button>
 
             {/* Cart */}
-            <Button variant="ghost" size="icon" asChild className="relative">
+            <Button variant="ghost" size="icon" asChild className="relative rounded-full hover:bg-primary/10">
               <Link to="/cos">
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
+                  <span className="absolute -top-0.5 -right-0.5 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold shadow-md">
                     {totalItems}
                   </span>
                 )}
@@ -87,7 +92,7 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden rounded-full"
               onClick={() => setIsOpen(!isOpen)}
             >
               {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -97,14 +102,14 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <nav className="md:hidden py-4 border-t border-border/40 animate-fade-in">
-            <div className="flex flex-col gap-4">
+          <nav className="md:hidden py-6 border-t border-border/30 animate-fade-in">
+            <div className="flex flex-col gap-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   to={link.href}
                   onClick={() => setIsOpen(false)}
-                  className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2"
+                  className="text-base font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all py-3 px-4 rounded-xl"
                 >
                   {link.label}
                 </Link>
