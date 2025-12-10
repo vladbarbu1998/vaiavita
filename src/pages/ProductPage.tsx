@@ -408,12 +408,9 @@ const ProductPage = () => {
               <TabsContent value="description" className="mt-0">
                 <div className="card-premium p-8">
                   {product.description_ro || product.description_en ? (
-                    <div 
-                      className="prose prose-lg max-w-none text-foreground"
-                      dangerouslySetInnerHTML={{ 
-                        __html: (language === 'ro' ? product.description_ro : product.description_en) || '' 
-                      }}
-                    />
+                    <div className="prose prose-lg max-w-none text-foreground whitespace-pre-line leading-relaxed">
+                      {(language === 'ro' ? product.description_ro : product.description_en) || ''}
+                    </div>
                   ) : (
                     <p className="text-muted-foreground">
                       {language === 'ro' ? 'Nu există descriere disponibilă.' : 'No description available.'}

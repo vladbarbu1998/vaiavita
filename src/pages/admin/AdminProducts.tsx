@@ -44,6 +44,7 @@ interface Product {
   status: string;
   featured: boolean;
   category_id: string | null;
+  category_ids?: string[];
   tags: string[];
   images: string[];
   specifications: ProductSpecifications | null;
@@ -110,21 +111,42 @@ const AdminProducts = () => {
   };
 
   const fetchProducts = async () => {
-    const { data, error } = await supabase
+    // Fetch products
+    const { data: productsData, error } = await supabase
       .from('products')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
       toast.error('Eroare la încărcarea produselor');
-    } else {
-      // Cast specifications to the correct type
-      const typedProducts = (data || []).map(p => ({
-        ...p,
-        specifications: (p.specifications as unknown as ProductSpecifications) || { items: [] },
-      })) as Product[];
-      setProducts(typedProducts);
+      setLoading(false);
+      return;
     }
+
+    // Fetch product categories relationships
+    const { data: productCategoriesData } = await supabase
+      .from('product_categories')
+      .select('product_id, category_id');
+
+    // Create a map of product_id to category_ids
+    const productCategoryMap: Record<string, string[]> = {};
+    if (productCategoriesData) {
+      productCategoriesData.forEach(pc => {
+        if (!productCategoryMap[pc.product_id]) {
+          productCategoryMap[pc.product_id] = [];
+        }
+        productCategoryMap[pc.product_id].push(pc.category_id);
+      });
+    }
+
+    // Cast specifications to the correct type and add category_ids
+    const typedProducts = (productsData || []).map(p => ({
+      ...p,
+      specifications: (p.specifications as unknown as ProductSpecifications) || { items: [] },
+      category_ids: productCategoryMap[p.id] || [],
+    })) as (Product & { category_ids: string[] })[];
+    
+    setProducts(typedProducts);
     setLoading(false);
   };
 
@@ -155,7 +177,7 @@ const AdminProducts = () => {
       status: product.status,
       featured: product.featured,
       category_id: product.category_id,
-      category_ids: product.category_id ? [product.category_id] : [],
+      category_ids: product.category_ids || (product.category_id ? [product.category_id] : []),
       tags: product.tags || [],
       images: product.images || [],
       specifications: product.specifications || { items: [] },
@@ -433,6 +455,8 @@ const AdminProducts = () => {
         specifications: JSON.parse(JSON.stringify(form.specifications)),
       };
 
+      let productId: string;
+
       if (editingProduct) {
         const { error } = await supabase
           .from('products')
@@ -440,16 +464,42 @@ const AdminProducts = () => {
           .eq('id', editingProduct.id);
 
         if (error) throw error;
-        toast.success('Produs actualizat');
+        productId = editingProduct.id;
+        
+        // Update product_categories: delete existing and insert new
+        await supabase
+          .from('product_categories')
+          .delete()
+          .eq('product_id', editingProduct.id);
+        
       } else {
-        const { error } = await supabase
+        const { data: newProduct, error } = await supabase
           .from('products')
-          .insert(productData as never);
+          .insert(productData as never)
+          .select('id')
+          .single();
 
         if (error) throw error;
-        toast.success('Produs creat');
+        productId = newProduct.id;
       }
 
+      // Insert new product_categories
+      if (form.category_ids.length > 0) {
+        const categoryInserts = form.category_ids.map(categoryId => ({
+          product_id: productId,
+          category_id: categoryId,
+        }));
+        
+        const { error: catError } = await supabase
+          .from('product_categories')
+          .insert(categoryInserts);
+        
+        if (catError) {
+          console.error('Error saving categories:', catError);
+        }
+      }
+
+      toast.success(editingProduct ? 'Produs actualizat' : 'Produs creat');
       setDialogOpen(false);
       fetchProducts();
     } catch (error: any) {
