@@ -107,7 +107,7 @@ const Produse = () => {
               </p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {products.map((product, index) => {
                 const isClickable = isProductClickable(product);
                 const CardWrapper = isClickable ? Link : 'div';
@@ -123,7 +123,7 @@ const Produse = () => {
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
                     {/* Image */}
-                    <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-6 rounded-t-2xl">
+                    <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-4 rounded-t-2xl">
                       <img 
                         src={getProductImage(product)} 
                         alt={language === 'ro' ? product.name_ro : product.name_en}
@@ -131,39 +131,39 @@ const Produse = () => {
                       />
                     </div>
                     
-                    <div className="p-6 flex flex-col">
+                    <div className="p-4 flex flex-col">
                       {/* Badge - fixed height */}
-                      <div className="h-6">
+                      <div className="h-5">
                         {getStatusBadge(product)}
                       </div>
                       
                       {/* Title - fixed height for 2 lines */}
-                      <h3 className="font-display text-xl tracking-wide line-clamp-2 h-[56px] mt-3">
+                      <h3 className="font-display text-base md:text-lg tracking-wide line-clamp-2 h-[44px] md:h-[48px] mt-2">
                         {language === 'ro' ? product.name_ro : product.name_en}
                       </h3>
                       
                       {/* Description - fixed height for 2 lines */}
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 h-[40px] mt-3 whitespace-pre-line">
+                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-2 h-[32px] md:h-[36px] mt-2 whitespace-pre-line">
                         {language === 'ro' 
                           ? (product.short_description_ro || '') 
                           : (product.short_description_en || '')}
                       </p>
                       
                       {/* Price and CTA - fixed position */}
-                      <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/50">
+                      <div className="flex items-center justify-between pt-3 mt-3 border-t border-border/50">
                         {product.status !== 'coming_soon' && product.price > 0 ? (
-                          <span className="text-2xl font-bold text-primary">
+                          <span className="text-lg md:text-xl font-bold text-primary">
                             {formatPrice(Number(product.price))}
                           </span>
                         ) : (
-                          <span className="text-muted-foreground">
+                          <span className="text-muted-foreground text-sm">
                             {language === 'ro' ? 'Preț în curând' : 'Price coming soon'}
                           </span>
                         )}
                         {isClickable && (
-                          <span className="text-primary font-medium text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
+                          <span className="text-primary font-medium text-xs md:text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
                             {t('common.viewProduct')}
-                            <ArrowRight className="w-4 h-4" />
+                            <ArrowRight className="w-3 h-3 md:w-4 md:h-4" />
                           </span>
                         )}
                       </div>
