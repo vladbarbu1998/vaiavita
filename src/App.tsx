@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { CartProvider } from "@/context/CartContext";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 import Index from "./pages/Index";
 import Despre from "./pages/Despre";
 import Produse from "./pages/Produse";
@@ -35,6 +36,7 @@ const App = () => (
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <ChatWidget />
             </BrowserRouter>
           </TooltipProvider>
         </CartProvider>
