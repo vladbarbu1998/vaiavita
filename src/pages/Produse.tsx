@@ -175,12 +175,12 @@ const Produse = () => {
                       </div>
                       
                       {/* Title - fixed height for 2 lines */}
-                      <h3 className="font-display text-sm md:text-base tracking-wide line-clamp-2 h-[36px] md:h-[40px] mt-3">
+                      <h3 className="font-display text-sm md:text-base tracking-wide line-clamp-2 min-h-[2.5rem] md:min-h-[2.75rem] mt-3">
                         {language === 'ro' ? product.name_ro : product.name_en}
                       </h3>
                       
                       {/* Description - fixed height for 2 lines */}
-                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-2 h-[32px] md:h-[36px] mt-3 whitespace-pre-line">
+                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-2 min-h-[2.5rem] md:min-h-[2.75rem] mt-3">
                         {language === 'ro' 
                           ? (product.card_description_ro || '') 
                           : (product.card_description_en || '')}
