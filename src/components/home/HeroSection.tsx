@@ -43,20 +43,17 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* Hero Image - with border-radius */}
+          {/* Hero Image */}
           <div className="relative opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center">
-            <div className="relative w-full max-w-md">
+            <div className="relative">
               {/* Glow effect behind image */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-[2rem] blur-3xl scale-110" />
               
-              {/* Image with overflow hidden for border-radius */}
-              <div className="relative overflow-hidden rounded-[2rem]">
-                <img 
-                  src={heroImage} 
-                  alt="Dent-Tastic Toothpaste" 
-                  className="w-full h-auto drop-shadow-2xl hover:scale-105 transition-transform duration-500"
-                />
-              </div>
+              <img 
+                src={heroImage} 
+                alt="Dent-Tastic Toothpaste" 
+                className="relative w-full h-auto max-w-lg rounded-2xl drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+              />
             </div>
           </div>
         </div>
