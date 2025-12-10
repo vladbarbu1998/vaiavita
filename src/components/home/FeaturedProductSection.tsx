@@ -26,27 +26,20 @@ export function FeaturedProductSection() {
             to="/produse/dent-tastic"
             className="order-2 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center group"
           >
-            <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
-              {/* Decorative frame */}
-              <div className="absolute -inset-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-[2rem] rotate-2 group-hover:rotate-1 transition-transform duration-500" />
-              <div className="absolute -inset-3 bg-gradient-to-tr from-primary/5 to-primary/10 rounded-[2rem] -rotate-2 group-hover:-rotate-1 transition-transform duration-500" />
+            <div className="relative">
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-transparent rounded-2xl blur-2xl scale-110 opacity-50" />
               
-              <div className="relative bg-card rounded-[2rem] p-8 w-full h-full flex items-center justify-center shadow-card border border-border/30 group-hover:border-primary/30 transition-colors overflow-hidden">
-                <img 
-                  src={dentTasticImage} 
-                  alt="Dent-Tastic Fresh Mint" 
-                  className="w-full h-auto max-h-[85%] object-contain group-hover:scale-105 transition-transform duration-500 rounded-2xl"
-                />
-              </div>
+              <img 
+                src={dentTasticImage} 
+                alt="Dent-Tastic Fresh Mint" 
+                className="relative w-full h-auto max-w-md rounded-2xl drop-shadow-xl group-hover:scale-105 transition-transform duration-500"
+              />
             </div>
           </Link>
 
           {/* Content */}
           <div className="order-1 lg:order-2 space-y-5 opacity-0 animate-fade-up animation-delay-200">
-            <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
-              {language === 'ro' ? 'Produs Vedeta' : 'Featured Product'}
-            </span>
-            
             <h2 className="font-display text-2xl md:text-3xl lg:text-4xl tracking-wide">
               {t('featured.title')}
             </h2>

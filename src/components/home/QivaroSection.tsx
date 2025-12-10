@@ -22,10 +22,6 @@ export function QivaroSection() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Content */}
           <div className="space-y-5 opacity-0 animate-fade-up">
-            <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
-              {language === 'ro' ? 'În Curând' : 'Coming Soon'}
-            </span>
-            
             <h2 className="font-display text-2xl md:text-3xl lg:text-4xl tracking-wide">
               {t('qivaro.title')}
             </h2>
@@ -50,17 +46,15 @@ export function QivaroSection() {
             </Button>
           </div>
 
-          {/* Image - Equal size container */}
+          {/* Image */}
           <div className="opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center">
-            <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-[2rem] blur-2xl scale-105 opacity-50" />
-              <div className="relative bg-card/50 backdrop-blur-sm rounded-[2rem] p-8 w-full h-full flex items-center justify-center border border-border/30 shadow-card overflow-hidden">
-                <img 
-                  src={qivaroImage} 
-                  alt="Qivaro Supplements" 
-                  className="w-full h-auto max-h-[85%] object-contain hover:scale-105 transition-transform duration-500 rounded-2xl"
-                />
-              </div>
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-transparent rounded-2xl blur-2xl scale-110 opacity-50" />
+              <img 
+                src={qivaroImage} 
+                alt="Qivaro Supplements" 
+                className="relative w-full h-auto max-w-md rounded-2xl drop-shadow-xl hover:scale-105 transition-transform duration-500"
+              />
             </div>
           </div>
         </div>
