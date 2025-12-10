@@ -4,8 +4,10 @@ import { MainLayout } from '@/components/layout';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency } from '@/context/CurrencyContext';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
+import { ArrowRight, Loader2, ShoppingCart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import dentTasticImage from '@/assets/dent-tastic-product.webp';
 import qivaroImage from '@/assets/qivaro.webp';
 
@@ -31,8 +33,30 @@ const fallbackImages: Record<string, string> = {
 const Produse = () => {
   const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
+  const { addItem } = useCart();
   const [products, setProducts] = useState<DatabaseProduct[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleQuickAdd = (e: React.MouseEvent, product: DatabaseProduct) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (product.stock <= 0 || product.status !== 'active') return;
+    
+    addItem({
+      id: product.id,
+      name: product.name_ro,
+      nameEn: product.name_en,
+      price: product.price,
+      image: getProductImage(product),
+      slug: product.slug,
+    });
+    
+    toast({
+      title: language === 'ro' ? 'Adăugat în coș' : 'Added to cart',
+      description: language === 'ro' ? product.name_ro : product.name_en,
+    });
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -122,16 +146,28 @@ const Produse = () => {
                     className={`card-interactive overflow-hidden opacity-0 animate-fade-up block ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    {/* Image */}
-                    <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-4 rounded-t-2xl">
-                      <img 
-                        src={getProductImage(product)} 
-                        alt={language === 'ro' ? product.name_ro : product.name_en}
-                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
-                      />
+                    {/* Image with Quick Add button */}
+                    <div className="relative">
+                      <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-4 rounded-t-2xl">
+                        <img 
+                          src={getProductImage(product)} 
+                          alt={language === 'ro' ? product.name_ro : product.name_en}
+                          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                        />
+                      </div>
+                      {/* Quick Add Button */}
+                      {isClickable && product.stock > 0 && (
+                        <button
+                          onClick={(e) => handleQuickAdd(e, product)}
+                          className="absolute bottom-0 right-3 translate-y-1/2 w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
+                          title={language === 'ro' ? 'Adaugă în coș' : 'Add to cart'}
+                        >
+                          <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
+                        </button>
+                      )}
                     </div>
                     
-                    <div className="p-4 flex flex-col">
+                    <div className="p-4 pt-6 flex flex-col">
                       {/* Badge - fixed height */}
                       <div className="h-5">
                         {getStatusBadge(product)}
