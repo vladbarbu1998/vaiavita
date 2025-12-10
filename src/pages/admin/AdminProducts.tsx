@@ -561,32 +561,46 @@ const AdminProducts = () => {
               </div>
             </div>
 
-            {/* English Preview (read-only or editable) */}
-            {(form.name_en || form.short_description_en || form.description_en) && (
-              <div className="space-y-4 p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+            {/* English Fields - Editable */}
+            <div className="space-y-4 p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+              <div className="flex items-center justify-between">
                 <h3 className="font-medium text-sm flex items-center gap-2">
-                  🇬🇧 Traducere în Engleză
+                  🇬🇧 Conținut în Engleză
                 </h3>
-                {form.name_en && (
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Nume</Label>
-                    <p className="text-sm">{form.name_en}</p>
-                  </div>
-                )}
-                {form.short_description_en && (
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Descriere scurtă</Label>
-                    <p className="text-sm">{form.short_description_en}</p>
-                  </div>
-                )}
-                {form.description_en && (
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Descriere</Label>
-                    <p className="text-sm whitespace-pre-wrap">{form.description_en}</p>
-                  </div>
-                )}
+                <span className="text-xs text-muted-foreground">
+                  Se completează automat dacă lași gol
+                </span>
               </div>
-            )}
+
+              <div className="space-y-2">
+                <Label>Nume produs (EN)</Label>
+                <Input
+                  value={form.name_en}
+                  onChange={(e) => setForm({ ...form, name_en: e.target.value })}
+                  placeholder="Lasă gol pentru traducere automată..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Descriere scurtă (EN)</Label>
+                <Textarea
+                  value={form.short_description_en}
+                  onChange={(e) => setForm({ ...form, short_description_en: e.target.value })}
+                  rows={2}
+                  placeholder="Lasă gol pentru traducere automată..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Descriere completă (EN)</Label>
+                <Textarea
+                  value={form.description_en}
+                  onChange={(e) => setForm({ ...form, description_en: e.target.value })}
+                  rows={4}
+                  placeholder="Lasă gol pentru traducere automată..."
+                />
+              </div>
+            </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">

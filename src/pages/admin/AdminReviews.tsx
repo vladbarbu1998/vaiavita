@@ -10,6 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface Review {
   id: string;
@@ -24,17 +31,33 @@ interface Review {
   created_at: string;
 }
 
+interface Product {
+  id: string;
+  name_ro: string;
+}
+
 const AdminReviews = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved'>('all');
+  const [productFilter, setProductFilter] = useState<string>('all');
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchReviews();
+    fetchProducts();
   }, []);
+
+  const fetchProducts = async () => {
+    const { data } = await supabase
+      .from('products')
+      .select('id, name_ro')
+      .order('name_ro');
+    setProducts(data || []);
+  };
 
   const fetchReviews = async () => {
     const { data, error } = await supabase
@@ -95,18 +118,25 @@ const AdminReviews = () => {
     }
   };
 
+  const getProductName = (productId: string) => {
+    return products.find(p => p.id === productId)?.name_ro || 'Produs necunoscut';
+  };
+
   const filteredReviews = reviews.filter(review => {
     const matchesSearch = 
       review.customer_name.toLowerCase().includes(search.toLowerCase()) ||
       review.customer_email.toLowerCase().includes(search.toLowerCase()) ||
-      (review.content?.toLowerCase().includes(search.toLowerCase()) || false);
+      (review.content?.toLowerCase().includes(search.toLowerCase()) || false) ||
+      getProductName(review.product_id).toLowerCase().includes(search.toLowerCase());
     
     const matchesFilter = 
       filter === 'all' ||
       (filter === 'pending' && !review.is_approved) ||
       (filter === 'approved' && review.is_approved);
     
-    return matchesSearch && matchesFilter;
+    const matchesProduct = productFilter === 'all' || review.product_id === productFilter;
+    
+    return matchesSearch && matchesFilter && matchesProduct;
   });
 
   const formatDate = (date: string) => {
@@ -152,16 +182,31 @@ const AdminReviews = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col lg:flex-row gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
-            placeholder="Caută recenzii..."
+            placeholder="Caută recenzii sau produse..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
           />
         </div>
+        
+        <Select value={productFilter} onValueChange={setProductFilter}>
+          <SelectTrigger className="w-full lg:w-[250px]">
+            <SelectValue placeholder="Filtrează după produs" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toate produsele</SelectItem>
+            {products.map((product) => (
+              <SelectItem key={product.id} value={product.id}>
+                {product.name_ro}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
         <div className="flex gap-2">
           <Button 
             variant={filter === 'all' ? 'default' : 'outline'} 
@@ -232,10 +277,12 @@ const AdminReviews = () => {
                     <p className="text-muted-foreground text-sm line-clamp-2">{review.content}</p>
                   )}
                   
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                     <span>{review.customer_name}</span>
                     <span>•</span>
                     <span>{formatDate(review.created_at)}</span>
+                    <span>•</span>
+                    <span className="text-primary">{getProductName(review.product_id)}</span>
                   </div>
                 </div>
 
