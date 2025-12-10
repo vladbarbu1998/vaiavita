@@ -381,7 +381,7 @@ const AdminProducts = () => {
     }));
   };
 
-  const translateToEnglish = async (texts: { name?: string; short_description?: string; description?: string }) => {
+  const translateToEnglish = async (texts: { name?: string; short_description?: string; card_description?: string; description?: string }) => {
     try {
       const { data, error } = await supabase.functions.invoke('translate-product', {
         body: { texts }

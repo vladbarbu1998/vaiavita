@@ -9,6 +9,7 @@ interface TranslationRequest {
   texts: {
     name?: string;
     short_description?: string;
+    card_description?: string;
     description?: string;
   };
 }
@@ -30,6 +31,7 @@ serve(async (req) => {
     const fieldsToTranslate = [];
     if (texts.name) fieldsToTranslate.push(`name: "${texts.name}"`);
     if (texts.short_description) fieldsToTranslate.push(`short_description: "${texts.short_description}"`);
+    if (texts.card_description) fieldsToTranslate.push(`card_description: "${texts.card_description}"`);
     if (texts.description) fieldsToTranslate.push(`description: "${texts.description}"`);
 
     if (fieldsToTranslate.length === 0) {
@@ -47,7 +49,7 @@ Romanian text:
 ${fieldsToTranslate.join("\n")}
 
 Return format example:
-{"name": "English name", "short_description": "English short description", "description": "English description"}`;
+{"name": "English name", "short_description": "English short description", "card_description": "English card description", "description": "English description"}`;
 
     // Use Gemini API directly
     const response = await fetch(
