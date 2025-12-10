@@ -859,13 +859,24 @@ const AdminProducts = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Descriere scurtă</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Descriere scurtă (pentru card)</Label>
+                  <span className={`text-xs ${(form.short_description_ro?.length || 0) > 72 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                    {form.short_description_ro?.length || 0}/72 caractere
+                  </span>
+                </div>
                 <Textarea
                   value={form.short_description_ro}
                   onChange={(e) => setForm({ ...form, short_description_ro: e.target.value })}
                   rows={2}
-                  placeholder="Descriere scurtă pentru listări..."
+                  placeholder="Descriere scurtă pentru carduri (max 72 caractere recomandat)..."
+                  maxLength={150}
                 />
+                {(form.short_description_ro?.length || 0) > 72 && (
+                  <p className="text-xs text-amber-500">
+                    ⚠️ Textul va fi trunchiat pe carduri după 72 de caractere
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -900,13 +911,24 @@ const AdminProducts = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Descriere scurtă (EN)</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Descriere scurtă (EN)</Label>
+                  <span className={`text-xs ${(form.short_description_en?.length || 0) > 72 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                    {form.short_description_en?.length || 0}/72 caractere
+                  </span>
+                </div>
                 <Textarea
                   value={form.short_description_en}
                   onChange={(e) => setForm({ ...form, short_description_en: e.target.value })}
                   rows={2}
-                  placeholder="Lasă gol pentru traducere automată..."
+                  placeholder="Lasă gol pentru traducere automată (max 72 caractere recomandat)..."
+                  maxLength={150}
                 />
+                {(form.short_description_en?.length || 0) > 72 && (
+                  <p className="text-xs text-amber-500">
+                    ⚠️ Text will be truncated on cards after 72 characters
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
