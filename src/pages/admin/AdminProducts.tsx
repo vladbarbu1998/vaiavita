@@ -547,12 +547,13 @@ const AdminProducts = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Preț vechi (lei)</Label>
+                <Label>Preț redus (lei)</Label>
                 <Input
                   type="number"
                   step="0.01"
                   value={form.compare_at_price || ''}
                   onChange={(e) => setForm({ ...form, compare_at_price: parseFloat(e.target.value) || null })}
+                  placeholder="Opțional"
                 />
               </div>
               <div className="space-y-2">
@@ -565,32 +566,18 @@ const AdminProducts = () => {
               </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select value={form.status} onValueChange={(value) => setForm({ ...form, status: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Activ</SelectItem>
-                    <SelectItem value="inactive">Inactiv</SelectItem>
-                    <SelectItem value="coming_soon">În curând</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Produs vedeta</Label>
-                <div className="flex items-center gap-2 pt-2">
-                  <Switch
-                    checked={form.featured}
-                    onCheckedChange={(checked) => setForm({ ...form, featured: checked })}
-                  />
-                  <span className="text-sm text-muted-foreground">
-                    {form.featured ? 'Da' : 'Nu'}
-                  </span>
-                </div>
-              </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={form.status} onValueChange={(value) => setForm({ ...form, status: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Activ</SelectItem>
+                  <SelectItem value="inactive">Inactiv</SelectItem>
+                  <SelectItem value="coming_soon">În curând</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
