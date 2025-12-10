@@ -18,9 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Search, Loader2, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Loader2, Upload, X, Image as ImageIcon, Languages } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -71,6 +70,7 @@ const AdminProducts = () => {
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [translating, setTranslating] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
@@ -150,7 +150,6 @@ const AdminProducts = () => {
     setUploading(true);
     const url = await uploadImage(file);
     if (url) {
-      // Cover is the first image in the array
       setForm(prev => ({
         ...prev,
         images: [url, ...prev.images.slice(1)]
@@ -194,11 +193,47 @@ const AdminProducts = () => {
   };
 
   const removeGalleryImage = (index: number) => {
-    // index is relative to gallery (after cover), so actual index is index + 1
     setForm(prev => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index + 1)
     }));
+  };
+
+  const translateToEnglish = async () => {
+    if (!form.name_ro && !form.short_description_ro && !form.description_ro) {
+      toast.error('Completează cel puțin un câmp în română pentru a traduce');
+      return;
+    }
+
+    setTranslating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('translate-product', {
+        body: {
+          texts: {
+            name: form.name_ro || undefined,
+            short_description: form.short_description_ro || undefined,
+            description: form.description_ro || undefined,
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.translations) {
+        setForm(prev => ({
+          ...prev,
+          name_en: data.translations.name || prev.name_en,
+          short_description_en: data.translations.short_description || prev.short_description_en,
+          description_en: data.translations.description || prev.description_en,
+        }));
+        toast.success('Tradus cu succes!');
+      }
+    } catch (error: any) {
+      console.error('Translation error:', error);
+      toast.error(error.message || 'Eroare la traducere');
+    } finally {
+      setTranslating(false);
+    }
   };
 
   const handleSave = async () => {
@@ -264,16 +299,11 @@ const AdminProducts = () => {
     p.sku?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600',
-    inactive: 'bg-gray-500/10 text-gray-600',
-    coming_soon: 'bg-yellow-500/10 text-yellow-600',
-  };
-
-  const statusLabels: Record<string, string> = {
-    active: 'Activ',
-    inactive: 'Inactiv',
-    coming_soon: 'În curând',
+  const statusConfig: Record<string, { label: string; color: string }> = {
+    active: { label: 'Activ', color: 'bg-green-500/10 text-green-600' },
+    out_of_stock: { label: 'Stoc epuizat', color: 'bg-red-500/10 text-red-600' },
+    inactive: { label: 'Inactiv', color: 'bg-gray-500/10 text-gray-600' },
+    coming_soon: { label: 'În curând', color: 'bg-yellow-500/10 text-yellow-600' },
   };
 
   const coverImage = form.images[0] || null;
@@ -361,8 +391,8 @@ const AdminProducts = () => {
                       </span>
                     </td>
                     <td className="p-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[product.status]}`}>
-                        {statusLabels[product.status]}
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusConfig[product.status]?.color || 'bg-gray-500/10 text-gray-600'}`}>
+                        {statusConfig[product.status]?.label || product.status}
                       </span>
                     </td>
                     <td className="p-4 text-right">
@@ -483,22 +513,84 @@ const AdminProducts = () => {
               )}
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4">
+            {/* Romanian Fields */}
+            <div className="space-y-4 p-4 rounded-xl bg-muted/30 border border-border">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-sm flex items-center gap-2">
+                  🇷🇴 Conținut în Română
+                </h3>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={translateToEnglish}
+                  disabled={translating}
+                >
+                  {translating ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <Languages className="w-4 h-4 mr-2" />
+                  )}
+                  Traduce în EN
+                </Button>
+              </div>
+
               <div className="space-y-2">
-                <Label>Nume (RO) *</Label>
+                <Label>Nume produs *</Label>
                 <Input
                   value={form.name_ro}
                   onChange={(e) => setForm({ ...form, name_ro: e.target.value })}
+                  placeholder="Ex: Pasta de dinți Dent-Tastic Fresh Mint"
                 />
               </div>
+
               <div className="space-y-2">
-                <Label>Nume (EN)</Label>
-                <Input
-                  value={form.name_en}
-                  onChange={(e) => setForm({ ...form, name_en: e.target.value })}
+                <Label>Descriere scurtă</Label>
+                <Textarea
+                  value={form.short_description_ro}
+                  onChange={(e) => setForm({ ...form, short_description_ro: e.target.value })}
+                  rows={2}
+                  placeholder="Descriere scurtă pentru listări..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Descriere completă</Label>
+                <Textarea
+                  value={form.description_ro}
+                  onChange={(e) => setForm({ ...form, description_ro: e.target.value })}
+                  rows={4}
+                  placeholder="Descriere detaliată a produsului..."
                 />
               </div>
             </div>
+
+            {/* English Preview (read-only or editable) */}
+            {(form.name_en || form.short_description_en || form.description_en) && (
+              <div className="space-y-4 p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                <h3 className="font-medium text-sm flex items-center gap-2">
+                  🇬🇧 Traducere în Engleză
+                </h3>
+                {form.name_en && (
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Nume</Label>
+                    <p className="text-sm">{form.name_en}</p>
+                  </div>
+                )}
+                {form.short_description_en && (
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Descriere scurtă</Label>
+                    <p className="text-sm">{form.short_description_en}</p>
+                  </div>
+                )}
+                {form.description_en && (
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Descriere</Label>
+                    <p className="text-sm whitespace-pre-wrap">{form.description_en}</p>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -516,24 +608,6 @@ const AdminProducts = () => {
                   onChange={(e) => setForm({ ...form, sku: e.target.value })}
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Descriere scurtă (RO)</Label>
-              <Textarea
-                value={form.short_description_ro}
-                onChange={(e) => setForm({ ...form, short_description_ro: e.target.value })}
-                rows={2}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Descriere completă (RO)</Label>
-              <Textarea
-                value={form.description_ro}
-                onChange={(e) => setForm({ ...form, description_ro: e.target.value })}
-                rows={4}
-              />
             </div>
 
             <div className="grid sm:grid-cols-3 gap-4">
@@ -573,9 +647,10 @@ const AdminProducts = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Activ</SelectItem>
-                  <SelectItem value="inactive">Inactiv</SelectItem>
-                  <SelectItem value="coming_soon">În curând</SelectItem>
+                  <SelectItem value="active">✅ Activ</SelectItem>
+                  <SelectItem value="out_of_stock">🚫 Stoc epuizat</SelectItem>
+                  <SelectItem value="inactive">⏸️ Inactiv</SelectItem>
+                  <SelectItem value="coming_soon">🔜 În curând</SelectItem>
                 </SelectContent>
               </Select>
             </div>
