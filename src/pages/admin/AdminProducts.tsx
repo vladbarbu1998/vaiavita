@@ -89,6 +89,10 @@ const AdminProducts = () => {
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [slugError, setSlugError] = useState<string | null>(null);
+  const [skuError, setSkuError] = useState<string | null>(null);
+  const [checkingSlug, setCheckingSlug] = useState(false);
+  const [checkingSku, setCheckingSku] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
@@ -127,11 +131,15 @@ const AdminProducts = () => {
   const openCreateDialog = () => {
     setEditingProduct(null);
     setForm(emptyProduct);
+    setSlugError(null);
+    setSkuError(null);
     setDialogOpen(true);
   };
 
   const openEditDialog = (product: Product) => {
     setEditingProduct(product);
+    setSlugError(null);
+    setSkuError(null);
     setForm({
       slug: product.slug,
       name_ro: product.name_ro,
@@ -153,6 +161,85 @@ const AdminProducts = () => {
       specifications: product.specifications || { items: [] },
     });
     setDialogOpen(true);
+  };
+
+  // Check slug uniqueness
+  const checkSlugUniqueness = async (slug: string) => {
+    if (!slug.trim()) {
+      setSlugError(null);
+      return;
+    }
+    
+    setCheckingSlug(true);
+    try {
+      const { data } = await supabase
+        .from('products')
+        .select('id')
+        .eq('slug', slug.trim())
+        .maybeSingle();
+      
+      if (data && (!editingProduct || data.id !== editingProduct.id)) {
+        setSlugError('Acest slug este deja folosit de alt produs');
+      } else {
+        setSlugError(null);
+      }
+    } catch (error) {
+      console.error('Error checking slug:', error);
+    } finally {
+      setCheckingSlug(false);
+    }
+  };
+
+  // Check SKU uniqueness
+  const checkSkuUniqueness = async (sku: string) => {
+    if (!sku.trim()) {
+      setSkuError(null);
+      return;
+    }
+    
+    setCheckingSku(true);
+    try {
+      const { data } = await supabase
+        .from('products')
+        .select('id')
+        .eq('sku', sku.trim())
+        .maybeSingle();
+      
+      if (data && (!editingProduct || data.id !== editingProduct.id)) {
+        setSkuError('Acest SKU este deja folosit de alt produs');
+      } else {
+        setSkuError(null);
+      }
+    } catch (error) {
+      console.error('Error checking SKU:', error);
+    } finally {
+      setCheckingSku(false);
+    }
+  };
+
+  // Handle slug change with debounce check
+  const handleSlugChange = (value: string) => {
+    const formattedSlug = value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+    setForm({ ...form, slug: formattedSlug });
+    
+    // Debounce the uniqueness check
+    const timeoutId = setTimeout(() => {
+      checkSlugUniqueness(formattedSlug);
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
+  };
+
+  // Handle SKU change with debounce check
+  const handleSkuChange = (value: string) => {
+    setForm({ ...form, sku: value });
+    
+    // Debounce the uniqueness check
+    const timeoutId = setTimeout(() => {
+      checkSkuUniqueness(value);
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
@@ -280,6 +367,17 @@ const AdminProducts = () => {
   const handleSave = async () => {
     if (!form.name_ro || !form.slug || form.price <= 0) {
       toast.error('Completează câmpurile obligatorii');
+      return;
+    }
+
+    // Check for validation errors
+    if (slugError) {
+      toast.error('Slug-ul este deja folosit de alt produs');
+      return;
+    }
+    
+    if (skuError) {
+      toast.error('SKU-ul este deja folosit de alt produs');
       return;
     }
 
@@ -771,18 +869,36 @@ const AdminProducts = () => {
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Slug (URL) *</Label>
-                <Input
-                  value={form.slug}
-                  onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                  placeholder="pasta-dinti-fresh"
-                />
+                <div className="relative">
+                  <Input
+                    value={form.slug}
+                    onChange={(e) => handleSlugChange(e.target.value)}
+                    placeholder="pasta-dinti-fresh"
+                    className={slugError ? 'border-destructive focus-visible:ring-destructive' : ''}
+                  />
+                  {checkingSlug && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+                {slugError && (
+                  <p className="text-sm text-destructive">{slugError}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>SKU</Label>
-                <Input
-                  value={form.sku}
-                  onChange={(e) => setForm({ ...form, sku: e.target.value })}
-                />
+                <div className="relative">
+                  <Input
+                    value={form.sku}
+                    onChange={(e) => handleSkuChange(e.target.value)}
+                    className={skuError ? 'border-destructive focus-visible:ring-destructive' : ''}
+                  />
+                  {checkingSku && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+                {skuError && (
+                  <p className="text-sm text-destructive">{skuError}</p>
+                )}
               </div>
             </div>
 
