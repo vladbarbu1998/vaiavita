@@ -43,6 +43,16 @@ interface ReviewStats {
   reviewCount: number;
 }
 
+interface Review {
+  id: string;
+  customer_name: string;
+  rating: number;
+  content: string | null;
+  title: string | null;
+  created_at: string;
+  is_verified_purchase: boolean | null;
+}
+
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -55,6 +65,7 @@ const ProductPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [reviewStats, setReviewStats] = useState<ReviewStats>({ averageRating: 0, reviewCount: 0 });
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [activeTab, setActiveTab] = useState('description');
   const tabsRef = useRef<HTMLDivElement>(null);
 
@@ -87,16 +98,18 @@ const ProductPage = () => {
           specifications: specs,
         });
 
-        // Fetch review stats
-        const { data: reviews } = await supabase
+        // Fetch reviews
+        const { data: reviewsData } = await supabase
           .from('reviews')
-          .select('rating')
+          .select('id, customer_name, rating, content, title, created_at, is_verified_purchase')
           .eq('product_id', data.id)
-          .eq('is_approved', true);
+          .eq('is_approved', true)
+          .order('created_at', { ascending: false });
 
-        if (reviews && reviews.length > 0) {
-          const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
-          setReviewStats({ averageRating: avg, reviewCount: reviews.length });
+        if (reviewsData && reviewsData.length > 0) {
+          const avg = reviewsData.reduce((sum, r) => sum + r.rating, 0) / reviewsData.length;
+          setReviewStats({ averageRating: avg, reviewCount: reviewsData.length });
+          setReviews(reviewsData);
         }
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -311,8 +324,9 @@ const ProductPage = () => {
               <TabsContent value="reviews" className="mt-0">
                 <div className="card-premium p-8">
                   {reviewStats.reviewCount > 0 ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-4">
+                    <div className="space-y-6">
+                      {/* Rating Summary */}
+                      <div className="flex items-center gap-4 pb-6 border-b border-border">
                         <div className="flex items-center gap-1">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star 
@@ -321,14 +335,54 @@ const ProductPage = () => {
                             />
                           ))}
                         </div>
-                        <span className="text-lg font-medium">{reviewStats.averageRating.toFixed(1)}</span>
+                        <span className="text-2xl font-bold">{reviewStats.averageRating.toFixed(1)}</span>
                         <span className="text-muted-foreground">
                           ({reviewStats.reviewCount} {language === 'ro' ? 'recenzii' : 'reviews'})
                         </span>
                       </div>
-                      <p className="text-muted-foreground">
-                        {language === 'ro' ? 'Recenziile clienților vor fi afișate aici.' : 'Customer reviews will be displayed here.'}
-                      </p>
+
+                      {/* Reviews List */}
+                      <div className="space-y-6">
+                        {reviews.map((review) => (
+                          <div key={review.id} className="pb-6 border-b border-border last:border-0 last:pb-0">
+                            <div className="flex items-start justify-between gap-4 mb-3">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-medium">{review.customer_name}</span>
+                                  {review.is_verified_purchase && (
+                                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 border border-green-500/20">
+                                      {language === 'ro' ? 'Cumpărător verificat' : 'Verified purchase'}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-0.5">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <Star 
+                                        key={star} 
+                                        className={`w-4 h-4 ${star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} 
+                                      />
+                                    ))}
+                                  </div>
+                                  <span className="text-sm text-muted-foreground">
+                                    {new Date(review.created_at).toLocaleDateString(language === 'ro' ? 'ro-RO' : 'en-US', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric'
+                                    })}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            {review.title && (
+                              <h4 className="font-medium mb-2">{review.title}</h4>
+                            )}
+                            {review.content && (
+                              <p className="text-muted-foreground leading-relaxed">{review.content}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ) : (
                     <p className="text-muted-foreground">
