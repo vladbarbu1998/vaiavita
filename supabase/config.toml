@@ -2,3 +2,6 @@ project_id = "hivkibfnkaarlzxyokqd"
 
 [functions.setup-admin]
 verify_jwt = false
+
+[functions.translate-product]
+verify_jwt = false

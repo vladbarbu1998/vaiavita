@@ -1,10 +1,17 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { Menu, X, ShoppingCart, Sun, Moon, Globe } from 'lucide-react';
+import { Menu, X, ShoppingCart, Sun, Moon, Globe, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useCart } from '@/context/CartContext';
+import { useCurrency, currencies } from '@/context/CurrencyContext';
 import logoDark from '@/assets/logo-dark.png';
 import logoLight from '@/assets/logo-light.png';
 
@@ -13,6 +20,7 @@ export function Header() {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { totalItems } = useCart();
+  const { currency, setCurrency } = useCurrency();
 
   const navLinks = [
     { href: '/', label: t('nav.home') },
@@ -61,6 +69,33 @@ export function Header() {
                 {language}
               </span>
             </Button>
+
+            {/* Currency Toggle */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative rounded-full hover:bg-primary/10"
+                >
+                  <Coins className="h-5 w-5" />
+                  <span className="absolute -bottom-0.5 right-0.5 text-[9px] font-bold text-primary">
+                    {currency === 'RON' ? 'lei' : currencies.find(c => c.code === currency)?.symbol}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {currencies.map((c) => (
+                  <DropdownMenuItem 
+                    key={c.code} 
+                    onClick={() => setCurrency(c.code)}
+                    className={currency === c.code ? 'bg-primary/10' : ''}
+                  >
+                    {c.symbol} {c.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Theme Toggle */}
             <Button 

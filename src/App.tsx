@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { CartProvider } from "@/context/CartContext";
+import { CurrencyProvider } from "@/context/CurrencyContext";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import Index from "./pages/Index";
 import Despre from "./pages/Despre";
@@ -24,8 +25,9 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <LanguageProvider>
-        <CartProvider>
-          <TooltipProvider>
+        <CurrencyProvider>
+          <CartProvider>
+            <TooltipProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
@@ -49,7 +51,8 @@ const App = () => (
               <ChatWidget />
             </BrowserRouter>
           </TooltipProvider>
-        </CartProvider>
+          </CartProvider>
+        </CurrencyProvider>
       </LanguageProvider>
     </ThemeProvider>
   </QueryClientProvider>
