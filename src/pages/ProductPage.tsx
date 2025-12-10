@@ -8,9 +8,10 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
-import { Star, Minus, Plus, ShoppingCart, Check, Loader2 } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductSpecificationsDisplay, ProductSpecifications } from '@/components/product/ProductSpecifications';
+import { ImageGallery } from '@/components/product/ImageGallery';
 import dentTasticImage from '@/assets/dent-tastic-product.webp';
 import qivaroImage from '@/assets/qivaro.webp';
 
@@ -176,29 +177,11 @@ const ProductPage = () => {
         <div className="container-custom">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
             {/* Image Gallery */}
-            <div className="space-y-4 opacity-0 animate-fade-up">
-              <div className="card-premium overflow-hidden aspect-square bg-gradient-to-br from-muted/50 to-muted/30">
-                <img 
-                  src={images[activeImage]} 
-                  alt={language === 'ro' ? product.name_ro : product.name_en} 
-                  className="w-full h-full object-contain p-8" 
-                />
-              </div>
-              {images.length > 1 && (
-                <div className="flex gap-4">
-                  {images.map((img, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setActiveImage(index)}
-                      className={`card-premium overflow-hidden w-20 h-20 p-2 transition-all ${
-                        activeImage === index ? 'ring-2 ring-primary' : 'hover:ring-2 hover:ring-primary/50'
-                      }`}
-                    >
-                      <img src={img} alt="" className="w-full h-full object-contain" />
-                    </button>
-                  ))}
-                </div>
-              )}
+            <div className="relative">
+              <ImageGallery 
+                images={images} 
+                productName={language === 'ro' ? product.name_ro : product.name_en} 
+              />
             </div>
 
             {/* Product Details */}
