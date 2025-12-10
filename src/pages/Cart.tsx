@@ -60,18 +60,24 @@ const Cart = () => {
                   className="card-premium p-5 flex gap-5 group"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="w-28 h-28 rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 overflow-hidden shrink-0 p-3">
+                  <Link 
+                    to={`/produse/${item.slug}`}
+                    className="w-28 h-28 rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 overflow-hidden shrink-0 p-3 hover:ring-2 hover:ring-primary/30 transition-all"
+                  >
                     <img 
                       src={item.image} 
                       alt={language === 'ro' ? item.name : item.nameEn}
                       className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                     />
-                  </div>
+                  </Link>
                   <div className="flex-1 min-w-0 flex flex-col justify-between">
                     <div>
-                      <h3 className="font-display text-lg tracking-wide truncate">
+                      <Link 
+                        to={`/produse/${item.slug}`}
+                        className="font-display text-lg tracking-wide truncate block hover:text-primary transition-colors"
+                      >
                         {language === 'ro' ? item.name : item.nameEn}
-                      </h3>
+                      </Link>
                       <p className="text-primary font-bold text-xl mt-1">
                         {formatPrice(item.price)}
                       </p>
