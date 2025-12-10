@@ -226,15 +226,33 @@ const ProductPage = () => {
     setReviewSubmitting(true);
     
     try {
-      // Check if email has ordered this product before
+      // Check if email has ordered this specific product
       const { data: orderData } = await supabase
         .from('orders')
-        .select('id')
+        .select(`
+          id,
+          order_items!inner(product_id)
+        `)
         .eq('customer_email', reviewForm.customer_email.trim().toLowerCase())
+        .eq('order_items.product_id', product.id)
         .limit(1);
       
       const isVerifiedPurchase = orderData && orderData.length > 0;
-      const orderId = isVerifiedPurchase ? orderData[0].id : null;
+      
+      // Only verified purchases can submit reviews
+      if (!isVerifiedPurchase) {
+        toast({
+          title: language === 'ro' ? 'Nu poți lăsa o recenzie' : 'Cannot submit review',
+          description: language === 'ro' 
+            ? 'Doar clienții care au cumpărat acest produs pot lăsa o recenzie. Verifică adresa de email folosită la comandă.' 
+            : 'Only customers who have purchased this product can leave a review. Please check the email address used for your order.',
+          variant: 'destructive',
+        });
+        setReviewSubmitting(false);
+        return;
+      }
+      
+      const orderId = orderData[0].id;
       
       const { error } = await supabase
         .from('reviews')
@@ -245,12 +263,26 @@ const ProductPage = () => {
           rating: reviewForm.rating,
           title: reviewForm.title.trim() || null,
           content: reviewForm.content.trim(),
-          is_verified_purchase: isVerifiedPurchase,
+          is_verified_purchase: true,
           order_id: orderId,
-          is_approved: false, // Reviews need admin approval
+          is_approved: true, // Auto-approve verified purchase reviews
         });
       
       if (error) throw error;
+      
+      // Refresh reviews to show the new one immediately
+      const { data: reviewsData } = await supabase
+        .from('reviews')
+        .select('id, customer_name, rating, content, title, created_at, is_verified_purchase')
+        .eq('product_id', product.id)
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false });
+
+      if (reviewsData && reviewsData.length > 0) {
+        const avg = reviewsData.reduce((sum, r) => sum + r.rating, 0) / reviewsData.length;
+        setReviewStats({ averageRating: avg, reviewCount: reviewsData.length });
+        setReviews(reviewsData);
+      }
       
       setReviewSubmitted(true);
       setShowReviewForm(false);
@@ -263,10 +295,10 @@ const ProductPage = () => {
       });
       
       toast({
-        title: language === 'ro' ? 'Recenzie trimisă!' : 'Review submitted!',
+        title: language === 'ro' ? 'Recenzie publicată!' : 'Review published!',
         description: language === 'ro' 
-          ? 'Mulțumim pentru recenzie! Va fi afișată după aprobare.' 
-          : 'Thank you for your review! It will be displayed after approval.',
+          ? 'Mulțumim pentru recenzie! A fost publicată cu succes.' 
+          : 'Thank you for your review! It has been published successfully.',
       });
     } catch (error: any) {
       console.error('Error submitting review:', error);
