@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, User, Bot } from 'lucide-react';
+import { MessageCircle, X, Send, User, Bot, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/context/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   id: string;
@@ -10,37 +11,12 @@ interface Message {
   timestamp: Date;
 }
 
-const faqResponses: Record<string, { ro: string; en: string }> = {
-  livrare: {
-    ro: 'Livrăm în toată România prin curier rapid. Timpul de livrare este de 1-3 zile lucrătoare. Pentru comenzi peste 150 lei, livrarea este gratuită!',
-    en: 'We deliver throughout Romania via express courier. Delivery time is 1-3 business days. For orders over 150 lei, shipping is free!',
-  },
-  plata: {
-    ro: 'Acceptăm plată cu cardul (Stripe), Netopia și ramburs la livrare. Toate plățile sunt securizate.',
-    en: 'We accept card payment (Stripe), Netopia and cash on delivery. All payments are secure.',
-  },
-  retur: {
-    ro: 'Oferim 14 zile pentru returnarea produselor nedesfăcute. Contactați-ne la office@vaiavita.com pentru a iniția un retur.',
-    en: 'We offer 14 days for returning unopened products. Contact us at office@vaiavita.com to initiate a return.',
-  },
-  produs: {
-    ro: 'Dent-Tastic este pasta noastră de dinți premium, cu formulă patentată în SUA. Conține quercetin și paeoniflorin pentru sănătatea gingiilor. Preț: 29,99 lei.',
-    en: 'Dent-Tastic is our premium toothpaste with a USA patented formula. It contains quercetin and paeoniflorin for gum health. Price: 29.99 lei.',
-  },
-  default: {
-    ro: 'Vă mulțumim pentru mesaj! Pentru întrebări specifice, vă rugăm să ne contactați la office@vaiavita.com sau scrieți "agent" pentru a vorbi cu un reprezentant.',
-    en: 'Thank you for your message! For specific questions, please contact us at office@vaiavita.com or type "agent" to speak with a representative.',
-  },
-};
-
-const escalationKeywords = ['agent', 'suport', 'reprezentant', 'vreau să vorbesc', 'om', 'persoana', 'help', 'support'];
-
 export function ChatWidget() {
   const { language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [isEscalated, setIsEscalated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,8 +25,8 @@ export function ChatWidget() {
         id: '1',
         role: 'bot',
         content: language === 'ro' 
-          ? 'Bună! 👋 Sunt asistentul virtual VAIAVITA. Cum te pot ajuta? Poți întreba despre livrare, plată, retururi sau produse.'
-          : 'Hello! 👋 I\'m the VAIAVITA virtual assistant. How can I help you? You can ask about delivery, payment, returns or products.',
+          ? 'Bună! 👋 Sunt asistentul virtual VAIAVITA. Cum te pot ajuta? Poți întreba despre produsele noastre, livrare, plată sau retururi.'
+          : 'Hello! 👋 I\'m the VAIAVITA virtual assistant. How can I help you? You can ask about our products, delivery, payment or returns.',
         timestamp: new Date(),
       }]);
     }
@@ -60,34 +36,8 @@ export function ChatWidget() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const getBotResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
-    
-    if (escalationKeywords.some(kw => lowerMessage.includes(kw))) {
-      setIsEscalated(true);
-      return language === 'ro'
-        ? 'Am înțeles că dorești să vorbești cu un reprezentant. Te rog să ne lași adresa de email și te vom contacta în cel mai scurt timp posibil. Poți de asemenea să ne scrii la office@vaiavita.com.'
-        : 'I understand you want to speak with a representative. Please leave your email address and we will contact you as soon as possible. You can also email us at office@vaiavita.com.';
-    }
-    
-    if (lowerMessage.includes('livr') || lowerMessage.includes('ship') || lowerMessage.includes('delivery')) {
-      return faqResponses.livrare[language];
-    }
-    if (lowerMessage.includes('plat') || lowerMessage.includes('pay') || lowerMessage.includes('card')) {
-      return faqResponses.plata[language];
-    }
-    if (lowerMessage.includes('retur') || lowerMessage.includes('return')) {
-      return faqResponses.retur[language];
-    }
-    if (lowerMessage.includes('produs') || lowerMessage.includes('dent') || lowerMessage.includes('pasta') || lowerMessage.includes('product')) {
-      return faqResponses.produs[language];
-    }
-    
-    return faqResponses.default[language];
-  };
-
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -98,16 +48,50 @@ export function ChatWidget() {
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      // Prepare conversation history (exclude the welcome message)
+      const conversationHistory = messages
+        .filter(msg => msg.id !== '1')
+        .map(msg => ({
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content
+        }));
+
+      const { data, error } = await supabase.functions.invoke('chat-assistant', {
+        body: {
+          message: input,
+          language,
+          conversationHistory
+        }
+      });
+
+      if (error) throw error;
+
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
         role: 'bot',
-        content: getBotResponse(input),
+        content: data.reply || (language === 'ro' 
+          ? 'Îmi pare rău, nu am putut procesa cererea.'
+          : 'Sorry, I could not process the request.'),
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, botResponse]);
-    }, 500);
+    } catch (error) {
+      console.error('Chat error:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'bot',
+        content: language === 'ro'
+          ? 'Îmi pare rău, a apărut o eroare. Te rog să încerci din nou sau contactează-ne la office@vaiavita.com.'
+          : 'Sorry, an error occurred. Please try again or contact us at office@vaiavita.com.',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -151,6 +135,19 @@ export function ChatWidget() {
                 </div>
               </div>
             ))}
+            {isLoading && (
+              <div className="flex gap-2">
+                <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-muted text-muted-foreground">
+                  <Bot className="w-4 h-4" />
+                </div>
+                <div className="max-w-[75%] p-3 rounded-2xl text-sm bg-muted rounded-bl-md flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-muted-foreground">
+                    {language === 'ro' ? 'Se scrie...' : 'Typing...'}
+                  </span>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
 
@@ -163,9 +160,10 @@ export function ChatWidget() {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={language === 'ro' ? 'Scrie un mesaj...' : 'Type a message...'}
                 className="flex-1 px-4 py-2.5 rounded-full bg-muted border-0 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                disabled={isLoading}
               />
-              <Button type="submit" size="icon" className="rounded-full shrink-0">
-                <Send className="w-4 h-4" />
+              <Button type="submit" size="icon" className="rounded-full shrink-0" disabled={isLoading || !input.trim()}>
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </Button>
             </form>
           </div>
