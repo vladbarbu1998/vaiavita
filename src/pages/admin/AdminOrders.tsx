@@ -264,7 +264,7 @@ const AdminOrders = () => {
                 <span className="text-sm text-muted-foreground">Status:</span>
                 <Select 
                   value={selectedOrder.status} 
-                  onValueChange={(value) => updateOrderStatus(selectedOrder.id, value)}
+                  onValueChange={(value) => updateOrderStatus(selectedOrder.id, value as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled')}
                 >
                   <SelectTrigger className="w-48">
                     <SelectValue />
