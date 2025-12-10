@@ -11,7 +11,7 @@ export function HeroSection() {
     <section className="relative overflow-hidden gradient-animated min-h-[85vh] flex items-center">
       {/* Decorative circles */}
       <div className="absolute top-20 right-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-float" />
-      <div className="absolute bottom-20 left-10 w-96 h-96 bg-primary/3 rounded-full blur-3xl animate-float animation-delay-200" style={{ animationDelay: '1s' }} />
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-primary/3 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
       
       <div className="container-custom section-padding relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -44,20 +44,19 @@ export function HeroSection() {
           </div>
 
           {/* Hero Image */}
-          <div className="relative opacity-0 animate-fade-up animation-delay-200">
-            <div className="relative">
+          <div className="relative opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center">
+            <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
               {/* Glow effect behind image */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-full blur-3xl scale-110" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-3xl blur-3xl scale-110" />
               
-              {/* Floating decorative elements */}
-              <div className="absolute -top-4 -right-4 w-20 h-20 bg-primary/10 rounded-2xl rotate-12 animate-float" />
-              <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-primary/15 rounded-full animate-float" style={{ animationDelay: '0.5s' }} />
-              
-              <img 
-                src={heroImage} 
-                alt="Dent-Tastic Toothpaste" 
-                className="relative w-full max-w-lg mx-auto drop-shadow-2xl hover:scale-105 transition-transform duration-500"
-              />
+              {/* Image container with consistent border radius */}
+              <div className="relative bg-card/50 backdrop-blur-sm rounded-3xl p-6 w-full h-full flex items-center justify-center border border-border/30">
+                <img 
+                  src={heroImage} 
+                  alt="Dent-Tastic Toothpaste" 
+                  className="w-full h-auto max-h-[90%] object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
+                />
+              </div>
             </div>
           </div>
         </div>

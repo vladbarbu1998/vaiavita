@@ -24,15 +24,15 @@ export function WhyChooseUsSection() {
       
       <div className="container-custom relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Image */}
-          <div className="opacity-0 animate-fade-up">
-            <div className="relative group">
-              <div className="absolute -inset-4 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl blur-2xl opacity-60 group-hover:opacity-80 transition-opacity" />
-              <div className="relative overflow-hidden rounded-3xl shadow-card">
+          {/* Image - Equal size container */}
+          <div className="opacity-0 animate-fade-up flex items-center justify-center">
+            <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
+              <div className="absolute -inset-4 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl blur-2xl opacity-60" />
+              <div className="relative bg-card/50 backdrop-blur-sm rounded-3xl p-8 w-full h-full flex items-center justify-center border border-border/30 shadow-card overflow-hidden">
                 <img 
                   src={despreImage} 
                   alt="VAIAVITA Products" 
-                  className="w-full max-w-md mx-auto group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-auto max-h-[85%] object-contain hover:scale-105 transition-transform duration-700"
                 />
               </div>
             </div>
@@ -54,9 +54,9 @@ export function WhyChooseUsSection() {
               {benefits.map((benefit, index) => (
                 <div 
                   key={index} 
-                  className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border/50 hover:border-primary/30 transition-colors"
+                  className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                     <benefit.icon className="w-5 h-5 text-primary" />
                   </div>
                   <span className="text-sm font-medium">{benefit.label}</span>

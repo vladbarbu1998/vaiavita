@@ -50,15 +50,17 @@ export function QivaroSection() {
             </Button>
           </div>
 
-          {/* Image */}
-          <div className="opacity-0 animate-fade-up animation-delay-200">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl blur-2xl scale-105 opacity-50 group-hover:opacity-70 transition-opacity" />
-              <img 
-                src={qivaroImage} 
-                alt="Qivaro Supplements" 
-                className="relative w-full max-w-lg mx-auto group-hover:scale-102 transition-transform duration-500"
-              />
+          {/* Image - Equal size container */}
+          <div className="opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center">
+            <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl blur-2xl scale-105 opacity-50" />
+              <div className="relative bg-card/50 backdrop-blur-sm rounded-3xl p-8 w-full h-full flex items-center justify-center border border-border/30 shadow-card">
+                <img 
+                  src={qivaroImage} 
+                  alt="Qivaro Supplements" 
+                  className="w-full h-auto max-h-[85%] object-contain hover:scale-105 transition-transform duration-500"
+                />
+              </div>
             </div>
           </div>
         </div>
