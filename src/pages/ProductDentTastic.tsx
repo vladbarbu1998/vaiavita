@@ -152,16 +152,17 @@ const ProductDentTastic = () => {
         return;
       }
 
-      // Insert review into database
+      // Insert review into database - auto-approved since email is verified
       const { error: reviewError } = await supabase
         .from('reviews')
-                .insert({
-                  product_id: PRODUCT_ID,
+        .insert({
+          product_id: PRODUCT_ID,
           customer_name: reviewForm.name.trim(),
           customer_email: reviewForm.email.trim().toLowerCase(),
           rating: reviewForm.rating,
           content: reviewForm.review.trim(),
           is_verified_purchase: true,
+          is_approved: true, // Auto-approve verified purchase reviews
           order_id: orderExists[0].id,
         });
 
@@ -173,10 +174,10 @@ const ProductDentTastic = () => {
       }
 
       toast({
-        title: language === 'ro' ? 'Recenzie trimisă!' : 'Review submitted!',
+        title: language === 'ro' ? 'Recenzie publicată!' : 'Review published!',
         description: language === 'ro' 
-          ? 'Recenzia ta va fi afișată după aprobare.'
-          : 'Your review will be displayed after approval.',
+          ? 'Mulțumim pentru feedback-ul tău!'
+          : 'Thank you for your feedback!',
       });
       
       setReviewForm({ name: '', email: '', rating: 5, review: '' });
