@@ -9,6 +9,14 @@ interface ImageGalleryProps {
 }
 
 const VISIBLE_THUMBNAILS = 5;
+const THUMBNAIL_HEIGHT = 88; // Fixed height for each thumbnail in px
+const THUMBNAIL_GAP = 8; // Gap between thumbnails in px
+const ARROW_HEIGHT = 32; // Fixed height for arrows in px
+const ARROW_MARGIN = 8; // Margin for arrows in px
+
+// Calculate total height: 5 thumbnails + 4 gaps = main image height
+// Main image is square, so we need thumbnails to match that height
+const THUMBNAILS_CONTAINER_HEIGHT = (THUMBNAIL_HEIGHT * VISIBLE_THUMBNAILS) + (THUMBNAIL_GAP * (VISIBLE_THUMBNAILS - 1));
 
 export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
   const [activeImage, setActiveImage] = useState(0);
@@ -37,18 +45,27 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
   const visibleThumbnails = images.slice(thumbnailStart, thumbnailStart + VISIBLE_THUMBNAILS);
   const showThumbnailNavigation = images.length > VISIBLE_THUMBNAILS;
 
+  // Total height for thumbnail column (same as main image which is square)
+  const totalColumnHeight = showThumbnailNavigation 
+    ? THUMBNAILS_CONTAINER_HEIGHT + (ARROW_HEIGHT + ARROW_MARGIN) * 2
+    : THUMBNAILS_CONTAINER_HEIGHT;
+
   return (
     <>
       <div className="flex gap-4 opacity-0 animate-fade-up">
         {/* Thumbnails - Left Side */}
         {images.length > 1 && (
-          <div className="hidden md:flex flex-col w-24 shrink-0">
-            {/* Up Arrow */}
+          <div 
+            className="hidden md:flex flex-col w-24 shrink-0"
+            style={{ height: `${totalColumnHeight}px` }}
+          >
+            {/* Up Arrow - Fixed height */}
             {showThumbnailNavigation && (
               <Button
                 variant="ghost"
                 size="sm"
-                className={`w-full h-8 mb-2 ${!canScrollThumbnailsUp ? 'opacity-30 cursor-not-allowed' : ''}`}
+                className={`w-full shrink-0 ${!canScrollThumbnailsUp ? 'opacity-30 cursor-not-allowed' : ''}`}
+                style={{ height: `${ARROW_HEIGHT}px`, marginBottom: `${ARROW_MARGIN}px` }}
                 onClick={scrollThumbnailsUp}
                 disabled={!canScrollThumbnailsUp}
               >
@@ -56,10 +73,13 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
               </Button>
             )}
             
-            {/* Thumbnails Grid - Fixed height to match main image */}
+            {/* Thumbnails Grid - Fixed height container */}
             <div 
-              className="flex flex-col gap-2 flex-1"
-              style={{ height: showThumbnailNavigation ? 'calc(100% - 80px)' : '100%' }}
+              className="flex flex-col"
+              style={{ 
+                height: `${THUMBNAILS_CONTAINER_HEIGHT}px`,
+                gap: `${THUMBNAIL_GAP}px`
+              }}
             >
               {visibleThumbnails.map((img, index) => {
                 const actualIndex = thumbnailStart + index;
@@ -67,7 +87,8 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
                   <button
                     key={actualIndex}
                     onClick={() => setActiveImage(actualIndex)}
-                    className={`relative overflow-hidden flex-1 rounded-lg border-2 transition-all duration-200 bg-muted/30 min-h-0 ${
+                    style={{ height: `${THUMBNAIL_HEIGHT}px` }}
+                    className={`relative overflow-hidden shrink-0 rounded-lg border-2 transition-all duration-200 bg-muted/30 ${
                       activeImage === actualIndex 
                         ? 'border-primary shadow-md' 
                         : 'border-border hover:border-primary/50 opacity-60 hover:opacity-100'
@@ -83,12 +104,13 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
               })}
             </div>
 
-            {/* Down Arrow */}
+            {/* Down Arrow - Fixed height */}
             {showThumbnailNavigation && (
               <Button
                 variant="ghost"
                 size="sm"
-                className={`w-full h-8 mt-2 ${!canScrollThumbnailsDown ? 'opacity-30 cursor-not-allowed' : ''}`}
+                className={`w-full shrink-0 ${!canScrollThumbnailsDown ? 'opacity-30 cursor-not-allowed' : ''}`}
+                style={{ height: `${ARROW_HEIGHT}px`, marginTop: `${ARROW_MARGIN}px` }}
                 onClick={scrollThumbnailsDown}
                 disabled={!canScrollThumbnailsDown}
               >
@@ -98,8 +120,11 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
           </div>
         )}
 
-        {/* Main Image Container */}
-        <div className="flex-1 relative">
+        {/* Main Image Container - Square with same height as thumbnail column */}
+        <div 
+          className="flex-1 relative"
+          style={{ height: `${totalColumnHeight}px` }}
+        >
           {/* Navigation Arrows - Outside main image */}
           {images.length > 1 && (
             <Button
@@ -113,7 +138,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
           )}
           
           <div 
-            className="relative overflow-hidden aspect-square rounded-xl border border-border bg-gradient-to-br from-muted/30 to-muted/10 cursor-zoom-in group"
+            className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-muted/30 to-muted/10 cursor-zoom-in group w-full h-full"
             onClick={() => setZoomOpen(true)}
           >
             <img 
