@@ -26,23 +26,17 @@ export function FeaturedProductSection() {
             to="/produse/dent-tastic"
             className="order-2 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center group"
           >
-            {/* Multi-border frame effect - layered borders */}
-            <div className="relative p-8 md:p-12">
-              {/* Outermost border - subtle */}
-              <div className="absolute inset-0 rounded-[2rem] border-2 border-primary/15 bg-background/5" />
-              {/* Middle border */}
-              <div className="absolute inset-4 md:inset-6 rounded-[1.5rem] border-2 border-primary/25" />
-              {/* Inner border - most visible */}
-              <div className="absolute inset-8 md:inset-12 rounded-2xl border-2 border-primary/35" />
+            {/* Single elegant frame */}
+            <div className="relative p-6">
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-primary/5 rounded-3xl blur-xl" />
               
-              {/* Background glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-[2rem]" />
-              
-              <div className="relative p-4 md:p-8">
+              {/* Single border frame */}
+              <div className="relative rounded-2xl border-2 border-primary/30 bg-background/5 p-4 shadow-xl">
                 <img 
                   src={dentTasticImage} 
                   alt="Dent-Tastic Fresh Mint" 
-                  className="relative w-full h-auto max-w-sm rounded-xl drop-shadow-2xl group-hover:scale-105 transition-transform duration-500"
+                  className="relative w-full h-auto max-w-sm rounded-xl group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
             </div>
