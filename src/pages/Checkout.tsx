@@ -58,12 +58,32 @@ interface CheckoutForm {
   notes: string;
 }
 
+interface Coupon {
+  id: string;
+  code: string;
+  discount_type: string;
+  discount_value: number;
+  scope: string;
+  product_id: string | null;
+  category_id: string | null;
+  min_order_value: number | null;
+  max_uses: number | null;
+  uses_count: number | null;
+  is_active: boolean | null;
+  valid_from: string | null;
+  valid_until: string | null;
+}
+
 const Checkout = () => {
   const { language } = useLanguage();
   const { formatPrice } = useCurrency();
   const { items, totalPrice, clearCart } = useCart();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [couponError, setCouponError] = useState('');
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   
   const [form, setForm] = useState<CheckoutForm>({
     firstName: '',
@@ -81,8 +101,138 @@ const Checkout = () => {
     notes: '',
   });
 
+  // Calculate discount based on coupon
+  const calculateDiscount = () => {
+    if (!appliedCoupon) return 0;
+    
+    if (appliedCoupon.discount_type === 'percentage') {
+      return totalPrice * (appliedCoupon.discount_value / 100);
+    }
+    return Math.min(appliedCoupon.discount_value, totalPrice);
+  };
+
+  const discount = calculateDiscount();
   const shippingCost = form.deliveryMethod === 'shipping' && totalPrice < 150 ? 19.99 : 0;
-  const finalTotal = totalPrice + shippingCost;
+  const finalTotal = totalPrice - discount + shippingCost;
+
+  // Validate coupon against cart items
+  const validateCouponScope = async (coupon: Coupon): Promise<{ valid: boolean; message: string }> => {
+    if (coupon.scope === 'all') {
+      return { valid: true, message: '' };
+    }
+
+    if (coupon.scope === 'product' && coupon.product_id) {
+      const hasProduct = items.some(item => item.id === coupon.product_id);
+      if (!hasProduct) {
+        return { 
+          valid: false, 
+          message: language === 'ro' 
+            ? 'Cuponul este valabil doar pentru un anumit produs care nu este în coș.' 
+            : 'Coupon is only valid for a specific product not in your cart.' 
+        };
+      }
+      return { valid: true, message: '' };
+    }
+
+    if (coupon.scope === 'category' && coupon.category_id) {
+      // Fetch products with their categories
+      const productIds = items.map(item => item.id);
+      const { data: products } = await supabase
+        .from('products')
+        .select('id, category_id')
+        .in('id', productIds);
+
+      const hasMatchingCategory = products?.some(p => p.category_id === coupon.category_id);
+      if (!hasMatchingCategory) {
+        return { 
+          valid: false, 
+          message: language === 'ro' 
+            ? 'Cuponul este valabil doar pentru o anumită categorie de produse care nu este în coș.' 
+            : 'Coupon is only valid for a specific category not in your cart.' 
+        };
+      }
+      return { valid: true, message: '' };
+    }
+
+    return { valid: true, message: '' };
+  };
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    
+    setCouponError('');
+    setIsApplyingCoupon(true);
+
+    try {
+      const { data: coupon, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', couponCode.trim().toUpperCase())
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!coupon) {
+        setCouponError(language === 'ro' ? 'Cupon invalid.' : 'Invalid coupon.');
+        setIsApplyingCoupon(false);
+        return;
+      }
+
+      // Check validity dates
+      const now = new Date();
+      if (coupon.valid_from && new Date(coupon.valid_from) > now) {
+        setCouponError(language === 'ro' ? 'Cuponul nu este încă activ.' : 'Coupon is not yet active.');
+        setIsApplyingCoupon(false);
+        return;
+      }
+      if (coupon.valid_until && new Date(coupon.valid_until) < now) {
+        setCouponError(language === 'ro' ? 'Cuponul a expirat.' : 'Coupon has expired.');
+        setIsApplyingCoupon(false);
+        return;
+      }
+
+      // Check max uses
+      if (coupon.max_uses && coupon.uses_count && coupon.uses_count >= coupon.max_uses) {
+        setCouponError(language === 'ro' ? 'Cuponul a atins limita de utilizări.' : 'Coupon has reached its usage limit.');
+        setIsApplyingCoupon(false);
+        return;
+      }
+
+      // Check minimum order value
+      if (coupon.min_order_value && totalPrice < coupon.min_order_value) {
+        setCouponError(
+          language === 'ro' 
+            ? `Comanda minimă pentru acest cupon este ${coupon.min_order_value} lei.` 
+            : `Minimum order for this coupon is ${coupon.min_order_value} lei.`
+        );
+        setIsApplyingCoupon(false);
+        return;
+      }
+
+      // Validate scope
+      const scopeValidation = await validateCouponScope(coupon);
+      if (!scopeValidation.valid) {
+        setCouponError(scopeValidation.message);
+        setIsApplyingCoupon(false);
+        return;
+      }
+
+      setAppliedCoupon(coupon);
+      toast.success(language === 'ro' ? 'Cupon aplicat cu succes!' : 'Coupon applied successfully!');
+    } catch (error) {
+      console.error('Coupon error:', error);
+      setCouponError(language === 'ro' ? 'Eroare la aplicarea cuponului.' : 'Error applying coupon.');
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError('');
+  };
 
   const updateForm = (field: keyof CheckoutForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -132,6 +282,8 @@ const Checkout = () => {
           pickup_location: form.deliveryMethod === 'pickup' ? 'Brașov, România' : null,
           subtotal: totalPrice,
           shipping_cost: shippingCost,
+          discount: discount,
+          coupon_code: appliedCoupon?.code || null,
           total: finalTotal,
           customer_notes: form.notes || null,
         }])
@@ -139,6 +291,14 @@ const Checkout = () => {
         .single();
 
       if (orderError) throw orderError;
+
+      // Update coupon uses_count if a coupon was applied
+      if (appliedCoupon) {
+        await supabase
+          .from('coupons')
+          .update({ uses_count: (appliedCoupon.uses_count || 0) + 1 })
+          .eq('id', appliedCoupon.id);
+      }
 
       // Create order items
       const orderItems = items.map(item => ({
@@ -573,11 +733,71 @@ const Checkout = () => {
                     ))}
                   </div>
 
+                  {/* Coupon Code */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      {language === 'ro' ? 'Cod cupon' : 'Coupon code'}
+                    </Label>
+                    {appliedCoupon ? (
+                      <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                        <div>
+                          <p className="font-medium text-green-600">{appliedCoupon.code}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {appliedCoupon.discount_type === 'percentage' 
+                              ? `-${appliedCoupon.discount_value}%` 
+                              : `-${formatPrice(appliedCoupon.discount_value)}`}
+                          </p>
+                        </div>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={removeCoupon}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          {language === 'ro' ? 'Elimină' : 'Remove'}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          placeholder={language === 'ro' ? 'Introdu codul' : 'Enter code'}
+                          className="flex-1"
+                        />
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={applyCoupon}
+                          disabled={isApplyingCoupon || !couponCode.trim()}
+                        >
+                          {isApplyingCoupon ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            language === 'ro' ? 'Aplică' : 'Apply'
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                    {couponError && (
+                      <p className="text-xs text-destructive">{couponError}</p>
+                    )}
+                  </div>
+
                   <div className="space-y-3 pt-4 border-t border-border">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
                       <span>{formatPrice(totalPrice)}</span>
                     </div>
+                    {discount > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {language === 'ro' ? 'Reducere' : 'Discount'}
+                        </span>
+                        <span className="text-green-600">-{formatPrice(discount)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">
                         {language === 'ro' ? 'Livrare' : 'Shipping'}
