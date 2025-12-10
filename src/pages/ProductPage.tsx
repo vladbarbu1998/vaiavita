@@ -54,8 +54,8 @@ interface RelatedProduct {
   slug: string;
   name_ro: string;
   name_en: string;
-  short_description_ro: string | null;
-  short_description_en: string | null;
+  card_description_ro: string | null;
+  card_description_en: string | null;
   price: number;
   images: string[] | null;
 }
@@ -170,7 +170,7 @@ const ProductPage = () => {
         if (data.related_products && (data.related_products as string[]).length > 0) {
           const { data: relatedData } = await supabase
             .from('products')
-            .select('id, slug, name_ro, name_en, short_description_ro, short_description_en, price, images')
+            .select('id, slug, name_ro, name_en, card_description_ro, card_description_en, price, images')
             .in('id', data.related_products as string[])
             .eq('status', 'active');
           
@@ -615,19 +615,19 @@ const ProductPage = () => {
                         <ShoppingCart className="w-3.5 h-3.5 md:w-4 md:h-4" />
                       </button>
                     </div>
-                    <a href={`/produse/${relProd.slug}`} className="block p-2 pt-5">
+                    <a href={`/produse/${relProd.slug}`} className="block p-3 pt-5">
                       {/* Title - fixed height for 2 lines */}
-                      <h5 className="font-medium text-xs leading-snug line-clamp-2 h-8 group-hover:text-primary transition-colors">
+                      <h5 className="font-medium text-sm leading-snug line-clamp-2 h-10 group-hover:text-primary transition-colors">
                         {language === 'ro' ? relProd.name_ro : relProd.name_en}
                       </h5>
-                      {/* Short description - fixed height */}
-                      <p className="text-[10px] text-muted-foreground line-clamp-2 h-6 mt-1">
+                      {/* Card description - fixed height */}
+                      <p className="text-xs text-muted-foreground line-clamp-2 h-8 mt-1.5">
                         {language === 'ro' 
-                          ? (relProd.short_description_ro || '') 
-                          : (relProd.short_description_en || '')}
+                          ? (relProd.card_description_ro || '') 
+                          : (relProd.card_description_en || '')}
                       </p>
                       {/* Price - always at bottom */}
-                      <p className="text-primary font-semibold text-sm pt-1.5">
+                      <p className="text-primary font-semibold text-sm pt-2">
                         {formatPrice(relProd.price)}
                       </p>
                     </a>
