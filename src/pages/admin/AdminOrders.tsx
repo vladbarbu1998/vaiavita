@@ -285,7 +285,7 @@ const AdminOrders = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toate produsele</SelectItem>
-                {products.map(p => (
+                {products.filter(p => p.id).map(p => (
                   <SelectItem key={p.id} value={p.id}>{p.name_ro}</SelectItem>
                 ))}
               </SelectContent>
@@ -300,7 +300,7 @@ const AdminOrders = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toate categoriile</SelectItem>
-                {categories.map(c => (
+                {categories.filter(c => c.id).map(c => (
                   <SelectItem key={c.id} value={c.id}>{c.name_ro}</SelectItem>
                 ))}
               </SelectContent>
