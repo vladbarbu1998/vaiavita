@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X, ZoomIn } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
@@ -8,9 +8,12 @@ interface ImageGalleryProps {
   productName: string;
 }
 
+const VISIBLE_THUMBNAILS = 5;
+
 export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
   const [activeImage, setActiveImage] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
+  const [thumbnailStart, setThumbnailStart] = useState(0);
 
   const goToPrevious = () => {
     setActiveImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -20,29 +23,78 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
     setActiveImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
+  const canScrollThumbnailsUp = thumbnailStart > 0;
+  const canScrollThumbnailsDown = thumbnailStart + VISIBLE_THUMBNAILS < images.length;
+
+  const scrollThumbnailsUp = () => {
+    setThumbnailStart((prev) => Math.max(0, prev - 1));
+  };
+
+  const scrollThumbnailsDown = () => {
+    setThumbnailStart((prev) => Math.min(images.length - VISIBLE_THUMBNAILS, prev + 1));
+  };
+
+  const visibleThumbnails = images.slice(thumbnailStart, thumbnailStart + VISIBLE_THUMBNAILS);
+  const showThumbnailNavigation = images.length > VISIBLE_THUMBNAILS;
+
   return (
     <>
       <div className="flex gap-4 opacity-0 animate-fade-up">
         {/* Thumbnails - Left Side */}
         {images.length > 1 && (
-          <div className="hidden md:flex flex-col gap-2 w-24 shrink-0 max-h-[500px] overflow-y-auto">
-            {images.map((img, index) => (
-              <button
-                key={index}
-                onClick={() => setActiveImage(index)}
-                className={`relative overflow-hidden aspect-square rounded-lg border-2 transition-all duration-200 bg-muted/30 ${
-                  activeImage === index 
-                    ? 'border-primary shadow-md' 
-                    : 'border-border hover:border-primary/50 opacity-60 hover:opacity-100'
-                }`}
+          <div className="hidden md:flex flex-col w-24 shrink-0">
+            {/* Up Arrow */}
+            {showThumbnailNavigation && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`w-full h-8 mb-2 ${!canScrollThumbnailsUp ? 'opacity-30 cursor-not-allowed' : ''}`}
+                onClick={scrollThumbnailsUp}
+                disabled={!canScrollThumbnailsUp}
               >
-                <img 
-                  src={img} 
-                  alt="" 
-                  className="w-full h-full object-contain p-2" 
-                />
-              </button>
-            ))}
+                <ChevronUp className="w-4 h-4" />
+              </Button>
+            )}
+            
+            {/* Thumbnails Grid - Fixed height to match main image */}
+            <div 
+              className="flex flex-col gap-2 flex-1"
+              style={{ height: showThumbnailNavigation ? 'calc(100% - 80px)' : '100%' }}
+            >
+              {visibleThumbnails.map((img, index) => {
+                const actualIndex = thumbnailStart + index;
+                return (
+                  <button
+                    key={actualIndex}
+                    onClick={() => setActiveImage(actualIndex)}
+                    className={`relative overflow-hidden flex-1 rounded-lg border-2 transition-all duration-200 bg-muted/30 min-h-0 ${
+                      activeImage === actualIndex 
+                        ? 'border-primary shadow-md' 
+                        : 'border-border hover:border-primary/50 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img 
+                      src={img} 
+                      alt="" 
+                      className="w-full h-full object-contain p-2" 
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Down Arrow */}
+            {showThumbnailNavigation && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`w-full h-8 mt-2 ${!canScrollThumbnailsDown ? 'opacity-30 cursor-not-allowed' : ''}`}
+                onClick={scrollThumbnailsDown}
+                disabled={!canScrollThumbnailsDown}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         )}
 

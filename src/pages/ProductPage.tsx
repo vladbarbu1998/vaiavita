@@ -24,6 +24,13 @@ const fallbackImages: Record<string, string> = {
   'qivaro-supplements': qivaroImage,
 };
 
+interface Category {
+  id: string;
+  name_ro: string;
+  name_en: string;
+  slug: string;
+}
+
 interface Product {
   id: string;
   slug: string;
@@ -77,6 +84,7 @@ const ProductPage = () => {
   const [activeImage, setActiveImage] = useState(0);
   const [reviewStats, setReviewStats] = useState<ReviewStats>({ averageRating: 0, reviewCount: 0 });
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [activeTab, setActiveTab] = useState('description');
   const tabsRef = useRef<HTMLDivElement>(null);
   
@@ -120,6 +128,24 @@ const ProductPage = () => {
           ...data,
           specifications: specs,
         });
+
+        // Fetch product categories
+        const { data: productCategoriesData } = await supabase
+          .from('product_categories')
+          .select('category_id')
+          .eq('product_id', data.id);
+
+        if (productCategoriesData && productCategoriesData.length > 0) {
+          const categoryIds = productCategoriesData.map(pc => pc.category_id);
+          const { data: categoriesData } = await supabase
+            .from('categories')
+            .select('id, name_ro, name_en, slug')
+            .in('id', categoryIds);
+          
+          if (categoriesData) {
+            setCategories(categoriesData);
+          }
+        }
 
         // Fetch reviews
         const { data: reviewsData } = await supabase
@@ -312,29 +338,48 @@ const ProductPage = () => {
                 }`}>
                   {isInStock ? t('common.inStock') : t('common.outOfStock')}
                 </Badge>
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                  <h1 className="font-display text-3xl md:text-4xl tracking-wide">
-                    {language === 'ro' ? product.name_ro : product.name_en}
-                  </h1>
-                  {reviewStats.reviewCount > 0 && (
-                    <button 
-                      onClick={scrollToReviews}
-                      className="flex items-center gap-2 text-sm hover:text-primary transition-colors shrink-0"
-                    >
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star 
-                            key={star} 
-                            className={`w-4 h-4 ${star <= Math.round(reviewStats.averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} 
-                          />
-                        ))}
-                      </div>
-                      <span className="text-muted-foreground">
-                        ({reviewStats.reviewCount} {language === 'ro' ? 'recenzii' : 'reviews'})
-                      </span>
-                    </button>
-                  )}
-                </div>
+                {/* Categories */}
+                {categories.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {categories.map((category) => (
+                      <Badge key={category.id} variant="secondary" className="text-xs">
+                        {language === 'ro' ? category.name_ro : category.name_en}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                
+                <h1 className="font-display text-3xl md:text-4xl tracking-wide">
+                  {language === 'ro' ? product.name_ro : product.name_en}
+                </h1>
+                
+                {/* Rating Stars under title */}
+                <button 
+                  onClick={scrollToReviews}
+                  className="flex items-center gap-2 mt-2 hover:opacity-80 transition-opacity"
+                >
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star 
+                        key={star} 
+                        className={`w-5 h-5 ${
+                          star <= Math.floor(reviewStats.averageRating) 
+                            ? 'fill-yellow-400 text-yellow-400' 
+                            : star <= reviewStats.averageRating + 0.5
+                              ? 'fill-yellow-400/50 text-yellow-400' 
+                              : 'text-muted-foreground/40'
+                        }`} 
+                      />
+                    ))}
+                  </div>
+                  <span className="font-semibold text-foreground">
+                    {reviewStats.averageRating > 0 ? reviewStats.averageRating.toFixed(1) : '0.0'}
+                  </span>
+                  <span className="text-muted-foreground">
+                    ({reviewStats.reviewCount})
+                  </span>
+                </button>
+
                 {(product.short_description_ro || product.short_description_en) && (
                   <p className="text-muted-foreground leading-relaxed mt-4 whitespace-pre-line">
                     {language === 'ro' ? product.short_description_ro : product.short_description_en}
