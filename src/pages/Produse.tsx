@@ -30,6 +30,20 @@ const fallbackImages: Record<string, string> = {
   'qivaro-supplements': qivaroImage,
 };
 
+const truncateCardDescription = (text: string | null, maxLength: number = 72): string => {
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  
+  // Find the last space before maxLength
+  const truncated = text.substring(0, maxLength);
+  const lastSpaceIndex = truncated.lastIndexOf(' ');
+  
+  if (lastSpaceIndex > 0) {
+    return truncated.substring(0, lastSpaceIndex) + '...';
+  }
+  return truncated + '...';
+};
+
 const Produse = () => {
   const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
@@ -180,10 +194,10 @@ const Produse = () => {
                       </h3>
                       
                       {/* Description - fixed height for 2 lines */}
-                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-2 min-h-[2.5rem] md:min-h-[2.75rem] mt-3">
-                        {language === 'ro' 
-                          ? (product.card_description_ro || '') 
-                          : (product.card_description_en || '')}
+                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed min-h-[2.5rem] md:min-h-[2.75rem] mt-3">
+                        {truncateCardDescription(language === 'ro' 
+                          ? product.card_description_ro 
+                          : product.card_description_en)}
                       </p>
                       
                       {/* Price and CTA - fixed position */}
