@@ -336,6 +336,8 @@ export type Database = {
       }
       products: {
         Row: {
+          card_description_en: string | null
+          card_description_ro: string | null
           category_id: string | null
           compare_at_price: number | null
           created_at: string
@@ -363,6 +365,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          card_description_en?: string | null
+          card_description_ro?: string | null
           category_id?: string | null
           compare_at_price?: number | null
           created_at?: string
@@ -390,6 +394,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          card_description_en?: string | null
+          card_description_ro?: string | null
           category_id?: string | null
           compare_at_price?: number | null
           created_at?: string

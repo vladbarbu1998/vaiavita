@@ -37,6 +37,8 @@ interface Product {
   description_en: string | null;
   short_description_ro: string | null;
   short_description_en: string | null;
+  card_description_ro: string | null;
+  card_description_en: string | null;
   price: number;
   compare_at_price: number | null;
   stock: number;
@@ -60,6 +62,8 @@ const emptyProduct = {
   description_en: '',
   short_description_ro: '',
   short_description_en: '',
+  card_description_ro: '',
+  card_description_en: '',
   price: 0,
   compare_at_price: null as number | null,
   stock: 0,
@@ -172,6 +176,8 @@ const AdminProducts = () => {
       description_en: product.description_en || '',
       short_description_ro: product.short_description_ro || '',
       short_description_en: product.short_description_en || '',
+      card_description_ro: product.card_description_ro || '',
+      card_description_en: product.card_description_en || '',
       price: product.price,
       compare_at_price: product.compare_at_price,
       stock: product.stock,
@@ -413,20 +419,23 @@ const AdminProducts = () => {
       let translations = {
         name_en: form.name_en,
         short_description_en: form.short_description_en,
+        card_description_en: form.card_description_en,
         description_en: form.description_en,
       };
 
       const needsTranslation = 
         (!form.name_en && form.name_ro) ||
         (!form.short_description_en && form.short_description_ro) ||
+        (!form.card_description_en && form.card_description_ro) ||
         (!form.description_en && form.description_ro);
 
       if (needsTranslation) {
         toast.info('Se traduce automat în engleză...');
         
-        const textsToTranslate: { name?: string; short_description?: string; description?: string } = {};
+        const textsToTranslate: { name?: string; short_description?: string; card_description?: string; description?: string } = {};
         if (!form.name_en && form.name_ro) textsToTranslate.name = form.name_ro;
         if (!form.short_description_en && form.short_description_ro) textsToTranslate.short_description = form.short_description_ro;
+        if (!form.card_description_en && form.card_description_ro) textsToTranslate.card_description = form.card_description_ro;
         if (!form.description_en && form.description_ro) textsToTranslate.description = form.description_ro;
 
         const translatedTexts = await translateToEnglish(textsToTranslate);
@@ -434,6 +443,7 @@ const AdminProducts = () => {
         translations = {
           name_en: translatedTexts.name || form.name_en || form.name_ro,
           short_description_en: translatedTexts.short_description || form.short_description_en || form.short_description_ro || '',
+          card_description_en: translatedTexts.card_description || form.card_description_en || form.card_description_ro || '',
           description_en: translatedTexts.description || form.description_en || form.description_ro || '',
         };
       }
@@ -446,6 +456,8 @@ const AdminProducts = () => {
         description_en: translations.description_en,
         short_description_ro: form.short_description_ro,
         short_description_en: translations.short_description_en,
+        card_description_ro: form.card_description_ro,
+        card_description_en: translations.card_description_en,
         price: Number(form.price),
         compare_at_price: form.compare_at_price ? Number(form.compare_at_price) : null,
         stock: Number(form.stock),
@@ -860,23 +872,33 @@ const AdminProducts = () => {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Descriere scurtă (pentru card)</Label>
-                  <span className={`text-xs ${(form.short_description_ro?.length || 0) > 72 ? 'text-amber-500' : 'text-muted-foreground'}`}>
-                    {form.short_description_ro?.length || 0}/72 caractere
+                  <Label>Descriere card <span className="text-muted-foreground font-normal">(afișată pe carduri)</span></Label>
+                  <span className={`text-xs ${(form.card_description_ro?.length || 0) > 72 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                    {form.card_description_ro?.length || 0}/72 caractere
                   </span>
                 </div>
                 <Textarea
-                  value={form.short_description_ro}
-                  onChange={(e) => setForm({ ...form, short_description_ro: e.target.value })}
+                  value={form.card_description_ro}
+                  onChange={(e) => setForm({ ...form, card_description_ro: e.target.value })}
                   rows={2}
                   placeholder="Descriere scurtă pentru carduri (max 72 caractere recomandat)..."
                   maxLength={150}
                 />
-                {(form.short_description_ro?.length || 0) > 72 && (
+                {(form.card_description_ro?.length || 0) > 72 && (
                   <p className="text-xs text-amber-500">
                     ⚠️ Textul va fi trunchiat pe carduri după 72 de caractere
                   </p>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Descriere scurtă <span className="text-muted-foreground font-normal">(afișată pe pagina produsului sub titlu)</span></Label>
+                <Textarea
+                  value={form.short_description_ro}
+                  onChange={(e) => setForm({ ...form, short_description_ro: e.target.value })}
+                  rows={2}
+                  placeholder="Descriere scurtă afișată sub titlul produsului..."
+                />
               </div>
 
               <div className="space-y-2">
@@ -912,23 +934,33 @@ const AdminProducts = () => {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Descriere scurtă (EN)</Label>
-                  <span className={`text-xs ${(form.short_description_en?.length || 0) > 72 ? 'text-amber-500' : 'text-muted-foreground'}`}>
-                    {form.short_description_en?.length || 0}/72 caractere
+                  <Label>Card description (EN)</Label>
+                  <span className={`text-xs ${(form.card_description_en?.length || 0) > 72 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                    {form.card_description_en?.length || 0}/72 caractere
                   </span>
                 </div>
                 <Textarea
-                  value={form.short_description_en}
-                  onChange={(e) => setForm({ ...form, short_description_en: e.target.value })}
+                  value={form.card_description_en}
+                  onChange={(e) => setForm({ ...form, card_description_en: e.target.value })}
                   rows={2}
                   placeholder="Lasă gol pentru traducere automată (max 72 caractere recomandat)..."
                   maxLength={150}
                 />
-                {(form.short_description_en?.length || 0) > 72 && (
+                {(form.card_description_en?.length || 0) > 72 && (
                   <p className="text-xs text-amber-500">
                     ⚠️ Text will be truncated on cards after 72 characters
                   </p>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Short description (EN)</Label>
+                <Textarea
+                  value={form.short_description_en}
+                  onChange={(e) => setForm({ ...form, short_description_en: e.target.value })}
+                  rows={2}
+                  placeholder="Lasă gol pentru traducere automată..."
+                />
               </div>
 
               <div className="space-y-2">

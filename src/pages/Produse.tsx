@@ -16,8 +16,8 @@ interface DatabaseProduct {
   slug: string;
   name_ro: string;
   name_en: string;
-  short_description_ro: string | null;
-  short_description_en: string | null;
+  card_description_ro: string | null;
+  card_description_en: string | null;
   price: number;
   status: string;
   images: string[] | null;
@@ -63,7 +63,7 @@ const Produse = () => {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('id, slug, name_ro, name_en, short_description_ro, short_description_en, price, status, images, stock')
+          .select('id, slug, name_ro, name_en, card_description_ro, card_description_en, price, status, images, stock')
           .order('created_at', { ascending: true });
 
         if (error) throw error;
@@ -181,8 +181,8 @@ const Produse = () => {
                       {/* Description - fixed height for 2 lines */}
                       <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-2 h-[32px] md:h-[36px] mt-3 whitespace-pre-line">
                         {language === 'ro' 
-                          ? (product.short_description_ro || '') 
-                          : (product.short_description_en || '')}
+                          ? (product.card_description_ro || '') 
+                          : (product.card_description_en || '')}
                       </p>
                       
                       {/* Price and CTA - fixed position */}
