@@ -21,22 +21,25 @@ export function FeaturedProductSection() {
       
       <div className="container-custom relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Image - Equal size container */}
-          <div className="order-2 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center">
+          {/* Image - Clickable link to product */}
+          <Link 
+            to="/produse/dent-tastic"
+            className="order-2 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center group"
+          >
             <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
               {/* Decorative frame */}
               <div className="absolute -inset-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl rotate-2 group-hover:rotate-1 transition-transform duration-500" />
               <div className="absolute -inset-3 bg-gradient-to-tr from-primary/5 to-primary/10 rounded-3xl -rotate-2 group-hover:-rotate-1 transition-transform duration-500" />
               
-              <div className="relative bg-card rounded-3xl p-8 w-full h-full flex items-center justify-center shadow-card border border-border/30">
+              <div className="relative bg-card rounded-3xl p-8 w-full h-full flex items-center justify-center shadow-card border border-border/30 group-hover:border-primary/30 transition-colors">
                 <img 
                   src={dentTasticImage} 
                   alt="Dent-Tastic Fresh Mint" 
-                  className="w-full h-auto max-h-[85%] object-contain hover:scale-105 transition-transform duration-500"
+                  className="w-full h-auto max-h-[85%] object-contain group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* Content */}
           <div className="order-1 lg:order-2 space-y-6 opacity-0 animate-fade-up animation-delay-200">

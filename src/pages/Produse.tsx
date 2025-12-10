@@ -3,6 +3,7 @@ import { MainLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/context/LanguageContext';
+import { ArrowRight } from 'lucide-react';
 import dentTasticImage from '@/assets/dent-tastic-product.webp';
 import qivaroImage from '@/assets/qivaro.webp';
 
@@ -16,6 +17,7 @@ interface Product {
   price: number;
   status: 'in_stock' | 'out_of_stock' | 'coming_soon';
   image: string;
+  hasPage: boolean;
 }
 
 const products: Product[] = [
@@ -29,6 +31,7 @@ const products: Product[] = [
     price: 29.99,
     status: 'in_stock',
     image: dentTasticImage,
+    hasPage: true,
   },
   {
     id: '2',
@@ -40,6 +43,7 @@ const products: Product[] = [
     price: 0,
     status: 'coming_soon',
     image: qivaroImage,
+    hasPage: false,
   },
 ];
 
@@ -77,50 +81,66 @@ const Produse = () => {
       <section className="section-padding">
         <div className="container-custom">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product, index) => (
-              <div
-                key={product.id}
-                className="card-premium overflow-hidden opacity-0 animate-fade-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="aspect-square overflow-hidden bg-muted/30 p-4">
-                  <img 
-                    src={product.image} 
-                    alt={language === 'ro' ? product.nameRo : product.nameEn}
-                    className="w-full h-full object-contain transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
-                <div className="p-6 space-y-4">
-                  <div className="flex items-start justify-between gap-4">
+            {products.map((product, index) => {
+              const CardWrapper = product.hasPage ? Link : 'div';
+              const cardProps = product.hasPage 
+                ? { to: `/produse/${product.slug}` } 
+                : {};
+              
+              return (
+                <CardWrapper
+                  key={product.id}
+                  {...cardProps as any}
+                  className={`card-interactive overflow-hidden opacity-0 animate-fade-up block ${product.hasPage ? 'cursor-pointer' : 'cursor-default'}`}
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {/* Image - clickable */}
+                  <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-6 rounded-t-2xl">
+                    <img 
+                      src={product.image} 
+                      alt={language === 'ro' ? product.nameRo : product.nameEn}
+                      className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                    />
+                  </div>
+                  
+                  <div className="p-6 space-y-3">
+                    {/* Badge ABOVE title */}
+                    <div>
+                      {getStatusBadge(product.status)}
+                    </div>
+                    
+                    {/* Title */}
                     <h3 className="font-display text-xl tracking-wide">
                       {language === 'ro' ? product.nameRo : product.nameEn}
                     </h3>
-                    {getStatusBadge(product.status)}
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {language === 'ro' ? product.descriptionRo : product.descriptionEn}
-                  </p>
-                  <div className="flex items-center justify-between pt-2">
-                    {product.price > 0 ? (
-                      <span className="text-2xl font-bold text-primary">
-                        {product.price.toFixed(2)} lei
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        {language === 'ro' ? 'Preț în curând' : 'Price coming soon'}
-                      </span>
-                    )}
-                    {product.status === 'in_stock' && (
-                      <Button asChild>
-                        <Link to={`/produse/${product.slug}`}>
+                    
+                    {/* Description */}
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {language === 'ro' ? product.descriptionRo : product.descriptionEn}
+                    </p>
+                    
+                    {/* Price and CTA */}
+                    <div className="flex items-center justify-between pt-3">
+                      {product.price > 0 ? (
+                        <span className="text-2xl font-bold text-primary">
+                          {product.price.toFixed(2)} lei
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          {language === 'ro' ? 'Preț în curând' : 'Price coming soon'}
+                        </span>
+                      )}
+                      {product.hasPage && (
+                        <span className="text-primary font-medium text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
                           {t('common.viewProduct')}
-                        </Link>
-                      </Button>
-                    )}
+                          <ArrowRight className="w-4 h-4" />
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                </CardWrapper>
+              );
+            })}
           </div>
         </div>
       </section>
