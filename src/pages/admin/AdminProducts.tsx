@@ -412,6 +412,17 @@ const AdminProducts = () => {
       return;
     }
 
+    // Check card description length
+    if (form.card_description_ro && form.card_description_ro.length > 72) {
+      toast.error('Descrierea de card (RO) nu poate depăși 72 de caractere');
+      return;
+    }
+    
+    if (form.card_description_en && form.card_description_en.length > 72) {
+      toast.error('Descrierea de card (EN) nu poate depăși 72 de caractere');
+      return;
+    }
+
     setSaving(true);
 
     try {
