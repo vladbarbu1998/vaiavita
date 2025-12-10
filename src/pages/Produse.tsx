@@ -131,26 +131,26 @@ const Produse = () => {
                       />
                     </div>
                     
-                    <div className="p-6 flex flex-col h-[220px]">
+                    <div className="p-6 flex flex-col">
                       {/* Badge - fixed height */}
-                      <div className="h-6 flex-shrink-0">
+                      <div className="h-6">
                         {getStatusBadge(product)}
                       </div>
                       
                       {/* Title - fixed height for 2 lines */}
-                      <h3 className="font-display text-xl tracking-wide line-clamp-2 min-h-[56px] mt-3 flex-shrink-0">
+                      <h3 className="font-display text-xl tracking-wide line-clamp-2 h-[56px] mt-3">
                         {language === 'ro' ? product.name_ro : product.name_en}
                       </h3>
                       
                       {/* Description - fixed height for 2 lines */}
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 min-h-[40px] mt-3 flex-shrink-0 whitespace-pre-line">
+                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 h-[40px] mt-3 whitespace-pre-line">
                         {language === 'ro' 
                           ? (product.short_description_ro || '') 
                           : (product.short_description_en || '')}
                       </p>
                       
-                      {/* Price and CTA - always at bottom */}
-                      <div className="flex items-center justify-between pt-3 mt-auto border-t border-border/50">
+                      {/* Price and CTA - fixed position */}
+                      <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/50">
                         {product.status !== 'coming_soon' && product.price > 0 ? (
                           <span className="text-2xl font-bold text-primary">
                             {formatPrice(Number(product.price))}
