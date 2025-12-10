@@ -5,6 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { 
   LayoutDashboard, 
   Package, 
@@ -18,16 +24,27 @@ import {
   Loader2,
   Tag,
   Lock,
-  FolderOpen
+  FolderOpen,
+  Sun,
+  Moon,
+  Globe,
+  Coins,
+  Home,
+  Info,
+  Phone
 } from 'lucide-react';
 import logoLight from '@/assets/logo-light.png';
 import logoDark from '@/assets/logo-dark.png';
 import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { useCurrency, currencies } from '@/context/CurrencyContext';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
+  const { currency, setCurrency } = useCurrency();
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -292,43 +309,107 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <main className="lg:ml-64 min-h-screen">
-        {/* Top Header Bar */}
-        <header className="hidden lg:flex h-16 bg-background border-b border-border items-center justify-between px-6 sticky top-0 z-40">
-          <div className="flex items-center gap-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`
-                  flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
-                  ${isActive(item.path, item.exact) 
-                    ? 'bg-primary/10 text-primary' 
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'}
-                `}
-              >
-                <item.icon className="w-4 h-4" />
-                {item.label}
+        {/* Site Header in Admin */}
+        <header className="sticky top-0 z-40 w-full border-b border-border/30 bg-background/90 backdrop-blur-md">
+          <div className="flex h-14 items-center justify-between px-4 lg:px-6">
+            {/* Site Navigation Links */}
+            <nav className="hidden md:flex items-center gap-6">
+              <Link to="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Home className="w-4 h-4" />
+                {t('nav.home')}
               </Link>
-            ))}
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
-              <span className="capitalize font-medium text-foreground">{userRole}</span>
-            </span>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="text-muted-foreground hover:text-destructive"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Ieșire
-            </Button>
+              <Link to="/despre" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Info className="w-4 h-4" />
+                {t('nav.about')}
+              </Link>
+              <Link to="/produse" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Package className="w-4 h-4" />
+                {t('nav.products')}
+              </Link>
+              <Link to="/contact" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Phone className="w-4 h-4" />
+                {t('nav.contact')}
+              </Link>
+            </nav>
+            
+            <div className="md:hidden" />
+
+            {/* Actions */}
+            <div className="flex items-center gap-1.5">
+              {/* Language Toggle */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setLanguage(language === 'ro' ? 'en' : 'ro')}
+                className="relative rounded-full hover:bg-primary/10"
+              >
+                <Globe className="h-4 w-4" />
+                <span className="absolute -bottom-0.5 right-0.5 text-[8px] font-bold uppercase text-primary">
+                  {language}
+                </span>
+              </Button>
+
+              {/* Currency Toggle */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative rounded-full hover:bg-primary/10"
+                  >
+                    <Coins className="h-4 w-4" />
+                    <span className="absolute -bottom-0.5 right-0.5 text-[8px] font-bold text-primary">
+                      {currency === 'RON' ? 'lei' : currencies.find(c => c.code === currency)?.symbol}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {currencies.map((c) => (
+                    <DropdownMenuItem 
+                      key={c.code} 
+                      onClick={() => setCurrency(c.code)}
+                      className={currency === c.code ? 'bg-primary/10' : ''}
+                    >
+                      {c.symbol} {c.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Theme Toggle */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={toggleTheme}
+                className="rounded-full hover:bg-primary/10"
+              >
+                {theme === 'dark' ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </Button>
+
+              {/* Admin Role & Logout */}
+              <div className="hidden sm:flex items-center gap-2 ml-4 pl-4 border-l border-border">
+                <span className="text-xs text-muted-foreground">
+                  <span className="capitalize font-medium text-foreground">{userRole}</span>
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive h-8 px-2"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         </header>
         
         {/* Page Content */}
-        <div className="pt-16 lg:pt-0">
+        <div className="pt-0">
           <Outlet />
         </div>
       </main>
