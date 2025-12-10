@@ -545,6 +545,61 @@ const ProductPage = () => {
 
               <TabsContent value="reviews" className="mt-0">
                 <div className="card-premium p-8">
+                  {/* Reviews Overview */}
+                  <div className="mb-8 pb-8 border-b border-border">
+                    <div className="flex flex-col md:flex-row gap-8 items-start">
+                      {/* Average Rating */}
+                      <div className="flex flex-col items-center text-center">
+                        <span className="text-5xl font-bold text-foreground">
+                          {reviewStats.averageRating > 0 ? reviewStats.averageRating.toFixed(1) : '0.0'}
+                        </span>
+                        <div className="flex items-center gap-0.5 mt-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star 
+                              key={star} 
+                              className={`w-5 h-5 ${
+                                star <= Math.floor(reviewStats.averageRating) 
+                                  ? 'fill-yellow-400 text-yellow-400' 
+                                  : star <= reviewStats.averageRating + 0.5
+                                    ? 'fill-yellow-400/50 text-yellow-400' 
+                                    : 'text-muted-foreground/40'
+                              }`} 
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm text-muted-foreground mt-1">
+                          {reviewStats.reviewCount} {language === 'ro' ? 'recenzii' : 'reviews'}
+                        </span>
+                      </div>
+                      
+                      {/* Rating Distribution */}
+                      <div className="flex-1 space-y-2 w-full md:max-w-md">
+                        {[5, 4, 3, 2, 1].map((stars) => {
+                          const count = reviews.filter(r => r.rating === stars).length;
+                          const percentage = reviewStats.reviewCount > 0 
+                            ? (count / reviewStats.reviewCount) * 100 
+                            : 0;
+                          return (
+                            <div key={stars} className="flex items-center gap-3">
+                              <span className="text-sm text-muted-foreground w-12 shrink-0">
+                                {stars} {stars === 1 ? (language === 'ro' ? 'stea' : 'star') : (language === 'ro' ? 'stele' : 'stars')}
+                              </span>
+                              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-yellow-400 rounded-full transition-all duration-500"
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                              <span className="text-sm text-muted-foreground w-8 text-right">
+                                {count}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Add Review Button */}
                   {!reviewSubmitted && !showReviewForm && (
                     <div className="mb-6">
