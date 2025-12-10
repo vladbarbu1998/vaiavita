@@ -5,7 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Site information for the AI to use
 const SITE_CONTEXT = `
 Ești asistentul virtual al VAIAVITA, un magazin online românesc de produse premium pentru sănătate și vitalitate.
 
@@ -61,78 +60,71 @@ serve(async (req) => {
   try {
     const { message, language, conversationHistory } = await req.json();
 
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY is not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Build conversation history for context
+    // Build conversation history for Lovable AI Gateway (OpenAI-compatible format)
     const messages = [
-      {
-        role: "user",
-        parts: [{ text: SITE_CONTEXT }]
-      },
-      {
-        role: "model", 
-        parts: [{ text: "Înțeleg. Sunt asistentul virtual VAIAVITA și voi răspunde doar la întrebări despre companie, produse, livrare și plăți. Cum te pot ajuta?" }]
-      }
+      { role: "system", content: SITE_CONTEXT },
     ];
 
     // Add conversation history
     if (conversationHistory && conversationHistory.length > 0) {
       for (const msg of conversationHistory) {
         messages.push({
-          role: msg.role === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.content }]
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content
         });
       }
     }
 
     // Add current message
-    messages.push({
-      role: "user",
-      parts: [{ text: message }]
+    messages.push({ role: "user", content: message });
+
+    console.log("Sending request to Lovable AI Gateway...");
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages,
+      }),
     });
 
-    console.log("Sending request to Gemini API...");
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: messages,
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 500,
-          },
-          safetySettings: [
-            {
-              category: "HARM_CATEGORY_HARASSMENT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-              category: "HARM_CATEGORY_HATE_SPEECH", 
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            }
-          ]
-        }),
-      }
-    );
-
     if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Rate limit exceeded",
+            reply: "Sistemul este momentan ocupat. Te rog să încerci din nou în câteva momente."
+          }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Payment required",
+            reply: "Serviciul nu este disponibil momentan. Te rog să ne contactezi la office@vaiavita.com."
+          }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       const errorText = await response.text();
-      console.error("Gemini API error:", response.status, errorText);
-      throw new Error(`Gemini API error: ${response.status}`);
+      console.error("AI Gateway error:", response.status, errorText);
+      throw new Error(`AI Gateway error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log("Gemini response:", JSON.stringify(data, null, 2));
+    console.log("AI Gateway response received");
 
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 
+    const reply = data.choices?.[0]?.message?.content || 
       (language === 'ro' 
         ? 'Îmi pare rău, nu am putut procesa cererea. Te rog să încerci din nou.'
         : 'Sorry, I could not process the request. Please try again.');
@@ -144,10 +136,10 @@ serve(async (req) => {
 
   } catch (error: unknown) {
     console.error("Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
       JSON.stringify({ 
-        error: message,
+        error: errorMessage,
         reply: "Îmi pare rău, a apărut o eroare. Te rog să încerci din nou sau contactează-ne la office@vaiavita.com."
       }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
