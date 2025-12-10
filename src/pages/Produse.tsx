@@ -174,7 +174,7 @@ const Produse = () => {
                       </div>
                       
                       {/* Title - fixed height for 2 lines */}
-                      <h3 className="font-display text-base md:text-lg tracking-wide line-clamp-2 h-[44px] md:h-[48px] mt-2">
+                      <h3 className="font-display text-sm md:text-base tracking-wide line-clamp-2 h-[36px] md:h-[40px] mt-2">
                         {language === 'ro' ? product.name_ro : product.name_en}
                       </h3>
                       
