@@ -336,7 +336,7 @@ const ProductPage = () => {
                   )}
                 </div>
                 {(product.short_description_ro || product.short_description_en) && (
-                  <p className="text-muted-foreground leading-relaxed mt-4">
+                  <p className="text-muted-foreground leading-relaxed mt-4 whitespace-pre-line">
                     {language === 'ro' ? product.short_description_ro : product.short_description_en}
                   </p>
                 )}
