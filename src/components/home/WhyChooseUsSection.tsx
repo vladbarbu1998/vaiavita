@@ -1,24 +1,40 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/context/LanguageContext';
+import { ArrowRight, Globe, Award, Heart, Zap } from 'lucide-react';
 import despreImage from '@/assets/despre.webp';
 
 export function WhyChooseUsSection() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  const benefits = [
+    { icon: Globe, label: language === 'ro' ? 'Produse internaționale' : 'International products' },
+    { icon: Award, label: language === 'ro' ? 'Standarde înalte' : 'High standards' },
+    { icon: Heart, label: language === 'ro' ? 'Pasiune pentru calitate' : 'Passion for quality' },
+    { icon: Zap, label: language === 'ro' ? 'Soluții inovatoare' : 'Innovative solutions' },
+  ];
 
   return (
-    <section className="section-padding">
-      <div className="container-custom">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+    <section className="section-padding relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 opacity-40">
+        <div className="absolute top-1/3 left-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/3 right-0 w-96 h-96 bg-primary/3 rounded-full blur-3xl" />
+      </div>
+      
+      <div className="container-custom relative z-10">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Image */}
           <div className="opacity-0 animate-fade-up">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl blur-2xl" />
-              <img 
-                src={despreImage} 
-                alt="VAIAVITA Products" 
-                className="relative w-full max-w-md mx-auto"
-              />
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl blur-2xl opacity-60 group-hover:opacity-80 transition-opacity" />
+              <div className="relative overflow-hidden rounded-3xl shadow-card">
+                <img 
+                  src={despreImage} 
+                  alt="VAIAVITA Products" 
+                  className="w-full max-w-md mx-auto group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
             </div>
           </div>
 
@@ -27,12 +43,32 @@ export function WhyChooseUsSection() {
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-wide">
               {t('why.title')}
             </h2>
-            <div className="space-y-4 text-muted-foreground leading-relaxed">
+            
+            <div className="space-y-4 text-muted-foreground leading-relaxed text-lg">
               <p>{t('why.description')}</p>
               <p>{t('why.description2')}</p>
             </div>
-            <Button variant="outline" size="lg" asChild>
-              <Link to="/despre">{t('why.cta')}</Link>
+
+            {/* Benefits grid */}
+            <div className="grid grid-cols-2 gap-4 pt-4">
+              {benefits.map((benefit, index) => (
+                <div 
+                  key={index} 
+                  className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border/50 hover:border-primary/30 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <benefit.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <span className="text-sm font-medium">{benefit.label}</span>
+                </div>
+              ))}
+            </div>
+
+            <Button variant="outline" size="lg" asChild className="group mt-4">
+              <Link to="/despre">
+                {t('why.cta')}
+                <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+              </Link>
             </Button>
           </div>
         </div>

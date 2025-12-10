@@ -22,7 +22,7 @@ const routeTranslations: Record<string, { ro: string; en: string }> = {
 
 export function Breadcrumbs() {
   const location = useLocation();
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
 
   if (location.pathname === '/') return null;
 
@@ -45,21 +45,23 @@ export function Breadcrumbs() {
   });
 
   return (
-    <nav aria-label="Breadcrumb" className="py-4">
-      <ol className="flex items-center gap-2 text-sm text-muted-foreground">
+    <nav aria-label="Breadcrumb" className="py-5">
+      <ol className="flex items-center gap-2 text-sm">
         {breadcrumbs.map((item, index) => (
           <li key={index} className="flex items-center gap-2">
-            {index > 0 && <ChevronRight className="h-4 w-4" />}
+            {index > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />}
             {item.href ? (
               <Link
                 to={item.href}
-                className="flex items-center gap-1.5 hover:text-primary transition-colors"
+                className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors duration-200"
               >
-                {index === 0 && <Home className="h-4 w-4" />}
-                <span>{item.label}</span>
+                {index === 0 && <Home className="h-3.5 w-3.5" />}
+                <span className="hover:underline underline-offset-4">{item.label}</span>
               </Link>
             ) : (
-              <span className="text-foreground font-medium">{item.label}</span>
+              <span className="text-foreground font-medium truncate max-w-[200px] sm:max-w-none">
+                {item.label}
+              </span>
             )}
           </li>
         ))}
