@@ -11,7 +11,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
-import { Star, Minus, Plus, ShoppingCart, Loader2, CheckCircle } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, Loader2, CheckCircle, ImagePlus, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductSpecificationsDisplay, ProductSpecifications } from '@/components/product/ProductSpecifications';
 import { ImageGallery } from '@/components/product/ImageGallery';
@@ -61,6 +61,7 @@ interface Review {
   title: string | null;
   created_at: string;
   is_verified_purchase: boolean | null;
+  images: string[] | null;
 }
 
 interface ReviewFormData {
@@ -92,6 +93,10 @@ const ProductPage = () => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [reviewImages, setReviewImages] = useState<File[]>([]);
+  const [reviewImagePreviews, setReviewImagePreviews] = useState<string[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const reviewImageInputRef = useRef<HTMLInputElement>(null);
   const [reviewForm, setReviewForm] = useState<ReviewFormData>({
     customer_name: '',
     customer_email: '',
@@ -150,7 +155,7 @@ const ProductPage = () => {
         // Fetch reviews
         const { data: reviewsData } = await supabase
           .from('reviews')
-          .select('id, customer_name, rating, content, title, created_at, is_verified_purchase')
+          .select('id, customer_name, rating, content, title, created_at, is_verified_purchase, images')
           .eq('product_id', data.id)
           .eq('is_approved', true)
           .order('created_at', { ascending: false });
@@ -297,6 +302,29 @@ const ProductPage = () => {
       
       const orderId = validOrder.id;
       
+      // Upload images if any
+      let uploadedImageUrls: string[] = [];
+      if (reviewImages.length > 0) {
+        setUploadingImages(true);
+        for (const file of reviewImages) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+          const filePath = `${product.id}/${fileName}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('reviews')
+            .upload(filePath, file);
+          
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('reviews')
+              .getPublicUrl(filePath);
+            uploadedImageUrls.push(publicUrl);
+          }
+        }
+        setUploadingImages(false);
+      }
+      
       const { error } = await supabase
         .from('reviews')
         .insert({
@@ -308,7 +336,8 @@ const ProductPage = () => {
           content: reviewForm.content.trim(),
           is_verified_purchase: true,
           order_id: orderId,
-          is_approved: true, // Auto-approve verified purchase reviews
+          is_approved: true,
+          images: uploadedImageUrls.length > 0 ? uploadedImageUrls : null,
         });
       
       if (error) throw error;
@@ -316,7 +345,7 @@ const ProductPage = () => {
       // Refresh reviews to show the new one immediately
       const { data: reviewsData } = await supabase
         .from('reviews')
-        .select('id, customer_name, rating, content, title, created_at, is_verified_purchase')
+        .select('id, customer_name, rating, content, title, created_at, is_verified_purchase, images')
         .eq('product_id', product.id)
         .eq('is_approved', true)
         .order('created_at', { ascending: false });
@@ -329,6 +358,8 @@ const ProductPage = () => {
       
       setReviewSubmitted(true);
       setShowReviewForm(false);
+      setReviewImages([]);
+      setReviewImagePreviews([]);
       setReviewForm({
         customer_name: '',
         customer_email: '',
@@ -543,13 +574,15 @@ const ProductPage = () => {
                 <ProductSpecificationsDisplay specifications={product.specifications} />
               </TabsContent>
 
-              <TabsContent value="reviews" className="mt-0">
-                <div className="card-premium p-8">
-                  {/* Reviews Overview */}
-                  <div className="mb-8 pb-8 border-b border-border">
+              <TabsContent value="reviews" className="mt-0 space-y-6">
+                  {/* Reviews Overview - Separate Card */}
+                  <div className="card-premium p-6 bg-gradient-to-br from-primary/5 to-transparent">
+                    <h3 className="font-display text-lg mb-4">
+                      {language === 'ro' ? 'Sumar Recenzii' : 'Reviews Summary'}
+                    </h3>
                     <div className="flex flex-col md:flex-row gap-8 items-start">
                       {/* Average Rating */}
-                      <div className="flex flex-col items-center text-center">
+                      <div className="flex flex-col items-center text-center min-w-[100px]">
                         <span className="text-5xl font-bold text-foreground">
                           {reviewStats.averageRating > 0 ? reviewStats.averageRating.toFixed(1) : '0.0'}
                         </span>
@@ -600,154 +633,206 @@ const ProductPage = () => {
                     </div>
                   </div>
 
-                  {/* Add Review Button */}
-                  {!reviewSubmitted && !showReviewForm && (
-                    <div className="mb-6">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setShowReviewForm(true)}
-                      >
-                        {language === 'ro' ? 'Scrie o recenzie' : 'Write a review'}
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Review Submitted Message */}
-                  {reviewSubmitted && (
-                    <div className="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                      <p className="text-green-700 dark:text-green-400">
-                        {language === 'ro' 
-                          ? 'Mulțumim pentru recenzie! Va fi afișată după aprobare.' 
-                          : 'Thank you for your review! It will be displayed after approval.'}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Review Form */}
-                  {showReviewForm && (
-                    <form onSubmit={handleSubmitReview} className="mb-8 p-6 rounded-xl bg-muted/30 border border-border space-y-4">
-                      <h3 className="font-display text-lg mb-4">
-                        {language === 'ro' ? 'Scrie o recenzie' : 'Write a review'}
-                      </h3>
-                      
-                      {/* Rating */}
-                      <div className="space-y-2">
-                        <Label>{language === 'ro' ? 'Rating *' : 'Rating *'}</Label>
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                              key={star}
-                              type="button"
-                              onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))}
-                              className="p-1 hover:scale-110 transition-transform"
-                            >
-                              <Star 
-                                className={`w-8 h-8 ${star <= reviewForm.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground hover:text-yellow-400'}`} 
-                              />
-                            </button>
-                          ))}
-                        </div>
+                  {/* Reviews Content Card */}
+                  <div className="card-premium p-8">
+                    {/* Add Review Button */}
+                    {!reviewSubmitted && !showReviewForm && (
+                      <div className="mb-6">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setShowReviewForm(true)}
+                        >
+                          {language === 'ro' ? 'Scrie o recenzie' : 'Write a review'}
+                        </Button>
                       </div>
+                    )}
 
-                      <div className="grid sm:grid-cols-2 gap-4">
+                    {/* Review Submitted Message */}
+                    {reviewSubmitted && (
+                      <div className="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                        <p className="text-green-700 dark:text-green-400">
+                          {language === 'ro' 
+                            ? 'Mulțumim pentru recenzie! A fost publicată cu succes.' 
+                            : 'Thank you for your review! It has been published successfully.'}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Review Form */}
+                    {showReviewForm && (
+                      <form onSubmit={handleSubmitReview} className="mb-8 p-6 rounded-xl bg-muted/30 border border-border space-y-4">
+                        <h3 className="font-display text-lg mb-4">
+                          {language === 'ro' ? 'Scrie o recenzie' : 'Write a review'}
+                        </h3>
+                        
+                        {/* Rating */}
                         <div className="space-y-2">
-                          <Label htmlFor="review_name">{language === 'ro' ? 'Nume *' : 'Name *'}</Label>
+                          <Label>{language === 'ro' ? 'Rating *' : 'Rating *'}</Label>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))}
+                                className="p-1 hover:scale-110 transition-transform"
+                              >
+                                <Star 
+                                  className={`w-8 h-8 ${star <= reviewForm.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground hover:text-yellow-400'}`} 
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="review_name">{language === 'ro' ? 'Nume *' : 'Name *'}</Label>
+                            <Input
+                              id="review_name"
+                              value={reviewForm.customer_name}
+                              onChange={(e) => setReviewForm(prev => ({ ...prev, customer_name: e.target.value }))}
+                              placeholder={language === 'ro' ? 'Numele tău' : 'Your name'}
+                              maxLength={100}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="review_email">{language === 'ro' ? 'Email *' : 'Email *'}</Label>
+                            <Input
+                              id="review_email"
+                              type="email"
+                              value={reviewForm.customer_email}
+                              onChange={(e) => setReviewForm(prev => ({ ...prev, customer_email: e.target.value }))}
+                              placeholder={language === 'ro' ? 'email@exemplu.com' : 'email@example.com'}
+                              maxLength={255}
+                              required
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              {language === 'ro' 
+                                ? 'Emailul nu va fi afișat public. Folosit doar pentru verificare.' 
+                                : 'Email will not be displayed publicly. Used for verification only.'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="review_title">{language === 'ro' ? 'Titlu (opțional)' : 'Title (optional)'}</Label>
                           <Input
-                            id="review_name"
-                            value={reviewForm.customer_name}
-                            onChange={(e) => setReviewForm(prev => ({ ...prev, customer_name: e.target.value }))}
-                            placeholder={language === 'ro' ? 'Numele tău' : 'Your name'}
-                            maxLength={100}
+                            id="review_title"
+                            value={reviewForm.title}
+                            onChange={(e) => setReviewForm(prev => ({ ...prev, title: e.target.value }))}
+                            placeholder={language === 'ro' ? 'Titlul recenziei' : 'Review title'}
+                            maxLength={200}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="review_content">{language === 'ro' ? 'Recenzia ta *' : 'Your review *'}</Label>
+                          <Textarea
+                            id="review_content"
+                            value={reviewForm.content}
+                            onChange={(e) => setReviewForm(prev => ({ ...prev, content: e.target.value }))}
+                            placeholder={language === 'ro' ? 'Spune-ne părerea ta despre acest produs...' : 'Tell us what you think about this product...'}
+                            rows={4}
+                            maxLength={2000}
                             required
                           />
                         </div>
+
+                        {/* Image Upload */}
                         <div className="space-y-2">
-                          <Label htmlFor="review_email">{language === 'ro' ? 'Email *' : 'Email *'}</Label>
-                          <Input
-                            id="review_email"
-                            type="email"
-                            value={reviewForm.customer_email}
-                            onChange={(e) => setReviewForm(prev => ({ ...prev, customer_email: e.target.value }))}
-                            placeholder={language === 'ro' ? 'email@exemplu.com' : 'email@example.com'}
-                            maxLength={255}
-                            required
-                          />
+                          <Label>{language === 'ro' ? 'Imagini (opțional)' : 'Images (optional)'}</Label>
+                          <div className="flex flex-wrap gap-3">
+                            {reviewImagePreviews.map((preview, index) => (
+                              <div key={index} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border">
+                                <img src={preview} alt="" className="w-full h-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setReviewImages(prev => prev.filter((_, i) => i !== index));
+                                    setReviewImagePreviews(prev => prev.filter((_, i) => i !== index));
+                                  }}
+                                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-destructive text-white flex items-center justify-center hover:bg-destructive/90"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ))}
+                            {reviewImages.length < 5 && (
+                              <button
+                                type="button"
+                                onClick={() => reviewImageInputRef.current?.click()}
+                                className="w-20 h-20 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center cursor-pointer transition-colors"
+                              >
+                                <ImagePlus className="w-5 h-5 text-muted-foreground" />
+                                <span className="text-xs text-muted-foreground mt-1">
+                                  {language === 'ro' ? 'Adaugă' : 'Add'}
+                                </span>
+                              </button>
+                            )}
+                            <input
+                              ref={reviewImageInputRef}
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(e) => {
+                                const files = Array.from(e.target.files || []);
+                                const remainingSlots = 5 - reviewImages.length;
+                                const newFiles = files.slice(0, remainingSlots);
+                                
+                                setReviewImages(prev => [...prev, ...newFiles]);
+                                
+                                newFiles.forEach(file => {
+                                  const reader = new FileReader();
+                                  reader.onload = (e) => {
+                                    setReviewImagePreviews(prev => [...prev, e.target?.result as string]);
+                                  };
+                                  reader.readAsDataURL(file);
+                                });
+                                
+                                e.target.value = '';
+                              }}
+                              className="hidden"
+                            />
+                          </div>
                           <p className="text-xs text-muted-foreground">
-                            {language === 'ro' 
-                              ? 'Emailul nu va fi afișat public. Folosit doar pentru verificare.' 
-                              : 'Email will not be displayed publicly. Used for verification only.'}
+                            {language === 'ro' ? 'Poți adăuga până la 5 imagini.' : 'You can add up to 5 images.'}
                           </p>
                         </div>
-                      </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="review_title">{language === 'ro' ? 'Titlu (opțional)' : 'Title (optional)'}</Label>
-                        <Input
-                          id="review_title"
-                          value={reviewForm.title}
-                          onChange={(e) => setReviewForm(prev => ({ ...prev, title: e.target.value }))}
-                          placeholder={language === 'ro' ? 'Titlul recenziei' : 'Review title'}
-                          maxLength={200}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="review_content">{language === 'ro' ? 'Recenzia ta *' : 'Your review *'}</Label>
-                        <Textarea
-                          id="review_content"
-                          value={reviewForm.content}
-                          onChange={(e) => setReviewForm(prev => ({ ...prev, content: e.target.value }))}
-                          placeholder={language === 'ro' ? 'Spune-ne părerea ta despre acest produs...' : 'Tell us what you think about this product...'}
-                          rows={4}
-                          maxLength={2000}
-                          required
-                        />
-                      </div>
-
-                      <div className="flex gap-3 pt-2">
-                        <Button type="submit" variant="hero" disabled={reviewSubmitting}>
-                          {reviewSubmitting ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              {language === 'ro' ? 'Se trimite...' : 'Submitting...'}
-                            </>
-                          ) : (
-                            language === 'ro' ? 'Trimite recenzia' : 'Submit review'
-                          )}
-                        </Button>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={() => setShowReviewForm(false)}
-                          disabled={reviewSubmitting}
-                        >
-                          {language === 'ro' ? 'Anulează' : 'Cancel'}
-                        </Button>
-                      </div>
-                    </form>
-                  )}
-
-                  {reviewStats.reviewCount > 0 ? (
-                    <div className="space-y-6">
-                      {/* Rating Summary */}
-                      <div className="flex items-center gap-4 pb-6 border-b border-border">
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star 
-                              key={star} 
-                              className={`w-6 h-6 ${star <= Math.round(reviewStats.averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} 
-                            />
-                          ))}
+                        <div className="flex gap-3 pt-2">
+                          <Button type="submit" variant="hero" disabled={reviewSubmitting || uploadingImages}>
+                            {reviewSubmitting || uploadingImages ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                {uploadingImages 
+                                  ? (language === 'ro' ? 'Se încarcă imaginile...' : 'Uploading images...') 
+                                  : (language === 'ro' ? 'Se trimite...' : 'Submitting...')}
+                              </>
+                            ) : (
+                              language === 'ro' ? 'Trimite recenzia' : 'Submit review'
+                            )}
+                          </Button>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => {
+                              setShowReviewForm(false);
+                              setReviewImages([]);
+                              setReviewImagePreviews([]);
+                            }}
+                            disabled={reviewSubmitting}
+                          >
+                            {language === 'ro' ? 'Anulează' : 'Cancel'}
+                          </Button>
                         </div>
-                        <span className="text-2xl font-bold">{reviewStats.averageRating.toFixed(1)}</span>
-                        <span className="text-muted-foreground">
-                          ({reviewStats.reviewCount} {language === 'ro' ? 'recenzii' : 'reviews'})
-                        </span>
-                      </div>
+                      </form>
+                    )}
 
-                      {/* Reviews List */}
+                    {reviewStats.reviewCount > 0 ? (
                       <div className="space-y-6">
+                        {/* Reviews List */}
                         {reviews.map((review) => (
                           <div key={review.id} className="pb-6 border-b border-border last:border-0 last:pb-0">
                             <div className="flex items-start justify-between gap-4 mb-3">
@@ -783,18 +868,33 @@ const ProductPage = () => {
                               <h4 className="font-medium mb-2">{review.title}</h4>
                             )}
                             {review.content && (
-                              <p className="text-muted-foreground leading-relaxed">{review.content}</p>
+                              <p className="text-muted-foreground leading-relaxed mb-3">{review.content}</p>
+                            )}
+                            {/* Review Images */}
+                            {review.images && review.images.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mt-3">
+                                {review.images.map((img, index) => (
+                                  <a 
+                                    key={index} 
+                                    href={img} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="w-20 h-20 rounded-lg overflow-hidden border border-border hover:border-primary transition-colors"
+                                  >
+                                    <img src={img} alt="" className="w-full h-full object-cover" />
+                                  </a>
+                                ))}
+                              </div>
                             )}
                           </div>
                         ))}
                       </div>
-                    </div>
-                  ) : !showReviewForm && !reviewSubmitted && (
-                    <p className="text-muted-foreground">
-                      {language === 'ro' ? 'Nu există recenzii încă. Fii primul care scrie o recenzie!' : 'No reviews yet. Be the first to write a review!'}
-                    </p>
-                  )}
-                </div>
+                    ) : !showReviewForm && !reviewSubmitted && (
+                      <p className="text-muted-foreground">
+                        {language === 'ro' ? 'Nu există recenzii încă. Fii primul care scrie o recenzie!' : 'No reviews yet. Be the first to write a review!'}
+                      </p>
+                    )}
+                  </div>
               </TabsContent>
             </Tabs>
           </div>
