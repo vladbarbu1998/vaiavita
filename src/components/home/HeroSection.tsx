@@ -43,20 +43,18 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* Hero Image */}
+          {/* Hero Image - Just the image with border-radius, no card */}
           <div className="relative opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center">
-            <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
+            <div className="relative w-full max-w-md">
               {/* Glow effect behind image */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-3xl blur-3xl scale-110" />
               
-              {/* Image container with consistent border radius */}
-              <div className="relative bg-card/50 backdrop-blur-sm rounded-3xl p-6 w-full h-full flex items-center justify-center border border-border/30">
-                <img 
-                  src={heroImage} 
-                  alt="Dent-Tastic Toothpaste" 
-                  className="w-full h-auto max-h-[90%] object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
-                />
-              </div>
+              {/* Image with border-radius directly */}
+              <img 
+                src={heroImage} 
+                alt="Dent-Tastic Toothpaste" 
+                className="relative w-full h-auto rounded-3xl drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+              />
             </div>
           </div>
         </div>
