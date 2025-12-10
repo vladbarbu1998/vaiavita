@@ -131,19 +131,19 @@ const Produse = () => {
                       />
                     </div>
                     
-                    <div className="p-6 flex flex-col">
+                    <div className="p-6 flex flex-col h-[220px]">
                       {/* Badge - fixed height */}
-                      <div className="h-6 mb-3">
+                      <div className="h-6 flex-shrink-0">
                         {getStatusBadge(product)}
                       </div>
                       
                       {/* Title - fixed height for 2 lines */}
-                      <h3 className="font-display text-xl tracking-wide line-clamp-2 h-14 mb-3">
+                      <h3 className="font-display text-xl tracking-wide line-clamp-2 min-h-[56px] mt-3 flex-shrink-0">
                         {language === 'ro' ? product.name_ro : product.name_en}
                       </h3>
                       
                       {/* Description - fixed height for 2 lines */}
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 h-10 mb-4 whitespace-pre-line">
+                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 min-h-[40px] mt-3 flex-shrink-0 whitespace-pre-line">
                         {language === 'ro' 
                           ? (product.short_description_ro || '') 
                           : (product.short_description_en || '')}
