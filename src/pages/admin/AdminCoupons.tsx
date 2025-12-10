@@ -463,7 +463,7 @@ const AdminCoupons = () => {
                     <SelectValue placeholder="Alege un produs" />
                   </SelectTrigger>
                   <SelectContent>
-                    {products.map((product) => (
+                    {products.filter(product => product.id).map((product) => (
                       <SelectItem key={product.id} value={product.id}>
                         {product.name_ro}
                       </SelectItem>
@@ -482,7 +482,7 @@ const AdminCoupons = () => {
                     <SelectValue placeholder="Alege o categorie" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((category) => (
+                    {categories.filter(category => category.id).map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name_ro}
                       </SelectItem>

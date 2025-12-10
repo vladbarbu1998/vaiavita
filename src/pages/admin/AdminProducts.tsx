@@ -796,13 +796,13 @@ const AdminProducts = () => {
               </div>
               <div className="space-y-2">
                 <Label>Categorie</Label>
-                <Select value={form.category_id || ''} onValueChange={(value) => setForm({ ...form, category_id: value || null })}>
+                <Select value={form.category_id || 'none'} onValueChange={(value) => setForm({ ...form, category_id: value === 'none' ? null : value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selectează categorie" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Fără categorie</SelectItem>
-                    {categories.map((cat) => (
+                    <SelectItem value="none">Fără categorie</SelectItem>
+                    {categories.filter(cat => cat.id).map((cat) => (
                       <SelectItem key={cat.id} value={cat.id}>{cat.name_ro}</SelectItem>
                     ))}
                   </SelectContent>
