@@ -93,6 +93,7 @@ const Checkout = () => {
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert([{
+          order_number: `VV-${Date.now()}`, // Temporary, will be overwritten by trigger
           customer_email: form.email,
           customer_phone: form.phone,
           customer_first_name: form.firstName,
@@ -110,7 +111,7 @@ const Checkout = () => {
           shipping_cost: shippingCost,
           total: finalTotal,
           customer_notes: form.notes || null,
-        })
+        }])
         .select()
         .single();
 
