@@ -592,12 +592,12 @@ const ProductPage = () => {
                     {/* Image with Quick Add button */}
                     <div className="relative">
                       <a href={`/produse/${relProd.slug}`} className="block">
-                        <div className="aspect-square overflow-hidden bg-muted">
+                        <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-3 rounded-t-2xl">
                           {relProd.images?.[0] ? (
                             <img
                               src={relProd.images[0]}
                               alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
