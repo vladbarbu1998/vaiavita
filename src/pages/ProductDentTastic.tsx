@@ -8,6 +8,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
 import { Star, Minus, Plus, ShoppingCart, Check, Quote, Upload, Send, AlertCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import dentTasticImage from '@/assets/dent-tastic-product.webp';
 import heroImage from '@/assets/hero-toothpaste.webp';
 
@@ -43,7 +44,6 @@ const ProductDentTastic = () => {
   
   // Review form state
   const [reviewForm, setReviewForm] = useState({
-    orderId: '',
     name: '',
     email: '',
     rating: 5,
@@ -76,21 +76,61 @@ const ProductDentTastic = () => {
     setReviewError('');
 
     // Validate form
-    if (!reviewForm.orderId || !reviewForm.name || !reviewForm.email || !reviewForm.review) {
+    if (!reviewForm.name || !reviewForm.email || !reviewForm.review) {
       setReviewError(language === 'ro' ? 'Toate câmpurile sunt obligatorii.' : 'All fields are required.');
       setIsSubmitting(false);
       return;
     }
 
-    // Simulate order verification (replace with actual Supabase logic when connected)
-    setTimeout(() => {
-      // For demo: accept any order ID that starts with "ORD-"
-      if (!reviewForm.orderId.startsWith('ORD-')) {
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(reviewForm.email)) {
+      setReviewError(language === 'ro' ? 'Adresa de email nu este validă.' : 'Email address is not valid.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      // Check if the email exists in any order
+      const { data: orderExists, error: orderError } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('customer_email', reviewForm.email.trim().toLowerCase())
+        .limit(1);
+
+      if (orderError) {
+        console.error('Error checking order:', orderError);
+        setReviewError(language === 'ro' ? 'A apărut o eroare. Încearcă din nou.' : 'An error occurred. Please try again.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!orderExists || orderExists.length === 0) {
         setReviewError(
           language === 'ro' 
-            ? 'ID-ul comenzii nu a fost găsit. Verifică ID-ul și adresa de email.' 
-            : 'Order ID not found. Please verify your order ID and email.'
+            ? 'Nu am găsit nicio comandă cu acest email. Doar clienții care au cumpărat pot lăsa recenzii.' 
+            : 'No order found with this email. Only customers who have purchased can leave reviews.'
         );
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Insert review into database
+      const { error: reviewError } = await supabase
+        .from('reviews')
+        .insert({
+          product_id: 'dent-tastic-product-id', // This should be the actual product ID from database
+          customer_name: reviewForm.name.trim(),
+          customer_email: reviewForm.email.trim().toLowerCase(),
+          rating: reviewForm.rating,
+          content: reviewForm.review.trim(),
+          is_verified_purchase: true,
+          order_id: orderExists[0].id,
+        });
+
+      if (reviewError) {
+        console.error('Error submitting review:', reviewError);
+        setReviewError(language === 'ro' ? 'A apărut o eroare la trimiterea recenziei.' : 'An error occurred while submitting the review.');
         setIsSubmitting(false);
         return;
       }
@@ -102,10 +142,14 @@ const ProductDentTastic = () => {
           : 'Your review will be displayed after approval.',
       });
       
-      setReviewForm({ orderId: '', name: '', email: '', rating: 5, review: '' });
+      setReviewForm({ name: '', email: '', rating: 5, review: '' });
       setReviewImages([]);
+    } catch (error) {
+      console.error('Review submission error:', error);
+      setReviewError(language === 'ro' ? 'A apărut o eroare. Încearcă din nou.' : 'An error occurred. Please try again.');
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -303,8 +347,8 @@ const ProductDentTastic = () => {
                     </h3>
                     <p className="text-muted-foreground mb-6">
                       {language === 'ro' 
-                        ? 'Doar clienții verificați pot lăsa recenzii. Introdu ID-ul comenzii și emailul pentru verificare.'
-                        : 'Only verified customers can leave reviews. Enter your order ID and email for verification.'}
+                        ? 'Doar clienții verificați pot lăsa recenzii. Introdu emailul cu care ai plasat comanda.'
+                        : 'Only verified customers can leave reviews. Enter the email you used for your order.'}
                     </p>
 
                     {reviewError && (
@@ -318,18 +362,6 @@ const ProductDentTastic = () => {
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium mb-2">
-                            {language === 'ro' ? 'ID Comandă *' : 'Order ID *'}
-                          </label>
-                          <input
-                            type="text"
-                            value={reviewForm.orderId}
-                            onChange={(e) => setReviewForm(prev => ({ ...prev, orderId: e.target.value }))}
-                            placeholder="ORD-XXXXXX"
-                            className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
                             {language === 'ro' ? 'Nume *' : 'Name *'}
                           </label>
                           <input
@@ -339,18 +371,18 @@ const ProductDentTastic = () => {
                             className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                           />
                         </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium mb-2">
-                          {language === 'ro' ? 'Adresă email *' : 'Email address *'}
-                        </label>
-                        <input
-                          type="email"
-                          value={reviewForm.email}
-                          onChange={(e) => setReviewForm(prev => ({ ...prev, email: e.target.value }))}
-                          className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                        />
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            {language === 'ro' ? 'Adresă email *' : 'Email address *'}
+                          </label>
+                          <input
+                            type="email"
+                            value={reviewForm.email}
+                            onChange={(e) => setReviewForm(prev => ({ ...prev, email: e.target.value }))}
+                            placeholder={language === 'ro' ? 'Email-ul folosit la comandă' : 'Email used for your order'}
+                            className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                          />
+                        </div>
                       </div>
 
                       <div>
