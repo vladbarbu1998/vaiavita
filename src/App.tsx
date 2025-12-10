@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import Despre from "./pages/Despre";
 import Produse from "./pages/Produse";
 import ProductDentTastic from "./pages/ProductDentTastic";
+import ProductPage from "./pages/ProductPage";
 import Contact from "./pages/Contact";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
@@ -36,6 +37,7 @@ const App = () => (
                 <Route path="/despre" element={<Despre />} />
                 <Route path="/produse" element={<Produse />} />
                 <Route path="/produse/dent-tastic" element={<ProductDentTastic />} />
+                <Route path="/produse/:slug" element={<ProductPage />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/cos" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
