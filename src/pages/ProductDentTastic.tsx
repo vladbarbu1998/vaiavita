@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,10 +7,14 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
-import { Star, Minus, Plus, ShoppingCart, Check, Quote, Upload, Send, AlertCircle } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, Check, Quote, Upload, Send, AlertCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { ProductSpecificationsDisplay, ProductSpecifications } from '@/components/product/ProductSpecifications';
 import dentTasticImage from '@/assets/dent-tastic-product.webp';
 import heroImage from '@/assets/hero-toothpaste.webp';
+
+// Product ID from database
+const PRODUCT_ID = 'a04ebe48-1ceb-4188-a9c4-99a8e14f0481';
 
 const testimonials = [
   {
@@ -41,6 +45,9 @@ const ProductDentTastic = () => {
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+  const [specifications, setSpecifications] = useState<ProductSpecifications | null>(null);
+  const [loadingSpecs, setLoadingSpecs] = useState(true);
+  const [productPrice, setProductPrice] = useState(32.99);
   
   // Review form state
   const [reviewForm, setReviewForm] = useState({
@@ -53,20 +60,50 @@ const ProductDentTastic = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState('');
 
+  // Fetch product data from database
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('price, specifications')
+          .eq('id', PRODUCT_ID)
+          .single();
+        
+        if (error) throw error;
+        
+        if (data) {
+          setProductPrice(Number(data.price));
+          if (data.specifications && typeof data.specifications === 'object' && 'items' in data.specifications) {
+            setSpecifications(data.specifications as unknown as ProductSpecifications);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      } finally {
+        setLoadingSpecs(false);
+      }
+    };
+
+    fetchProduct();
+  }, []);
+
   const images = [dentTasticImage, heroImage];
 
   const handleAddToCart = () => {
-    addItem({
-      id: 'dent-tastic',
-      name: 'Pasta de dinți Dent-Tastic Fresh Mint',
-      nameEn: 'Dent-Tastic Fresh Mint Toothpaste',
-      price: 32.99,
-      image: dentTasticImage,
-      slug: 'dent-tastic',
-    });
+    for (let i = 0; i < quantity; i++) {
+      addItem({
+        id: PRODUCT_ID,
+        name: 'Pasta de dinți Dent-Tastic Fresh Mint',
+        nameEn: 'Dent-Tastic Fresh Mint Toothpaste',
+        price: productPrice,
+        image: dentTasticImage,
+        slug: 'dent-tastic',
+      });
+    }
     toast({
       title: language === 'ro' ? 'Produs adăugat în coș!' : 'Product added to cart!',
-      description: 'Dent-Tastic Fresh Mint',
+      description: `${quantity}x Dent-Tastic Fresh Mint`,
     });
   };
 
@@ -118,8 +155,8 @@ const ProductDentTastic = () => {
       // Insert review into database
       const { error: reviewError } = await supabase
         .from('reviews')
-        .insert({
-          product_id: 'dent-tastic-product-id', // This should be the actual product ID from database
+                .insert({
+                  product_id: PRODUCT_ID,
           customer_name: reviewForm.name.trim(),
           customer_email: reviewForm.email.trim().toLowerCase(),
           rating: reviewForm.rating,
@@ -227,7 +264,7 @@ const ProductDentTastic = () => {
                 <Badge variant="outline" className="gap-1"><Check className="w-3 h-3" />{language === 'ro' ? 'Ingrediente clinice' : 'Clinical ingredients'}</Badge>
               </div>
 
-              <div className="text-4xl font-bold text-primary">{formatPrice(32.99)}</div>
+              <div className="text-4xl font-bold text-primary">{formatPrice(productPrice)}</div>
 
               {/* Quantity & Add to Cart */}
               <div className="flex flex-col sm:flex-row gap-4">
@@ -274,24 +311,13 @@ const ProductDentTastic = () => {
               </TabsContent>
 
               <TabsContent value="specifications" className="mt-0">
-                <div className="card-premium p-8 space-y-6">
-                  <div>
-                    <h4 className="font-display text-lg mb-3">{language === 'ro' ? 'Ingrediente:' : 'Ingredients:'}</h4>
-                    <p className="text-muted-foreground leading-relaxed">
-                      Quercetin 1%, Paeoniflorine 0.5%, Calcium Carbonate, Aqua, Sorbitol, Glycerin, Sodium Lauryl Sulfate, Cellulose Gum, Hydroxypropyl Guar, Flavor, Sodium Saccharin, Methylparaben, Sodium Silicate, Sodium Phosphate, Quercus Alba Bark Extract, Paeonia Lactiflora Extract, Propylparaben
-                    </p>
+                {loadingSpecs ? (
+                  <div className="card-premium p-8 flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
                   </div>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl bg-muted/50">
-                      <h4 className="font-display text-sm text-muted-foreground mb-1">{language === 'ro' ? 'Greutate netă' : 'Net weight'}</h4>
-                      <p className="font-semibold">100g</p>
-                    </div>
-                    <div className="p-4 rounded-xl bg-muted/50">
-                      <h4 className="font-display text-sm text-muted-foreground mb-1">{language === 'ro' ? 'Origine' : 'Origin'}</h4>
-                      <p className="font-semibold">SUA (USA)</p>
-                    </div>
-                  </div>
-                </div>
+                ) : (
+                  <ProductSpecificationsDisplay specifications={specifications} />
+                )}
               </TabsContent>
 
               <TabsContent value="reviews" className="mt-0">
