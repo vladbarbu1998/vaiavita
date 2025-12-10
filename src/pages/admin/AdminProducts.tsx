@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Loader2, Upload, X, Image as ImageIcon } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -70,6 +70,9 @@ const AdminProducts = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -116,6 +119,86 @@ const AdminProducts = () => {
       images: product.images || [],
     });
     setDialogOpen(true);
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error } = await supabase.storage
+      .from('products')
+      .upload(filePath, file);
+
+    if (error) {
+      console.error('Upload error:', error);
+      toast.error(`Eroare la încărcare: ${error.message}`);
+      return null;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('products')
+      .getPublicUrl(filePath);
+
+    return urlData.publicUrl;
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const url = await uploadImage(file);
+    if (url) {
+      // Cover is the first image in the array
+      setForm(prev => ({
+        ...prev,
+        images: [url, ...prev.images.slice(1)]
+      }));
+      toast.success('Imagine cover încărcată');
+    }
+    setUploading(false);
+    if (coverInputRef.current) coverInputRef.current.value = '';
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    const newImages: string[] = [];
+
+    for (const file of Array.from(files)) {
+      const url = await uploadImage(file);
+      if (url) {
+        newImages.push(url);
+      }
+    }
+
+    if (newImages.length > 0) {
+      setForm(prev => ({
+        ...prev,
+        images: [...prev.images, ...newImages]
+      }));
+      toast.success(`${newImages.length} imagini încărcate`);
+    }
+    setUploading(false);
+    if (galleryInputRef.current) galleryInputRef.current.value = '';
+  };
+
+  const removeCoverImage = () => {
+    setForm(prev => ({
+      ...prev,
+      images: prev.images.slice(1)
+    }));
+  };
+
+  const removeGalleryImage = (index: number) => {
+    // index is relative to gallery (after cover), so actual index is index + 1
+    setForm(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index + 1)
+    }));
   };
 
   const handleSave = async () => {
@@ -193,6 +276,9 @@ const AdminProducts = () => {
     coming_soon: 'În curând',
   };
 
+  const coverImage = form.images[0] || null;
+  const galleryImages = form.images.slice(1);
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -248,11 +334,11 @@ const AdminProducts = () => {
                   <tr key={product.id} className="hover:bg-muted/30 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
                           {product.images?.[0] ? (
-                            <img src={product.images[0]} alt="" className="w-full h-full object-contain rounded-lg" />
+                            <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <span className="text-xs text-muted-foreground">N/A</span>
+                            <ImageIcon className="w-5 h-5 text-muted-foreground" />
                           )}
                         </div>
                         <div>
@@ -304,14 +390,99 @@ const AdminProducts = () => {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display text-xl">
               {editingProduct ? 'Editează produs' : 'Adaugă produs nou'}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-5 py-4">
+          <div className="space-y-6 py-4">
+            {/* Cover Image */}
+            <div className="space-y-3">
+              <Label>Imagine principală (Cover)</Label>
+              <div className="flex items-start gap-4">
+                {coverImage ? (
+                  <div className="relative w-32 h-32 rounded-xl overflow-hidden border border-border">
+                    <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={removeCoverImage}
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-destructive text-white flex items-center justify-center hover:bg-destructive/90"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div 
+                    onClick={() => coverInputRef.current?.click()}
+                    className="w-32 h-32 rounded-xl border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center cursor-pointer transition-colors"
+                  >
+                    <Upload className="w-6 h-6 text-muted-foreground mb-1" />
+                    <span className="text-xs text-muted-foreground">Upload</span>
+                  </div>
+                )}
+                <input
+                  ref={coverInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCoverUpload}
+                  className="hidden"
+                />
+                {coverImage && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => coverInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Schimbă'}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Gallery Images */}
+            <div className="space-y-3">
+              <Label>Galerie imagini</Label>
+              <div className="flex flex-wrap gap-3">
+                {galleryImages.map((img, index) => (
+                  <div key={index} className="relative w-24 h-24 rounded-xl overflow-hidden border border-border">
+                    <img src={img} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeGalleryImage(index)}
+                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-destructive text-white flex items-center justify-center hover:bg-destructive/90"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+                <div 
+                  onClick={() => galleryInputRef.current?.click()}
+                  className="w-24 h-24 rounded-xl border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center cursor-pointer transition-colors"
+                >
+                  <Plus className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground mt-1">Adaugă</span>
+                </div>
+                <input
+                  ref={galleryInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleGalleryUpload}
+                  className="hidden"
+                />
+              </div>
+              {uploading && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Se încarcă...
+                </div>
+              )}
+            </div>
+
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Nume (RO) *</Label>
@@ -427,7 +598,7 @@ const AdminProducts = () => {
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Anulează
             </Button>
-            <Button variant="hero" onClick={handleSave} disabled={saving}>
+            <Button variant="hero" onClick={handleSave} disabled={saving || uploading}>
               {saving ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
