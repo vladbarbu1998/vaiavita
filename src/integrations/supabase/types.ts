@@ -66,6 +66,7 @@ export type Database = {
       }
       coupons: {
         Row: {
+          category_id: string | null
           code: string
           created_at: string
           description: string | null
@@ -75,11 +76,14 @@ export type Database = {
           is_active: boolean | null
           max_uses: number | null
           min_order_value: number | null
+          product_id: string | null
+          scope: string
           uses_count: number | null
           valid_from: string | null
           valid_until: string | null
         }
         Insert: {
+          category_id?: string | null
           code: string
           created_at?: string
           description?: string | null
@@ -89,11 +93,14 @@ export type Database = {
           is_active?: boolean | null
           max_uses?: number | null
           min_order_value?: number | null
+          product_id?: string | null
+          scope?: string
           uses_count?: number | null
           valid_from?: string | null
           valid_until?: string | null
         }
         Update: {
+          category_id?: string | null
           code?: string
           created_at?: string
           description?: string | null
@@ -103,11 +110,28 @@ export type Database = {
           is_active?: boolean | null
           max_uses?: number | null
           min_order_value?: number | null
+          product_id?: string | null
+          scope?: string
           uses_count?: number | null
           valid_from?: string | null
           valid_until?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "coupons_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupons_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_templates: {
         Row: {
