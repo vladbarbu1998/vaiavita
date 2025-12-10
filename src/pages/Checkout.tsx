@@ -6,7 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useLanguage } from '@/context/LanguageContext';
+import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -16,15 +24,24 @@ import {
   Package, 
   CreditCard, 
   Banknote, 
-  Building2,
   ArrowLeft,
   ShoppingBag,
   Loader2,
   CheckCircle2
 } from 'lucide-react';
 
+// Romanian counties
+const ROMANIAN_COUNTIES = [
+  'Alba', 'Arad', 'Argeș', 'Bacău', 'Bihor', 'Bistrița-Năsăud', 'Botoșani', 'Brăila',
+  'Brașov', 'București', 'Buzău', 'Călărași', 'Caraș-Severin', 'Cluj', 'Constanța',
+  'Covasna', 'Dâmbovița', 'Dolj', 'Galați', 'Giurgiu', 'Gorj', 'Harghita', 'Hunedoara',
+  'Ialomița', 'Iași', 'Ilfov', 'Maramureș', 'Mehedinți', 'Mureș', 'Neamț', 'Olt',
+  'Prahova', 'Sălaj', 'Satu Mare', 'Sibiu', 'Suceava', 'Teleorman', 'Timiș', 'Tulcea',
+  'Vâlcea', 'Vaslui', 'Vrancea'
+];
+
 type DeliveryMethod = 'shipping' | 'pickup' | 'locker';
-type PaymentMethod = 'stripe' | 'netopia' | 'cash_on_delivery';
+type PaymentMethod = 'stripe' | 'cash_on_delivery';
 
 interface CheckoutForm {
   firstName: string;
@@ -45,6 +62,7 @@ interface CheckoutForm {
 
 const Checkout = () => {
   const { language } = useLanguage();
+  const { formatPrice } = useCurrency();
   const { items, totalPrice, clearCart } = useCart();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -445,13 +463,21 @@ const Checkout = () => {
                           <Label htmlFor="county">
                             {language === 'ro' ? 'Județ' : 'County'} *
                           </Label>
-                          <Input
-                            id="county"
+                          <Select
                             value={form.county}
-                            onChange={(e) => updateForm('county', e.target.value)}
-                            placeholder={language === 'ro' ? 'Selectează un județ' : 'Select county'}
-                            required
-                          />
+                            onValueChange={(value) => updateForm('county', value)}
+                          >
+                            <SelectTrigger className="bg-background">
+                              <SelectValue placeholder={language === 'ro' ? 'Selectează un județ' : 'Select county'} />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background z-50 max-h-60">
+                              {ROMANIAN_COUNTIES.map((county) => (
+                                <SelectItem key={county} value={county}>
+                                  {county}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
 
@@ -553,22 +579,6 @@ const Checkout = () => {
                       </div>
                     </label>
 
-                    <label 
-                      className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
-                        form.paymentMethod === 'netopia' 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <RadioGroupItem value="netopia" id="netopia" />
-                      <Building2 className="w-5 h-5 text-primary" />
-                      <div className="flex-1">
-                        <p className="font-medium">Netopia</p>
-                        <p className="text-sm text-muted-foreground">
-                          {language === 'ro' ? 'Plată online securizată' : 'Secure online payment'}
-                        </p>
-                      </div>
-                    </label>
                   </RadioGroup>
                 </div>
 
@@ -611,11 +621,11 @@ const Checkout = () => {
                             {language === 'ro' ? item.name : item.nameEn}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {item.quantity} x {item.price.toFixed(2)} lei
+                            {item.quantity} x {formatPrice(item.price)}
                           </p>
                         </div>
                         <p className="font-medium text-sm shrink-0">
-                          {(item.price * item.quantity).toFixed(2)} lei
+                          {formatPrice(item.price * item.quantity)}
                         </p>
                       </div>
                     ))}
@@ -624,7 +634,7 @@ const Checkout = () => {
                   <div className="space-y-3 pt-4 border-t border-border">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span>{totalPrice.toFixed(2)} lei</span>
+                      <span>{formatPrice(totalPrice)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">
@@ -633,7 +643,7 @@ const Checkout = () => {
                       <span className={shippingCost === 0 ? 'text-primary' : ''}>
                         {shippingCost === 0 
                           ? (language === 'ro' ? 'Gratuit' : 'Free')
-                          : `${shippingCost.toFixed(2)} lei`}
+                          : formatPrice(shippingCost)}
                       </span>
                     </div>
                   </div>
@@ -642,7 +652,7 @@ const Checkout = () => {
                     <div className="flex justify-between text-lg">
                       <span className="font-display">Total</span>
                       <span className="font-bold text-primary text-xl">
-                        {finalTotal.toFixed(2)} lei
+                        {formatPrice(finalTotal)}
                       </span>
                     </div>
                   </div>
