@@ -430,6 +430,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           id: string
+          images: string[] | null
           is_approved: boolean | null
           is_verified_purchase: boolean | null
           order_id: string | null
@@ -444,6 +445,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           id?: string
+          images?: string[] | null
           is_approved?: boolean | null
           is_verified_purchase?: boolean | null
           order_id?: string | null
@@ -458,6 +460,7 @@ export type Database = {
           customer_email?: string
           customer_name?: string
           id?: string
+          images?: string[] | null
           is_approved?: boolean | null
           is_verified_purchase?: boolean | null
           order_id?: string | null
