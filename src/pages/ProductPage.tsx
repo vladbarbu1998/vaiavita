@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -37,6 +37,11 @@ interface Product {
   specifications: ProductSpecifications | null;
 }
 
+interface ReviewStats {
+  averageRating: number;
+  reviewCount: number;
+}
+
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -48,6 +53,9 @@ const ProductPage = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+  const [reviewStats, setReviewStats] = useState<ReviewStats>({ averageRating: 0, reviewCount: 0 });
+  const [activeTab, setActiveTab] = useState('description');
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -77,6 +85,18 @@ const ProductPage = () => {
           ...data,
           specifications: specs,
         });
+
+        // Fetch review stats
+        const { data: reviews } = await supabase
+          .from('reviews')
+          .select('rating')
+          .eq('product_id', data.id)
+          .eq('is_approved', true);
+
+        if (reviews && reviews.length > 0) {
+          const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+          setReviewStats({ averageRating: avg, reviewCount: reviews.length });
+        }
       } catch (error) {
         console.error('Error fetching product:', error);
         navigate('/produse');
@@ -87,6 +107,13 @@ const ProductPage = () => {
 
     fetchProduct();
   }, [slug, navigate]);
+
+  const scrollToReviews = () => {
+    setActiveTab('reviews');
+    setTimeout(() => {
+      tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -184,11 +211,31 @@ const ProductPage = () => {
                 }`}>
                   {isInStock ? t('common.inStock') : t('common.outOfStock')}
                 </Badge>
-                <h1 className="font-display text-3xl md:text-4xl tracking-wide mb-4">
-                  {language === 'ro' ? product.name_ro : product.name_en}
-                </h1>
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <h1 className="font-display text-3xl md:text-4xl tracking-wide">
+                    {language === 'ro' ? product.name_ro : product.name_en}
+                  </h1>
+                  {reviewStats.reviewCount > 0 && (
+                    <button 
+                      onClick={scrollToReviews}
+                      className="flex items-center gap-2 text-sm hover:text-primary transition-colors shrink-0"
+                    >
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star 
+                            key={star} 
+                            className={`w-4 h-4 ${star <= Math.round(reviewStats.averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} 
+                          />
+                        ))}
+                      </div>
+                      <span className="text-muted-foreground">
+                        ({reviewStats.reviewCount} {language === 'ro' ? 'recenzii' : 'reviews'})
+                      </span>
+                    </button>
+                  )}
+                </div>
                 {(product.short_description_ro || product.short_description_en) && (
-                  <p className="text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground leading-relaxed mt-4">
                     {language === 'ro' ? product.short_description_ro : product.short_description_en}
                   </p>
                 )}
@@ -234,8 +281,8 @@ const ProductPage = () => {
           </div>
 
           {/* Tabs Section */}
-          <div className="mt-16 opacity-0 animate-fade-up animation-delay-300">
-            <Tabs defaultValue="description" className="w-full">
+          <div ref={tabsRef} className="mt-16 opacity-0 animate-fade-up animation-delay-300">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="w-full justify-start border-b border-border rounded-none bg-transparent h-auto p-0 mb-8 overflow-x-auto">
                 <TabsTrigger 
                   value="description" 
@@ -248,6 +295,12 @@ const ProductPage = () => {
                   className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary px-6 py-3 font-display text-base whitespace-nowrap"
                 >
                   {language === 'ro' ? 'Specificații' : 'Specifications'}
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="reviews" 
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary px-6 py-3 font-display text-base whitespace-nowrap"
+                >
+                  {language === 'ro' ? 'Recenzii' : 'Reviews'} ({reviewStats.reviewCount})
                 </TabsTrigger>
               </TabsList>
 
@@ -270,6 +323,36 @@ const ProductPage = () => {
 
               <TabsContent value="specifications" className="mt-0">
                 <ProductSpecificationsDisplay specifications={product.specifications} />
+              </TabsContent>
+
+              <TabsContent value="reviews" className="mt-0">
+                <div className="card-premium p-8">
+                  {reviewStats.reviewCount > 0 ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star 
+                              key={star} 
+                              className={`w-6 h-6 ${star <= Math.round(reviewStats.averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} 
+                            />
+                          ))}
+                        </div>
+                        <span className="text-lg font-medium">{reviewStats.averageRating.toFixed(1)}</span>
+                        <span className="text-muted-foreground">
+                          ({reviewStats.reviewCount} {language === 'ro' ? 'recenzii' : 'reviews'})
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground">
+                        {language === 'ro' ? 'Recenziile clienților vor fi afișate aici.' : 'Customer reviews will be displayed here.'}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">
+                      {language === 'ro' ? 'Nu există recenzii încă.' : 'No reviews yet.'}
+                    </p>
+                  )}
+                </div>
               </TabsContent>
             </Tabs>
           </div>

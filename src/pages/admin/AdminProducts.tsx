@@ -75,6 +75,9 @@ const AdminProducts = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [categoryFilterState, setCategoryFilterState] = useState<string>('all');
+  const [stockFilter, setStockFilter] = useState<string>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [form, setForm] = useState(emptyProduct);
@@ -383,10 +386,17 @@ const AdminProducts = () => {
     fetchProducts();
   };
 
-  const filteredProducts = products.filter(p => 
-    p.name_ro.toLowerCase().includes(search.toLowerCase()) ||
-    p.sku?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name_ro.toLowerCase().includes(search.toLowerCase()) ||
+      p.sku?.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
+    const matchesCategory = categoryFilterState === 'all' || p.category_id === categoryFilterState;
+    const matchesStock = stockFilter === 'all' || 
+      (stockFilter === 'low' && p.stock < 10) ||
+      (stockFilter === 'out' && p.stock === 0) ||
+      (stockFilter === 'in' && p.stock > 0);
+    return matchesSearch && matchesStatus && matchesCategory && matchesStock;
+  });
 
   const statusConfig: Record<string, { label: string; color: string }> = {
     active: { label: 'Activ', color: 'bg-green-500/10 text-green-600' },
@@ -411,15 +421,51 @@ const AdminProducts = () => {
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-        <Input
-          placeholder="Caută produse..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-10"
-        />
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <Input
+            placeholder="Caută produse..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toate statusurile</SelectItem>
+            <SelectItem value="active">Activ</SelectItem>
+            <SelectItem value="inactive">Inactiv</SelectItem>
+            <SelectItem value="out_of_stock">Stoc epuizat</SelectItem>
+            <SelectItem value="coming_soon">În curând</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={categoryFilterState} onValueChange={setCategoryFilterState}>
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="Categorie" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toate categoriile</SelectItem>
+            {categories.map(c => (
+              <SelectItem key={c.id} value={c.id}>{c.name_ro}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={stockFilter} onValueChange={setStockFilter}>
+          <SelectTrigger className="w-36">
+            <SelectValue placeholder="Stoc" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tot stocul</SelectItem>
+            <SelectItem value="in">În stoc</SelectItem>
+            <SelectItem value="low">Stoc scăzut</SelectItem>
+            <SelectItem value="out">Fără stoc</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Products Table */}

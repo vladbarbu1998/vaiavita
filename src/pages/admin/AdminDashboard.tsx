@@ -291,8 +291,46 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
-        <Outlet />
+      <main className="lg:ml-64 min-h-screen">
+        {/* Top Header Bar */}
+        <header className="hidden lg:flex h-16 bg-background border-b border-border items-center justify-between px-6 sticky top-0 z-40">
+          <div className="flex items-center gap-2">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`
+                  flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
+                  ${isActive(item.path, item.exact) 
+                    ? 'bg-primary/10 text-primary' 
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'}
+                `}
+              >
+                <item.icon className="w-4 h-4" />
+                {item.label}
+              </Link>
+            ))}
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">
+              <span className="capitalize font-medium text-foreground">{userRole}</span>
+            </span>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="text-muted-foreground hover:text-destructive"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Ieșire
+            </Button>
+          </div>
+        </header>
+        
+        {/* Page Content */}
+        <div className="pt-16 lg:pt-0">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
