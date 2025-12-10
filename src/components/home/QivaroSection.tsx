@@ -48,13 +48,25 @@ export function QivaroSection() {
 
           {/* Image */}
           <div className="opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-transparent rounded-2xl blur-2xl scale-110 opacity-50" />
-              <img 
-                src={qivaroImage} 
-                alt="Qivaro Supplements" 
-                className="relative w-full h-auto max-w-md rounded-2xl drop-shadow-xl hover:scale-105 transition-transform duration-500"
-              />
+            {/* Multi-border frame effect */}
+            <div className="relative p-4 group">
+              {/* Outer border */}
+              <div className="absolute inset-0 rounded-3xl border border-primary/20" />
+              {/* Middle border */}
+              <div className="absolute inset-3 rounded-2xl border border-primary/30" />
+              {/* Inner border */}
+              <div className="absolute inset-6 rounded-xl border border-primary/40" />
+              
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl blur-2xl scale-110 opacity-50" />
+              
+              <div className="relative p-6">
+                <img 
+                  src={qivaroImage} 
+                  alt="Qivaro Supplements" 
+                  className="relative w-full h-auto max-w-sm rounded-xl drop-shadow-xl group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
             </div>
           </div>
         </div>
