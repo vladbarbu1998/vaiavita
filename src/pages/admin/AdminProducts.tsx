@@ -70,7 +70,6 @@ const AdminProducts = () => {
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [translating, setTranslating] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
@@ -199,40 +198,17 @@ const AdminProducts = () => {
     }));
   };
 
-  const translateToEnglish = async () => {
-    if (!form.name_ro && !form.short_description_ro && !form.description_ro) {
-      toast.error('Completează cel puțin un câmp în română pentru a traduce');
-      return;
-    }
-
-    setTranslating(true);
+  const translateToEnglish = async (texts: { name?: string; short_description?: string; description?: string }) => {
     try {
       const { data, error } = await supabase.functions.invoke('translate-product', {
-        body: {
-          texts: {
-            name: form.name_ro || undefined,
-            short_description: form.short_description_ro || undefined,
-            description: form.description_ro || undefined,
-          }
-        }
+        body: { texts }
       });
 
       if (error) throw error;
-
-      if (data.translations) {
-        setForm(prev => ({
-          ...prev,
-          name_en: data.translations.name || prev.name_en,
-          short_description_en: data.translations.short_description || prev.short_description_en,
-          description_en: data.translations.description || prev.description_en,
-        }));
-        toast.success('Tradus cu succes!');
-      }
+      return data.translations || {};
     } catch (error: any) {
       console.error('Translation error:', error);
-      toast.error(error.message || 'Eroare la traducere');
-    } finally {
-      setTranslating(false);
+      return {};
     }
   };
 
@@ -244,14 +220,44 @@ const AdminProducts = () => {
 
     setSaving(true);
 
-    const productData = {
-      ...form,
-      price: Number(form.price),
-      compare_at_price: form.compare_at_price ? Number(form.compare_at_price) : null,
-      stock: Number(form.stock),
-    };
-
     try {
+      // Auto-translate Romanian fields to English if English fields are empty
+      let translations = {
+        name_en: form.name_en,
+        short_description_en: form.short_description_en,
+        description_en: form.description_en,
+      };
+
+      const needsTranslation = 
+        (!form.name_en && form.name_ro) ||
+        (!form.short_description_en && form.short_description_ro) ||
+        (!form.description_en && form.description_ro);
+
+      if (needsTranslation) {
+        toast.info('Se traduce automat în engleză...');
+        
+        const textsToTranslate: { name?: string; short_description?: string; description?: string } = {};
+        if (!form.name_en && form.name_ro) textsToTranslate.name = form.name_ro;
+        if (!form.short_description_en && form.short_description_ro) textsToTranslate.short_description = form.short_description_ro;
+        if (!form.description_en && form.description_ro) textsToTranslate.description = form.description_ro;
+
+        const translatedTexts = await translateToEnglish(textsToTranslate);
+        
+        translations = {
+          name_en: translatedTexts.name || form.name_en || form.name_ro,
+          short_description_en: translatedTexts.short_description || form.short_description_en || form.short_description_ro || '',
+          description_en: translatedTexts.description || form.description_en || form.description_ro || '',
+        };
+      }
+
+      const productData = {
+        ...form,
+        ...translations,
+        price: Number(form.price),
+        compare_at_price: form.compare_at_price ? Number(form.compare_at_price) : null,
+        stock: Number(form.stock),
+      };
+
       if (editingProduct) {
         const { error } = await supabase
           .from('products')
@@ -519,20 +525,10 @@ const AdminProducts = () => {
                 <h3 className="font-medium text-sm flex items-center gap-2">
                   🇷🇴 Conținut în Română
                 </h3>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm"
-                  onClick={translateToEnglish}
-                  disabled={translating}
-                >
-                  {translating ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  ) : (
-                    <Languages className="w-4 h-4 mr-2" />
-                  )}
-                  Traduce în EN
-                </Button>
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Languages className="w-3 h-3" />
+                  Traducere automată la salvare
+                </span>
               </div>
 
               <div className="space-y-2">
