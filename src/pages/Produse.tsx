@@ -167,26 +167,26 @@ const Produse = () => {
                       )}
                     </div>
                     
-                    <div className="p-4 pt-6 flex flex-col">
+                    <div className="p-3 pt-5 flex flex-col">
                       {/* Badge - fixed height */}
                       <div className="h-5">
                         {getStatusBadge(product)}
                       </div>
                       
                       {/* Title - fixed height for 2 lines */}
-                      <h3 className="font-display text-sm md:text-base tracking-wide line-clamp-2 h-[36px] md:h-[40px] mt-2">
+                      <h3 className="font-display text-sm md:text-base tracking-wide line-clamp-2 h-[36px] md:h-[40px] mt-1">
                         {language === 'ro' ? product.name_ro : product.name_en}
                       </h3>
                       
                       {/* Description - fixed height for 2 lines */}
-                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-2 h-[32px] md:h-[36px] mt-2 whitespace-pre-line">
+                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-2 h-[32px] md:h-[36px] mt-1 whitespace-pre-line">
                         {language === 'ro' 
                           ? (product.short_description_ro || '') 
                           : (product.short_description_en || '')}
                       </p>
                       
                       {/* Price and CTA - fixed position */}
-                      <div className="flex items-center justify-between pt-3 mt-3 border-t border-border/50">
+                      <div className="flex items-center justify-between pt-2 mt-2 border-t border-border/50">
                         {product.status !== 'coming_soon' && product.price > 0 ? (
                           <span className="text-base md:text-lg font-bold text-primary">
                             {formatPrice(Number(product.price))}
