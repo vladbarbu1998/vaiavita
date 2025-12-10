@@ -18,7 +18,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import NotFound from "./pages/NotFound";
-import { AdminLogin, AdminDashboard, AdminOverview, AdminProducts, AdminOrders, AdminCustomers, AdminReviews, AdminCoupons, AdminSettings } from "./pages/admin";
+import { AdminDashboard, AdminOverview, AdminProducts, AdminOrders, AdminCustomers, AdminReviews, AdminCoupons, AdminSettings } from "./pages/admin";
 
 const queryClient = new QueryClient();
 
@@ -42,8 +42,8 @@ const App = () => (
                 <Route path="/cos" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/comanda-confirmata" element={<OrderConfirmation />} />
-                <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin" element={<AdminDashboard />}>
+                  <Route index element={<AdminOverview />} />
                   <Route index element={<AdminOverview />} />
                   <Route path="products" element={<AdminProducts />} />
                   <Route path="orders" element={<AdminOrders />} />

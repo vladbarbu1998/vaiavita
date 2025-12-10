@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { 
   LayoutDashboard, 
@@ -14,7 +16,8 @@ import {
   Menu,
   X,
   Loader2,
-  Tag
+  Tag,
+  Lock
 } from 'lucide-react';
 import logoLight from '@/assets/logo-light.png';
 import logoDark from '@/assets/logo-dark.png';
@@ -27,13 +30,20 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Login form state
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        navigate('/admin/login');
+        setIsAuthenticated(false);
+        setLoading(false);
         return;
       }
 
@@ -44,30 +54,70 @@ const AdminDashboard = () => {
         .eq('user_id', session.user.id);
 
       if (error || !roles || roles.length === 0) {
-        toast.error('Nu ai acces la admin');
-        await supabase.auth.signOut();
-        navigate('/admin/login');
+        setIsAuthenticated(false);
+        setLoading(false);
         return;
       }
 
       setUserRole(roles[0].role);
+      setIsAuthenticated(true);
       setLoading(false);
     };
 
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
-        navigate('/admin/login');
+        setIsAuthenticated(false);
+        setUserRole(null);
+      } else if (event === 'SIGNED_IN' && session) {
+        // Check admin role after sign in
+        setTimeout(async () => {
+          const { data: roles } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id);
+
+          if (roles && roles.length > 0) {
+            setUserRole(roles[0].role);
+            setIsAuthenticated(true);
+          } else {
+            toast.error('Nu ai acces la admin');
+            await supabase.auth.signOut();
+          }
+        }, 0);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('Email sau parolă incorectă');
+        } else {
+          toast.error(error.message);
+        }
+      }
+    } catch (error: any) {
+      toast.error('Eroare la autentificare');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate('/admin/login');
   };
 
   const navItems = [
@@ -87,6 +137,9 @@ const AdminDashboard = () => {
     return location.pathname.startsWith(path);
   };
 
+  const logo = theme === 'dark' ? logoDark : logoLight;
+
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -95,8 +148,76 @@ const AdminDashboard = () => {
     );
   }
 
-  const logo = theme === 'dark' ? logoDark : logoLight;
+  // Login form (not authenticated)
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
+        <div className="w-full max-w-md space-y-8">
+          {/* Logo */}
+          <div className="text-center">
+            <img src={logo} alt="VAIAVITA" className="h-12 mx-auto mb-6" />
+            <h1 className="font-display text-2xl tracking-wide">Admin Panel</h1>
+            <p className="text-muted-foreground mt-2">Autentifică-te pentru a continua</p>
+          </div>
 
+          {/* Login Form */}
+          <div className="card-premium p-8">
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@vaiavita.com"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Parolă</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+
+              <Button 
+                type="submit" 
+                variant="hero" 
+                size="lg" 
+                className="w-full" 
+                disabled={loginLoading}
+              >
+                {loginLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Se autentifică...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-5 h-5 mr-2" />
+                    Autentificare
+                  </>
+                )}
+              </Button>
+            </form>
+          </div>
+
+          <p className="text-center text-sm text-muted-foreground">
+            © {new Date().getFullYear()} VAIAVITA S.R.L. Toate drepturile rezervate.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Dashboard (authenticated)
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Mobile Header */}
