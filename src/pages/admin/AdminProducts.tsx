@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Dialog, 
   DialogContent, 
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Search, Loader2, Upload, X, Image as ImageIcon, Languages } from 'lucide-react';
+import { SpecificationsEditor, ProductSpecifications } from '@/components/admin/SpecificationsEditor';
 
 interface Product {
   id: string;
@@ -39,6 +41,7 @@ interface Product {
   category_id: string | null;
   tags: string[];
   images: string[];
+  specifications: ProductSpecifications | null;
   created_at: string;
 }
 
@@ -59,6 +62,7 @@ const emptyProduct = {
   category_id: null as string | null,
   tags: [] as string[],
   images: [] as string[],
+  specifications: { items: [] } as ProductSpecifications,
 };
 
 const AdminProducts = () => {
@@ -86,7 +90,12 @@ const AdminProducts = () => {
     if (error) {
       toast.error('Eroare la încărcarea produselor');
     } else {
-      setProducts(data || []);
+      // Cast specifications to the correct type
+      const typedProducts = (data || []).map(p => ({
+        ...p,
+        specifications: (p.specifications as unknown as ProductSpecifications) || { items: [] },
+      })) as Product[];
+      setProducts(typedProducts);
     }
     setLoading(false);
   };
@@ -116,6 +125,7 @@ const AdminProducts = () => {
       category_id: product.category_id,
       tags: product.tags || [],
       images: product.images || [],
+      specifications: product.specifications || { items: [] },
     });
     setDialogOpen(true);
   };
@@ -251,17 +261,29 @@ const AdminProducts = () => {
       }
 
       const productData = {
-        ...form,
-        ...translations,
+        slug: form.slug,
+        name_ro: form.name_ro,
+        name_en: translations.name_en,
+        description_ro: form.description_ro,
+        description_en: translations.description_en,
+        short_description_ro: form.short_description_ro,
+        short_description_en: translations.short_description_en,
         price: Number(form.price),
         compare_at_price: form.compare_at_price ? Number(form.compare_at_price) : null,
         stock: Number(form.stock),
+        sku: form.sku || null,
+        status: form.status,
+        featured: form.featured,
+        category_id: form.category_id,
+        tags: form.tags,
+        images: form.images,
+        specifications: JSON.parse(JSON.stringify(form.specifications)),
       };
 
       if (editingProduct) {
         const { error } = await supabase
           .from('products')
-          .update(productData)
+          .update(productData as never)
           .eq('id', editingProduct.id);
 
         if (error) throw error;
@@ -269,7 +291,7 @@ const AdminProducts = () => {
       } else {
         const { error } = await supabase
           .from('products')
-          .insert(productData);
+          .insert(productData as never);
 
         if (error) throw error;
         toast.success('Produs creat');
@@ -664,6 +686,14 @@ const AdminProducts = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Specifications Editor */}
+            <SpecificationsEditor
+              specifications={form.specifications}
+              onChange={(specs) => setForm({ ...form, specifications: specs })}
+              productNameRo={form.name_ro}
+              productDescriptionRo={form.description_ro}
+            />
           </div>
 
           <DialogFooter>

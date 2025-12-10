@@ -60,7 +60,7 @@ const ProductDentTastic = () => {
       id: 'dent-tastic',
       name: 'Pasta de dinți Dent-Tastic Fresh Mint',
       nameEn: 'Dent-Tastic Fresh Mint Toothpaste',
-      price: 29.99,
+      price: 32.99,
       image: dentTasticImage,
       slug: 'dent-tastic',
     });
@@ -227,7 +227,7 @@ const ProductDentTastic = () => {
                 <Badge variant="outline" className="gap-1"><Check className="w-3 h-3" />{language === 'ro' ? 'Ingrediente clinice' : 'Clinical ingredients'}</Badge>
               </div>
 
-              <div className="text-4xl font-bold text-primary">{formatPrice(29.99)}</div>
+              <div className="text-4xl font-bold text-primary">{formatPrice(32.99)}</div>
 
               {/* Quantity & Add to Cart */}
               <div className="flex flex-col sm:flex-row gap-4">
