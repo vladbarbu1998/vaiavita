@@ -351,6 +351,7 @@ export type Database = {
           name_en: string
           name_ro: string
           price: number
+          related_products: string[] | null
           short_description_en: string | null
           short_description_ro: string | null
           sku: string | null
@@ -377,6 +378,7 @@ export type Database = {
           name_en: string
           name_ro: string
           price: number
+          related_products?: string[] | null
           short_description_en?: string | null
           short_description_ro?: string | null
           sku?: string | null
@@ -403,6 +405,7 @@ export type Database = {
           name_en?: string
           name_ro?: string
           price?: number
+          related_products?: string[] | null
           short_description_en?: string | null
           short_description_ro?: string | null
           sku?: string | null
