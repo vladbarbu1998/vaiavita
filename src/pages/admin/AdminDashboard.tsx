@@ -156,7 +156,7 @@ const AdminDashboard = () => {
     return location.pathname.startsWith(path);
   };
 
-  const logo = theme === 'dark' ? logoDark : logoLight;
+  const logo = theme === 'dark' ? logoLight : logoDark;
 
   // Loading state
   if (loading) {

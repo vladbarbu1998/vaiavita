@@ -8,7 +8,8 @@ import {
   DialogTitle 
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Search, Loader2, User, Mail, Phone, Package, Eye } from 'lucide-react';
+import { toast } from 'sonner';
+import { Search, Loader2, User, Mail, Phone, Package, Eye, Trash2, Download } from 'lucide-react';
 
 interface Customer {
   email: string;
@@ -122,11 +123,60 @@ const AdminCustomers = () => {
     cancelled: 'Anulată',
   };
 
+  const deleteCustomer = async (customer: Customer) => {
+    if (!confirm(`Ești sigur că vrei să ștergi clientul ${customer.firstName} ${customer.lastName} și toate comenzile asociate?`)) {
+      return;
+    }
+
+    try {
+      // Delete all orders for this customer (order_items will cascade)
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('customer_email', customer.email);
+
+      if (error) throw error;
+
+      toast.success('Client șters cu succes');
+      fetchCustomers();
+    } catch (error: any) {
+      console.error('Error deleting customer:', error);
+      toast.error('Eroare la ștergerea clientului');
+    }
+  };
+
+  const exportCustomers = () => {
+    const headers = ['Email', 'Prenume', 'Nume', 'Telefon', 'Nr. Comenzi', 'Total Cheltuit', 'Ultima Comandă'];
+    const rows = customers.map(c => [
+      c.email,
+      c.firstName,
+      c.lastName,
+      c.phone,
+      c.ordersCount.toString(),
+      c.totalSpent.toFixed(2),
+      formatDate(c.lastOrder)
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(r => r.map(cell => `"${cell}"`).join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `clienti_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    toast.success('Export realizat cu succes');
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
-      <div>
-        <h1 className="font-display text-2xl md:text-3xl tracking-wide">Clienți</h1>
-        <p className="text-muted-foreground mt-1">Vezi și gestionează clienții</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl md:text-3xl tracking-wide">Clienți</h1>
+          <p className="text-muted-foreground mt-1">Vezi și gestionează clienții</p>
+        </div>
+        <Button variant="outline" onClick={exportCustomers}>
+          <Download className="w-4 h-4 mr-2" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Search */}
@@ -221,9 +271,14 @@ const AdminCustomers = () => {
                       <p className="text-sm text-muted-foreground">{formatDate(customer.lastOrder)}</p>
                     </td>
                     <td className="p-4 text-right">
-                      <Button variant="ghost" size="icon" onClick={() => viewCustomer(customer)}>
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => viewCustomer(customer)}>
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteCustomer(customer)} className="text-destructive hover:text-destructive">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))
