@@ -143,7 +143,7 @@ const Produse = () => {
                       </h3>
                       
                       {/* Description */}
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 whitespace-pre-line">
                         {language === 'ro' 
                           ? (product.short_description_ro || '') 
                           : (product.short_description_en || '')}
