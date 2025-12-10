@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Search, Eye, Loader2, Package, Truck, CheckCircle, Clock, XCircle, Filter, Calendar, CreditCard } from 'lucide-react';
+import { Search, Eye, Loader2, Package, Truck, CheckCircle, Clock, XCircle, Filter, Calendar, CreditCard, Download } from 'lucide-react';
 
 interface Order {
   id: string;
@@ -217,13 +217,45 @@ const AdminOrders = () => {
     setSearch('');
   };
 
+  const exportOrders = () => {
+    const headers = ['Nr. Comandă', 'Data', 'Client', 'Email', 'Telefon', 'Status', 'Livrare', 'Plată', 'Subtotal', 'Livrare', 'Reducere', 'Total'];
+    const rows = filteredOrders.map(o => [
+      o.order_number,
+      formatDate(o.created_at),
+      `${o.customer_first_name} ${o.customer_last_name}`,
+      o.customer_email,
+      o.customer_phone,
+      statusConfig[o.status]?.label || o.status,
+      deliveryLabels[o.delivery_method] || o.delivery_method,
+      paymentLabels[o.payment_method] || o.payment_method,
+      Number(o.subtotal).toFixed(2),
+      Number(o.shipping_cost || 0).toFixed(2),
+      Number(o.discount || 0).toFixed(2),
+      Number(o.total).toFixed(2)
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(r => r.map(cell => `"${cell}"`).join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `comenzi_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    toast.success('Export realizat cu succes');
+  };
+
   const activeFiltersCount = [statusFilter, productFilter, categoryFilter, deliveryFilter, paymentFilter].filter(f => f !== 'all').length + (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
-      <div>
-        <h1 className="font-display text-2xl md:text-3xl tracking-wide">Comenzi</h1>
-        <p className="text-muted-foreground mt-1">Gestionează comenzile primite</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl md:text-3xl tracking-wide">Comenzi</h1>
+          <p className="text-muted-foreground mt-1">Gestionează comenzile primite</p>
+        </div>
+        <Button variant="outline" onClick={exportOrders}>
+          <Download className="w-4 h-4 mr-2" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Search and Filter Toggle */}

@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Search, Loader2, Upload, X, Image as ImageIcon, Languages } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Loader2, Upload, X, Image as ImageIcon, Languages, Download } from 'lucide-react';
 import { SpecificationsEditor, ProductSpecifications } from '@/components/admin/SpecificationsEditor';
 
 interface Product {
@@ -408,6 +408,30 @@ const AdminProducts = () => {
   const coverImage = form.images[0] || null;
   const galleryImages = form.images.slice(1);
 
+  const exportProducts = () => {
+    const headers = ['Nume RO', 'Nume EN', 'Slug', 'SKU', 'Preț', 'Preț vechi', 'Stoc', 'Status', 'Categorie', 'Creat la'];
+    const rows = filteredProducts.map(p => [
+      p.name_ro,
+      p.name_en,
+      p.slug,
+      p.sku || '',
+      Number(p.price).toFixed(2),
+      p.compare_at_price ? Number(p.compare_at_price).toFixed(2) : '',
+      p.stock.toString(),
+      statusConfig[p.status]?.label || p.status,
+      categories.find(c => c.id === p.category_id)?.name_ro || '',
+      new Date(p.created_at).toLocaleDateString('ro-RO')
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(r => r.map(cell => `"${cell.replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `produse_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    toast.success('Export realizat cu succes');
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -415,10 +439,16 @@ const AdminProducts = () => {
           <h1 className="font-display text-2xl md:text-3xl tracking-wide">Produse</h1>
           <p className="text-muted-foreground mt-1">Gestionează catalogul de produse</p>
         </div>
-        <Button variant="hero" onClick={openCreateDialog}>
-          <Plus className="w-5 h-5 mr-2" />
-          Adaugă produs
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={exportProducts}>
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+          <Button variant="hero" onClick={openCreateDialog}>
+            <Plus className="w-5 h-5 mr-2" />
+            Adaugă produs
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}

@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Search, Loader2, Star, Check, X, Trash2, Eye, ShieldCheck } from 'lucide-react';
+import { Search, Loader2, Star, Check, X, Trash2, Eye, ShieldCheck, Download } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -151,11 +151,40 @@ const AdminReviews = () => {
     ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
     : '0';
 
+  const exportReviews = () => {
+    const headers = ['Data', 'Produs', 'Client', 'Email', 'Rating', 'Titlu', 'Conținut', 'Verificat', 'Aprobat'];
+    const rows = filteredReviews.map(r => [
+      formatDate(r.created_at),
+      getProductName(r.product_id),
+      r.customer_name,
+      r.customer_email,
+      r.rating.toString(),
+      r.title || '',
+      r.content || '',
+      r.is_verified_purchase ? 'Da' : 'Nu',
+      r.is_approved ? 'Da' : 'Nu'
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(r => r.map(cell => `"${cell.replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `recenzii_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    toast.success('Export realizat cu succes');
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
-      <div>
-        <h1 className="font-display text-2xl md:text-3xl tracking-wide">Recenzii</h1>
-        <p className="text-muted-foreground mt-1">Gestionează recenziile produselor</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl md:text-3xl tracking-wide">Recenzii</h1>
+          <p className="text-muted-foreground mt-1">Gestionează recenziile produselor</p>
+        </div>
+        <Button variant="outline" onClick={exportReviews}>
+          <Download className="w-4 h-4 mr-2" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Stats */}
