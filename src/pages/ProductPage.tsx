@@ -226,33 +226,76 @@ const ProductPage = () => {
     setReviewSubmitting(true);
     
     try {
-      // Check if email has ordered this specific product
+      const productName = language === 'ro' ? product.name_ro : product.name_en;
+      
+      // Check if email has a delivered order containing this specific product
+      // We check both product_id and product_name since product_id might be null
       const { data: orderData } = await supabase
         .from('orders')
         .select(`
           id,
-          order_items!inner(product_id)
+          status,
+          order_items!inner(product_id, product_name)
         `)
         .eq('customer_email', reviewForm.customer_email.trim().toLowerCase())
-        .eq('order_items.product_id', product.id)
-        .limit(1);
+        .eq('status', 'delivered');
       
-      const isVerifiedPurchase = orderData && orderData.length > 0;
+      // Filter orders that contain this product (by product_id or product_name)
+      const validOrder = orderData?.find(order => {
+        const items = order.order_items as Array<{ product_id: string | null; product_name: string }>;
+        return items.some(item => 
+          item.product_id === product.id || 
+          item.product_name.trim().toLowerCase() === product.name_ro.trim().toLowerCase() ||
+          item.product_name.trim().toLowerCase() === product.name_en.trim().toLowerCase()
+        );
+      });
       
-      // Only verified purchases can submit reviews
+      const isVerifiedPurchase = !!validOrder;
+      
+      // Only verified purchases with delivered orders can submit reviews
       if (!isVerifiedPurchase) {
-        toast({
-          title: language === 'ro' ? 'Nu poți lăsa o recenzie' : 'Cannot submit review',
-          description: language === 'ro' 
-            ? 'Doar clienții care au cumpărat acest produs pot lăsa o recenzie. Verifică adresa de email folosită la comandă.' 
-            : 'Only customers who have purchased this product can leave a review. Please check the email address used for your order.',
-          variant: 'destructive',
+        // Check if they have an order but it's not delivered yet
+        const { data: pendingOrderData } = await supabase
+          .from('orders')
+          .select(`
+            id,
+            status,
+            order_items!inner(product_id, product_name)
+          `)
+          .eq('customer_email', reviewForm.customer_email.trim().toLowerCase())
+          .neq('status', 'delivered');
+        
+        const hasPendingOrder = pendingOrderData?.some(order => {
+          const items = order.order_items as Array<{ product_id: string | null; product_name: string }>;
+          return items.some(item => 
+            item.product_id === product.id || 
+            item.product_name.trim().toLowerCase() === product.name_ro.trim().toLowerCase() ||
+            item.product_name.trim().toLowerCase() === product.name_en.trim().toLowerCase()
+          );
         });
+        
+        if (hasPendingOrder) {
+          toast({
+            title: language === 'ro' ? 'Comanda nu este finalizată' : 'Order not completed',
+            description: language === 'ro' 
+              ? 'Poți lăsa o recenzie doar după ce comanda a fost livrată.' 
+              : 'You can leave a review only after your order has been delivered.',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: language === 'ro' ? 'Nu poți lăsa o recenzie' : 'Cannot submit review',
+            description: language === 'ro' 
+              ? 'Doar clienții care au cumpărat acest produs pot lăsa o recenzie. Verifică adresa de email folosită la comandă.' 
+              : 'Only customers who have purchased this product can leave a review. Please check the email address used for your order.',
+            variant: 'destructive',
+          });
+        }
         setReviewSubmitting(false);
         return;
       }
       
-      const orderId = orderData[0].id;
+      const orderId = validOrder.id;
       
       const { error } = await supabase
         .from('reviews')
