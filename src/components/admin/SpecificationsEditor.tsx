@@ -44,6 +44,9 @@ export function SpecificationsEditor({
   productDescriptionRo 
 }: SpecificationsEditorProps) {
   const [generating, setGenerating] = useState(false);
+  
+  // Ensure specifications.items always exists
+  const items = specifications?.items ?? [];
 
   const addSpecification = (template?: typeof SPEC_TEMPLATES[0]) => {
     const newItem: SpecificationItem = template ? {
@@ -61,19 +64,19 @@ export function SpecificationsEditor({
     };
 
     onChange({
-      items: [...specifications.items, newItem],
+      items: [...items, newItem],
     });
   };
 
   const updateSpecification = (index: number, field: keyof SpecificationItem, value: string) => {
-    const newItems = [...specifications.items];
+    const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
     onChange({ items: newItems });
   };
 
   const removeSpecification = (index: number) => {
     onChange({
-      items: specifications.items.filter((_, i) => i !== index),
+      items: items.filter((_, i) => i !== index),
     });
   };
 
@@ -89,7 +92,7 @@ export function SpecificationsEditor({
         body: {
           productName: productNameRo,
           productDescription: productDescriptionRo || '',
-          existingSpecs: specifications.items,
+          existingSpecs: items,
         }
       });
 
@@ -107,7 +110,7 @@ export function SpecificationsEditor({
     }
   };
 
-  const usedTemplates = specifications.items.map(item => item.label_ro);
+  const usedTemplates = items.map(item => item.label_ro);
   const availableTemplates = SPEC_TEMPLATES.filter(t => !usedTemplates.includes(t.label_ro));
 
   return (
@@ -152,7 +155,7 @@ export function SpecificationsEditor({
 
       {/* Specifications List */}
       <div className="space-y-4">
-        {specifications.items.map((item, index) => (
+        {items.map((item, index) => (
           <div key={index} className="p-4 rounded-xl border border-border bg-muted/20 space-y-3">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 text-muted-foreground">
