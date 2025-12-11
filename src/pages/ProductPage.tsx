@@ -611,8 +611,8 @@ const ProductPage = () => {
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {language === 'ro' 
-                            ? <>✓ La {PROMO_CONFIG.minQuantityFreeShipping}+ paste cumpărate → transport gratuit!</>
-                            : <>✓ Buy {PROMO_CONFIG.minQuantityFreeShipping}+ toothpastes → free shipping!</>
+                            ? <>✓ La {PROMO_CONFIG.minQuantityFreeShipping}+ paste cumpărate → transport gratuit (România)!</>
+                            : <>✓ Buy {PROMO_CONFIG.minQuantityFreeShipping}+ toothpastes → free shipping (Romania)!</>
                           }
                         </p>
                       </div>
@@ -665,7 +665,19 @@ const ProductPage = () => {
                     >
                       <Minus className="w-4 h-4" />
                     </button>
-                    <span className="w-10 text-center font-semibold">{quantity}</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max={product.stock}
+                      value={quantity}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val)) {
+                          setQuantity(Math.max(1, Math.min(product.stock, val)));
+                        }
+                      }}
+                      className="w-14 text-center font-semibold bg-transparent border-none focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
                     <button 
                       onClick={() => setQuantity(Math.min(product.stock, quantity + 1))} 
                       className="w-10 h-10 rounded-lg hover:bg-muted hover:text-primary transition-all flex items-center justify-center"
