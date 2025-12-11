@@ -18,21 +18,20 @@ export function QivaroSection() {
       <div className="hidden lg:block absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
       <div className="hidden lg:block absolute bottom-0 left-1/4 w-80 h-80 bg-primary/3 rounded-full blur-3xl" />
       
-      <div className="container-custom relative z-10 overflow-hidden">
+      <div className="container-custom relative z-10">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Image - First on mobile */}
-          <div className="order-1 lg:order-2 opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center px-4 sm:px-0">
-            {/* Simple frame for mobile, decorative frame for larger screens */}
-            <div className="relative w-full max-w-[220px] sm:max-w-[280px] md:max-w-sm mx-auto">
+          <div className="order-1 lg:order-2 opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center w-full">
+            <div className="relative w-full max-w-md lg:max-w-lg mx-auto p-3 sm:p-4">
               {/* Decorative borders - only on larger screens */}
-              <div className="hidden sm:block absolute -inset-4 md:-inset-6 rounded-2xl border-2 border-primary/15" />
-              <div className="hidden md:block absolute -inset-2 md:-inset-3 rounded-xl border-2 border-primary/25" />
+              <div className="hidden lg:block absolute -inset-4 rounded-2xl border-2 border-primary/15" />
+              <div className="hidden lg:block absolute -inset-2 rounded-xl border-2 border-primary/25" />
               
               {/* Background glow */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-xl" />
               
               {/* Image container */}
-              <div className="relative rounded-xl border-2 border-primary/30 overflow-hidden bg-background/50 p-2 sm:p-3">
+              <div className="relative rounded-xl border-2 border-primary/30 overflow-hidden bg-background/50 p-3 sm:p-4">
                 <img 
                   src={qivaroImage} 
                   alt="Qivaro Supplements" 
@@ -43,7 +42,7 @@ export function QivaroSection() {
           </div>
 
           {/* Content - Second on mobile */}
-          <div className="order-2 lg:order-1 space-y-5 opacity-0 animate-fade-up overflow-hidden">
+          <div className="order-2 lg:order-1 space-y-5 opacity-0 animate-fade-up">
             <h2 className="font-display text-2xl md:text-3xl lg:text-4xl tracking-wide">
               {t('qivaro.title')}
             </h2>

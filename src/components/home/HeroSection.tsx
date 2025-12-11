@@ -10,21 +10,21 @@ export function HeroSection() {
   return (
     <section className="relative overflow-hidden gradient-animated min-h-[85vh] flex items-center">
       {/* Decorative circles - hidden on mobile to prevent overflow */}
-      <div className="hidden sm:block absolute top-20 right-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-float" />
-      <div className="hidden sm:block absolute bottom-20 left-10 w-96 h-96 bg-primary/3 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+      <div className="hidden lg:block absolute top-20 right-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-float" />
+      <div className="hidden lg:block absolute bottom-20 left-10 w-96 h-96 bg-primary/3 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
       
       <div className="container-custom section-padding relative z-10">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Hero Image - First on mobile */}
-          <div className="order-1 lg:order-2 relative opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center">
-            <div className="relative">
+          <div className="order-1 lg:order-2 relative opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center w-full">
+            <div className="relative w-full max-w-md lg:max-w-lg mx-auto">
               {/* Glow effect behind image */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-[2rem] blur-3xl scale-110" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-2xl blur-3xl scale-110" />
               
               <img 
                 src={heroImage} 
                 alt="Dent-Tastic Toothpaste" 
-                className="relative w-full h-auto max-w-lg rounded-2xl drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+                className="relative w-full h-auto rounded-2xl drop-shadow-2xl hover:scale-105 transition-transform duration-500"
               />
             </div>
           </div>
