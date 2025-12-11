@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -6,13 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
@@ -27,8 +20,25 @@ import {
   ArrowLeft,
   ShoppingBag,
   Loader2,
-  Gift
+  Gift,
+  Search,
+  Check,
+  ChevronsUpDown
 } from 'lucide-react';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from '@/lib/utils';
 
 // Romanian counties
 const ROMANIAN_COUNTIES = [
@@ -38,6 +48,38 @@ const ROMANIAN_COUNTIES = [
   'Ialomița', 'Iași', 'Ilfov', 'Maramureș', 'Mehedinți', 'Mureș', 'Neamț', 'Olt',
   'Prahova', 'Sălaj', 'Satu Mare', 'Sibiu', 'Suceava', 'Teleorman', 'Timiș', 'Tulcea',
   'Vâlcea', 'Vaslui', 'Vrancea'
+];
+
+// EU countries + UK
+const COUNTRIES = [
+  { code: 'RO', name: 'România', nameEn: 'Romania' },
+  { code: 'AT', name: 'Austria', nameEn: 'Austria' },
+  { code: 'BE', name: 'Belgia', nameEn: 'Belgium' },
+  { code: 'BG', name: 'Bulgaria', nameEn: 'Bulgaria' },
+  { code: 'HR', name: 'Croația', nameEn: 'Croatia' },
+  { code: 'CY', name: 'Cipru', nameEn: 'Cyprus' },
+  { code: 'CZ', name: 'Cehia', nameEn: 'Czech Republic' },
+  { code: 'DK', name: 'Danemarca', nameEn: 'Denmark' },
+  { code: 'EE', name: 'Estonia', nameEn: 'Estonia' },
+  { code: 'FI', name: 'Finlanda', nameEn: 'Finland' },
+  { code: 'FR', name: 'Franța', nameEn: 'France' },
+  { code: 'DE', name: 'Germania', nameEn: 'Germany' },
+  { code: 'GR', name: 'Grecia', nameEn: 'Greece' },
+  { code: 'HU', name: 'Ungaria', nameEn: 'Hungary' },
+  { code: 'IE', name: 'Irlanda', nameEn: 'Ireland' },
+  { code: 'IT', name: 'Italia', nameEn: 'Italy' },
+  { code: 'LV', name: 'Letonia', nameEn: 'Latvia' },
+  { code: 'LT', name: 'Lituania', nameEn: 'Lithuania' },
+  { code: 'LU', name: 'Luxemburg', nameEn: 'Luxembourg' },
+  { code: 'MT', name: 'Malta', nameEn: 'Malta' },
+  { code: 'NL', name: 'Țările de Jos', nameEn: 'Netherlands' },
+  { code: 'PL', name: 'Polonia', nameEn: 'Poland' },
+  { code: 'PT', name: 'Portugalia', nameEn: 'Portugal' },
+  { code: 'SK', name: 'Slovacia', nameEn: 'Slovakia' },
+  { code: 'SI', name: 'Slovenia', nameEn: 'Slovenia' },
+  { code: 'ES', name: 'Spania', nameEn: 'Spain' },
+  { code: 'SE', name: 'Suedia', nameEn: 'Sweden' },
+  { code: 'GB', name: 'Regatul Unit', nameEn: 'United Kingdom' },
 ];
 
 type DeliveryMethod = 'shipping' | 'pickup' | 'locker';
@@ -85,6 +127,9 @@ const Checkout = () => {
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [couponError, setCouponError] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [countyOpen, setCountyOpen] = useState(false);
+  const [citySearch, setCitySearch] = useState('');
   
   const [form, setForm] = useState<CheckoutForm>({
     firstName: '',
@@ -93,7 +138,7 @@ const Checkout = () => {
     phone: '',
     deliveryMethod: 'shipping',
     paymentMethod: 'cash_on_delivery',
-    country: 'România',
+    country: 'RO',
     address: '',
     addressLine2: '',
     city: '',
@@ -101,6 +146,69 @@ const Checkout = () => {
     postalCode: '',
     notes: '',
   });
+
+  // Determine available delivery methods based on country and county
+  const isRomania = form.country === 'RO';
+  const isBrasov = isRomania && form.county === 'Brașov';
+  
+  const availableDeliveryMethods = useMemo(() => {
+    if (!isRomania) {
+      // International: only shipping
+      return ['shipping'] as DeliveryMethod[];
+    }
+    if (isBrasov) {
+      // Brașov: shipping, pickup, locker
+      return ['shipping', 'pickup', 'locker'] as DeliveryMethod[];
+    }
+    // Rest of Romania: shipping, locker
+    return ['shipping', 'locker'] as DeliveryMethod[];
+  }, [isRomania, isBrasov]);
+
+  // Reset delivery method when it becomes unavailable
+  const handleCountryChange = (countryCode: string) => {
+    setForm(prev => {
+      const newIsRomania = countryCode === 'RO';
+      let newDeliveryMethod = prev.deliveryMethod;
+      
+      // If switching away from Romania and method is not shipping, reset to shipping
+      if (!newIsRomania && (prev.deliveryMethod === 'pickup' || prev.deliveryMethod === 'locker')) {
+        newDeliveryMethod = 'shipping';
+      }
+      
+      return { 
+        ...prev, 
+        country: countryCode,
+        county: newIsRomania ? prev.county : '',
+        deliveryMethod: newDeliveryMethod
+      };
+    });
+    setCountryOpen(false);
+  };
+
+  const handleCountyChange = (county: string) => {
+    setForm(prev => {
+      const newIsBrasov = county === 'Brașov';
+      let newDeliveryMethod = prev.deliveryMethod;
+      
+      // If switching away from Brașov and method is pickup, reset to shipping
+      if (!newIsBrasov && prev.deliveryMethod === 'pickup') {
+        newDeliveryMethod = 'shipping';
+      }
+      
+      return { 
+        ...prev, 
+        county,
+        deliveryMethod: newDeliveryMethod
+      };
+    });
+    setCountyOpen(false);
+  };
+
+  // Get selected country name
+  const selectedCountry = COUNTRIES.find(c => c.code === form.country);
+  const countryDisplayName = selectedCountry 
+    ? (language === 'ro' ? selectedCountry.name : selectedCountry.nameEn)
+    : '';
 
   // Calculate discount based on coupon
   const calculateDiscount = () => {
@@ -113,8 +221,22 @@ const Checkout = () => {
   };
 
   const discount = calculateDiscount();
-  // Free shipping if: promo applies (4+ trigger products) OR total >= 150
-  const shippingCost = form.deliveryMethod === 'shipping' && !hasPromoFreeShipping && totalPrice < 150 ? 19.99 : 0;
+  
+  // Shipping cost calculation
+  const getShippingCost = () => {
+    if (form.deliveryMethod !== 'shipping') return 0;
+    if (hasPromoFreeShipping) return 0;
+    
+    if (isRomania) {
+      // Romania: free over 150 lei, otherwise 19.99
+      return totalPrice >= 150 ? 0 : 19.99;
+    } else {
+      // International: flat rate (can be adjusted)
+      return 29.99;
+    }
+  };
+  
+  const shippingCost = getShippingCost();
   const finalTotal = totalPrice - discount + shippingCost;
 
   // Validate coupon against cart items
@@ -137,7 +259,6 @@ const Checkout = () => {
     }
 
     if (coupon.scope === 'category' && coupon.category_id) {
-      // Fetch products with their categories
       const productIds = items.map(item => item.id);
       const { data: products } = await supabase
         .from('products')
@@ -181,7 +302,6 @@ const Checkout = () => {
         return;
       }
 
-      // Check validity dates
       const now = new Date();
       if (coupon.valid_from && new Date(coupon.valid_from) > now) {
         setCouponError(language === 'ro' ? 'Cuponul nu este încă activ.' : 'Coupon is not yet active.');
@@ -194,14 +314,12 @@ const Checkout = () => {
         return;
       }
 
-      // Check max uses
       if (coupon.max_uses && coupon.uses_count && coupon.uses_count >= coupon.max_uses) {
         setCouponError(language === 'ro' ? 'Cuponul a atins limita de utilizări.' : 'Coupon has reached its usage limit.');
         setIsApplyingCoupon(false);
         return;
       }
 
-      // Check minimum order value
       if (coupon.min_order_value && totalPrice < coupon.min_order_value) {
         setCouponError(
           language === 'ro' 
@@ -212,7 +330,6 @@ const Checkout = () => {
         return;
       }
 
-      // Validate scope
       const scopeValidation = await validateCouponScope(coupon);
       if (!scopeValidation.valid) {
         setCouponError(scopeValidation.message);
@@ -248,25 +365,28 @@ const Checkout = () => {
       return;
     }
 
-    // Validate required fields
     if (!form.firstName || !form.lastName || !form.email || !form.phone) {
       toast.error(language === 'ro' ? 'Completează toate câmpurile obligatorii' : 'Fill in all required fields');
       return;
     }
 
-    if (form.deliveryMethod === 'shipping' && (!form.address || !form.city || !form.county)) {
+    if (form.deliveryMethod === 'shipping' && (!form.address || !form.city)) {
       toast.error(language === 'ro' ? 'Completează adresa de livrare' : 'Fill in shipping address');
+      return;
+    }
+
+    if (isRomania && form.deliveryMethod === 'shipping' && !form.county) {
+      toast.error(language === 'ro' ? 'Selectează județul' : 'Select county');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Create order
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert([{
-          order_number: `VV-${Date.now()}`, // Temporary, will be overwritten by trigger
+          order_number: `VV-${Date.now()}`,
           customer_email: form.email,
           customer_phone: form.phone,
           customer_first_name: form.firstName,
@@ -274,7 +394,8 @@ const Checkout = () => {
           delivery_method: form.deliveryMethod as 'shipping' | 'pickup' | 'locker',
           payment_method: form.paymentMethod as 'stripe' | 'netopia' | 'cash_on_delivery',
           shipping_address: form.deliveryMethod === 'shipping' ? {
-            country: form.country,
+            country: countryDisplayName,
+            countryCode: form.country,
             address: form.address,
             addressLine2: form.addressLine2,
             city: form.city,
@@ -294,7 +415,6 @@ const Checkout = () => {
 
       if (orderError) throw orderError;
 
-      // Update coupon uses_count if a coupon was applied
       if (appliedCoupon) {
         await supabase
           .from('coupons')
@@ -302,7 +422,6 @@ const Checkout = () => {
           .eq('id', appliedCoupon.id);
       }
 
-      // Create order items (including gifts)
       const orderItems = items.map(item => ({
         order_id: order.id,
         product_id: item.id,
@@ -318,7 +437,6 @@ const Checkout = () => {
 
       if (itemsError) throw itemsError;
 
-      // Handle payment based on method
       if (form.paymentMethod === 'cash_on_delivery') {
         clearCart();
         navigate(`/comanda-confirmata?order=${order.order_number}`);
@@ -394,17 +512,49 @@ const Checkout = () => {
                     {language === 'ro' ? 'Date facturare și livrare' : 'Billing & shipping info'}
                   </h2>
                   
-                  {/* Country */}
+                  {/* Country with search */}
                   <div className="space-y-2">
-                    <Label htmlFor="country">
+                    <Label>
                       {language === 'ro' ? 'Țară/regiune' : 'Country/Region'} *
                     </Label>
-                    <Input
-                      id="country"
-                      value={form.country}
-                      onChange={(e) => updateForm('country', e.target.value)}
-                      required
-                    />
+                    <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={countryOpen}
+                          className="w-full justify-between bg-background"
+                        >
+                          {countryDisplayName || (language === 'ro' ? 'Selectează țara' : 'Select country')}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0 bg-background z-50" align="start">
+                        <Command>
+                          <CommandInput placeholder={language === 'ro' ? 'Caută țara...' : 'Search country...'} />
+                          <CommandList>
+                            <CommandEmpty>{language === 'ro' ? 'Nu s-a găsit.' : 'Not found.'}</CommandEmpty>
+                            <CommandGroup>
+                              {COUNTRIES.map((country) => (
+                                <CommandItem
+                                  key={country.code}
+                                  value={`${country.name} ${country.nameEn}`}
+                                  onSelect={() => handleCountryChange(country.code)}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      form.country === country.code ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {language === 'ro' ? country.name : country.nameEn}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   {/* Name row */}
@@ -459,7 +609,7 @@ const Checkout = () => {
                     </div>
                   </div>
 
-                  {/* City & County */}
+                  {/* City & County/Region */}
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="city">
@@ -473,26 +623,64 @@ const Checkout = () => {
                         required
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="county">
-                        {language === 'ro' ? 'Județ' : 'County'} *
-                      </Label>
-                      <Select
-                        value={form.county}
-                        onValueChange={(value) => updateForm('county', value)}
-                      >
-                        <SelectTrigger className="bg-background">
-                          <SelectValue placeholder={language === 'ro' ? 'Selectează un județ' : 'Select county'} />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background z-50 max-h-60">
-                          {ROMANIAN_COUNTIES.map((county) => (
-                            <SelectItem key={county} value={county}>
-                              {county}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    
+                    {isRomania ? (
+                      <div className="space-y-2">
+                        <Label>
+                          {language === 'ro' ? 'Județ' : 'County'} *
+                        </Label>
+                        <Popover open={countyOpen} onOpenChange={setCountyOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={countyOpen}
+                              className="w-full justify-between bg-background"
+                            >
+                              {form.county || (language === 'ro' ? 'Selectează județul' : 'Select county')}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0 bg-background z-50" align="start">
+                            <Command>
+                              <CommandInput placeholder={language === 'ro' ? 'Caută județul...' : 'Search county...'} />
+                              <CommandList>
+                                <CommandEmpty>{language === 'ro' ? 'Nu s-a găsit.' : 'Not found.'}</CommandEmpty>
+                                <CommandGroup>
+                                  {ROMANIAN_COUNTIES.map((county) => (
+                                    <CommandItem
+                                      key={county}
+                                      value={county}
+                                      onSelect={() => handleCountyChange(county)}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          form.county === county ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {county}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label htmlFor="county">
+                          {language === 'ro' ? 'Regiune/Stat' : 'Region/State'}
+                        </Label>
+                        <Input
+                          id="county"
+                          value={form.county}
+                          onChange={(e) => updateForm('county', e.target.value)}
+                          placeholder={language === 'ro' ? 'Regiune/Stat' : 'Region/State'}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* Address */}
@@ -546,6 +734,7 @@ const Checkout = () => {
                       onValueChange={(value) => updateForm('deliveryMethod', value)}
                       className="space-y-3"
                     >
+                      {/* Shipping - always available */}
                       <label 
                         className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
                           form.deliveryMethod === 'shipping' 
@@ -559,60 +748,57 @@ const Checkout = () => {
                           <p className="font-medium">
                             {language === 'ro' ? 'Livrare la adresă' : 'Home delivery'}
                           </p>
-                          <p className="text-sm text-muted-foreground">
-                            {language === 'ro' ? '1-3 zile lucrătoare' : '1-3 business days'}
-                          </p>
                         </div>
                         <span className="font-medium">
-                          {totalPrice >= 150 
+                          {shippingCost === 0 
                             ? (language === 'ro' ? 'Gratuit' : 'Free')
-                            : '19.99 lei'}
+                            : `${shippingCost} lei`}
                         </span>
                       </label>
 
-                      <label 
-                        className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
-                          form.deliveryMethod === 'pickup' 
-                            ? 'border-primary bg-primary/5' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <RadioGroupItem value="pickup" id="pickup" />
-                        <MapPin className="w-5 h-5 text-primary" />
-                        <div className="flex-1">
-                          <p className="font-medium">
-                            {language === 'ro' ? 'Ridicare personală - Brașov' : 'Pickup - Brașov'}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {language === 'ro' ? 'Disponibil în 24h' : 'Available in 24h'}
-                          </p>
-                        </div>
-                        <span className="font-medium text-primary">
-                          {language === 'ro' ? 'Gratuit' : 'Free'}
-                        </span>
-                      </label>
+                      {/* Pickup - only for Brașov */}
+                      {availableDeliveryMethods.includes('pickup') && (
+                        <label 
+                          className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                            form.deliveryMethod === 'pickup' 
+                              ? 'border-primary bg-primary/5' 
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                        >
+                          <RadioGroupItem value="pickup" id="pickup" />
+                          <MapPin className="w-5 h-5 text-primary" />
+                          <div className="flex-1">
+                            <p className="font-medium">
+                              {language === 'ro' ? 'Ridicare personală - Brașov' : 'Pickup - Brașov'}
+                            </p>
+                          </div>
+                          <span className="font-medium text-primary">
+                            {language === 'ro' ? 'Gratuit' : 'Free'}
+                          </span>
+                        </label>
+                      )}
 
-                      <label 
-                        className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all opacity-60 ${
-                          form.deliveryMethod === 'locker' 
-                            ? 'border-primary bg-primary/5' 
-                            : 'border-border'
-                        }`}
-                      >
-                        <RadioGroupItem value="locker" id="locker" disabled />
-                        <Package className="w-5 h-5 text-muted-foreground" />
-                        <div className="flex-1">
-                          <p className="font-medium">
-                            {language === 'ro' ? 'Easybox / Locker' : 'Easybox / Locker'}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {language === 'ro' ? 'În curând - Ecolet' : 'Coming soon - Ecolet'}
-                          </p>
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {language === 'ro' ? 'În curând' : 'Soon'}
-                        </span>
-                      </label>
+                      {/* Locker - only for Romania */}
+                      {availableDeliveryMethods.includes('locker') && (
+                        <label 
+                          className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all opacity-60 ${
+                            form.deliveryMethod === 'locker' 
+                              ? 'border-primary bg-primary/5' 
+                              : 'border-border'
+                          }`}
+                        >
+                          <RadioGroupItem value="locker" id="locker" disabled />
+                          <Package className="w-5 h-5 text-muted-foreground" />
+                          <div className="flex-1">
+                            <p className="font-medium">
+                              {language === 'ro' ? 'Easybox / Locker' : 'Easybox / Locker'}
+                            </p>
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {language === 'ro' ? 'În curând' : 'Soon'}
+                          </span>
+                        </label>
+                      )}
                     </RadioGroup>
 
                     {/* Pickup Info */}
@@ -628,6 +814,17 @@ const Checkout = () => {
                           {language === 'ro' 
                             ? 'Vei primi un email cu detalii exacte după plasarea comenzii.'
                             : 'You will receive an email with exact details after placing the order.'}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* International shipping info */}
+                    {!isRomania && (
+                      <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                          {language === 'ro' 
+                            ? 'Livrare internațională în Uniunea Europeană și Regatul Unit.'
+                            : 'International shipping to European Union and United Kingdom.'}
                         </p>
                       </div>
                     )}
@@ -846,12 +1043,12 @@ const Checkout = () => {
                     type="submit" 
                     variant="hero" 
                     size="lg" 
-                    className="w-full" 
+                    className="w-full"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         {language === 'ro' ? 'Se procesează...' : 'Processing...'}
                       </>
                     ) : (
@@ -861,8 +1058,8 @@ const Checkout = () => {
 
                   <p className="text-xs text-muted-foreground text-center">
                     {language === 'ro' 
-                      ? 'Prin plasarea comenzii, ești de acord cu Termenii și Condițiile noastre.'
-                      : 'By placing your order, you agree to our Terms and Conditions.'}
+                      ? 'Prin plasarea comenzii, ești de acord cu termenii și condițiile noastre.'
+                      : 'By placing your order, you agree to our terms and conditions.'}
                   </p>
                 </div>
               </div>
