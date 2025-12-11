@@ -44,7 +44,10 @@ export function HeroSection() {
           </div>
 
           {/* Hero Image - Second on mobile */}
-          <div className="order-2 lg:order-2 relative opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center w-full">
+          <Link 
+            to="/produse/pasta-dent-tastic"
+            className="order-2 lg:order-2 relative opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center w-full group"
+          >
             <div className="relative w-full max-w-md lg:max-w-lg mx-auto">
               {/* Glow effect behind image */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-2xl blur-3xl scale-110" />
@@ -52,10 +55,10 @@ export function HeroSection() {
               <img 
                 src={heroImage} 
                 alt="Dent-Tastic Toothpaste" 
-                className="relative w-full h-auto rounded-2xl drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+                className="relative w-full h-auto rounded-2xl drop-shadow-2xl group-hover:scale-105 transition-transform duration-500"
               />
             </div>
-          </div>
+          </Link>
         </div>
       </div>
 

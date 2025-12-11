@@ -23,7 +23,7 @@ export function FeaturedProductSection() {
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Image - First on mobile */}
           <Link 
-            to="/produse/dent-tastic"
+            to="/produse/pasta-dent-tastic"
             className="order-1 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center group w-full"
           >
             {/* Single elegant frame - same width as text */}
@@ -64,7 +64,7 @@ export function FeaturedProductSection() {
             </div>
 
             <Button variant="hero" size="lg" asChild className="group mt-4 w-full sm:w-auto">
-              <Link to="/produse/dent-tastic">
+              <Link to="/produse/pasta-dent-tastic">
                 {t('featured.cta')}
                 <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
               </Link>

@@ -26,6 +26,7 @@ interface Review {
   rating: number;
   title: string | null;
   content: string | null;
+  images: string[] | null;
   is_approved: boolean;
   is_verified_purchase: boolean;
   created_at: string;
@@ -101,8 +102,25 @@ const AdminReviews = () => {
     }
   };
 
+  // Helper to extract file path from URL for storage deletion
+  const getStoragePathFromUrl = (url: string, bucket: string): string | null => {
+    try {
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split(`/storage/v1/object/public/${bucket}/`);
+      if (pathParts.length > 1) {
+        return pathParts[1];
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   const deleteReview = async (id: string) => {
     if (!confirm('Sigur vrei să ștergi această recenzie?')) return;
+    
+    // Find review to get images
+    const reviewToDelete = reviews.find(r => r.id === id);
     
     const { error } = await supabase
       .from('reviews')
@@ -111,11 +129,26 @@ const AdminReviews = () => {
 
     if (error) {
       toast.error('Eroare la ștergere');
-    } else {
-      toast.success('Recenzie ștearsă');
-      fetchReviews();
-      setDialogOpen(false);
+      return;
     }
+
+    // Delete review images from storage
+    if (reviewToDelete && (reviewToDelete as any).images?.length > 0) {
+      const pathsToDelete = ((reviewToDelete as any).images as string[])
+        .map(url => getStoragePathFromUrl(url, 'reviews'))
+        .filter((path): path is string => path !== null);
+      
+      if (pathsToDelete.length > 0) {
+        await supabase.storage.from('reviews').remove(pathsToDelete);
+      }
+    }
+
+    // Also delete any coupons generated from this review
+    await supabase.from('coupons').delete().eq('review_id', id);
+
+    toast.success('Recenzie ștearsă');
+    fetchReviews();
+    setDialogOpen(false);
   };
 
   const getProductName = (productId: string) => {
