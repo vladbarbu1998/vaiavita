@@ -47,24 +47,24 @@ export function QivaroSection() {
           </div>
 
           {/* Image */}
-          <div className="opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center overflow-hidden">
+          <div className="opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center">
             {/* Multi-border frame effect - layered borders */}
-            <div className="relative p-4 sm:p-8 md:p-12 group w-full max-w-sm sm:max-w-md mx-auto">
+            <div className="relative p-3 sm:p-6 md:p-10 group w-full max-w-[280px] sm:max-w-sm md:max-w-md mx-auto">
               {/* Outermost border - subtle - hidden on very small screens */}
               <div className="hidden sm:block absolute inset-0 rounded-[2rem] border-2 border-primary/15 bg-background/5" />
               {/* Middle border */}
-              <div className="hidden sm:block absolute inset-4 md:inset-6 rounded-[1.5rem] border-2 border-primary/25" />
+              <div className="hidden sm:block absolute inset-3 md:inset-5 rounded-[1.5rem] border-2 border-primary/25" />
               {/* Inner border - most visible */}
-              <div className="absolute inset-2 sm:inset-8 md:inset-12 rounded-2xl border-2 border-primary/35" />
+              <div className="absolute inset-1 sm:inset-6 md:inset-10 rounded-2xl border-2 border-primary/35" />
               
               {/* Background glow */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-[2rem]" />
               
-              <div className="relative p-2 sm:p-4 md:p-8">
+              <div className="relative p-1 sm:p-3 md:p-6">
                 <img 
                   src={qivaroImage} 
                   alt="Qivaro Supplements" 
-                  className="relative w-full h-auto max-w-full rounded-xl drop-shadow-2xl group-hover:scale-105 transition-transform duration-500"
+                  className="relative w-full h-auto rounded-xl drop-shadow-2xl group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
             </div>
