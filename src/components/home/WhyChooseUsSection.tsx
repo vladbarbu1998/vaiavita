@@ -23,12 +23,12 @@ export function WhyChooseUsSection() {
       </div>
       
       <div className="container-custom relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Image - Equal size container */}
-          <div className="opacity-0 animate-fade-up flex items-center justify-center">
-            <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+          {/* Image - First on mobile */}
+          <div className="order-1 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center">
+            <div className="relative w-full max-w-sm sm:max-w-md aspect-square flex items-center justify-center">
               <div className="absolute -inset-4 bg-gradient-to-br from-primary/10 to-transparent rounded-[2rem] blur-2xl opacity-60" />
-              <div className="relative bg-card/50 backdrop-blur-sm rounded-[2rem] p-8 w-full h-full flex items-center justify-center border border-border/30 shadow-card overflow-hidden">
+              <div className="relative bg-card/50 backdrop-blur-sm rounded-[2rem] p-4 sm:p-8 w-full h-full flex items-center justify-center border border-border/30 shadow-card overflow-hidden">
                 <img 
                   src={despreImage} 
                   alt="VAIAVITA Products" 
@@ -38,8 +38,8 @@ export function WhyChooseUsSection() {
             </div>
           </div>
 
-          {/* Content */}
-          <div className="space-y-5 opacity-0 animate-fade-up animation-delay-200">
+          {/* Content - Second on mobile */}
+          <div className="order-2 lg:order-2 space-y-5 opacity-0 animate-fade-up animation-delay-200">
             <h2 className="font-display text-2xl md:text-3xl lg:text-4xl tracking-wide">
               {t('why.title')}
             </h2>
@@ -50,21 +50,21 @@ export function WhyChooseUsSection() {
             </div>
 
             {/* Benefits grid */}
-            <div className="grid grid-cols-2 gap-4 pt-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-4">
               {benefits.map((benefit, index) => (
                 <div 
                   key={index} 
-                  className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-colors"
+                  className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <benefit.icon className="w-5 h-5 text-primary" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <benefit.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
-                  <span className="text-sm font-medium">{benefit.label}</span>
+                  <span className="text-xs sm:text-sm font-medium">{benefit.label}</span>
                 </div>
               ))}
             </div>
 
-            <Button variant="outline" size="lg" asChild className="group mt-4">
+            <Button variant="outline" size="lg" asChild className="group mt-4 w-full sm:w-auto">
               <Link to="/despre">
                 {t('why.cta')}
                 <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
