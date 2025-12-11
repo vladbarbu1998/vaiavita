@@ -14,57 +14,55 @@ export function QivaroSection() {
 
   return (
     <section className="section-padding section-gradient-2 relative overflow-hidden">
-      {/* Decorative elements - hidden on mobile */}
-      <div className="hidden sm:block absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
-      <div className="hidden sm:block absolute bottom-0 left-1/4 w-80 h-80 bg-primary/3 rounded-full blur-3xl" />
+      {/* Decorative elements - hidden on mobile/tablet */}
+      <div className="hidden lg:block absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+      <div className="hidden lg:block absolute bottom-0 left-1/4 w-80 h-80 bg-primary/3 rounded-full blur-3xl" />
       
-      <div className="container-custom relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <div className="container-custom relative z-10 overflow-hidden">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Content */}
-          <div className="space-y-5 opacity-0 animate-fade-up">
-            <h2 className="font-display text-2xl md:text-3xl lg:text-4xl tracking-wide">
+          <div className="space-y-4 opacity-0 animate-fade-up overflow-hidden">
+            <h2 className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-wide break-words">
               {t('qivaro.title')}
             </h2>
             
-            <div className="space-y-3 text-muted-foreground leading-relaxed">
+            <div className="space-y-3 text-muted-foreground leading-relaxed text-sm sm:text-base">
               <p>{t('qivaro.description')}</p>
               <p>{t('qivaro.description2')}</p>
             </div>
 
             {/* Highlights */}
-            <div className="flex flex-wrap gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 pt-2">
               {highlights.map((item, index) => (
-                <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <item.icon className="w-5 h-5 text-primary" />
+                <div key={index} className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                  <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
                   <span>{item.label}</span>
                 </div>
               ))}
             </div>
 
-            <Button variant="secondary" size="lg" disabled className="cursor-not-allowed opacity-70 mt-4">
+            <Button variant="secondary" size="lg" disabled className="cursor-not-allowed opacity-70 mt-4 w-full sm:w-auto">
               {t('qivaro.cta')}
             </Button>
           </div>
 
           {/* Image */}
-          <div className="opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center">
-            {/* Multi-border frame effect - layered borders */}
-            <div className="relative p-3 sm:p-6 md:p-10 group w-full max-w-[280px] sm:max-w-sm md:max-w-md mx-auto">
-              {/* Outermost border - subtle - hidden on very small screens */}
-              <div className="hidden sm:block absolute inset-0 rounded-[2rem] border-2 border-primary/15 bg-background/5" />
-              {/* Middle border */}
-              <div className="hidden sm:block absolute inset-3 md:inset-5 rounded-[1.5rem] border-2 border-primary/25" />
-              {/* Inner border - most visible */}
-              <div className="absolute inset-1 sm:inset-6 md:inset-10 rounded-2xl border-2 border-primary/35" />
+          <div className="opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center px-4 sm:px-0">
+            {/* Simple frame for mobile, decorative frame for larger screens */}
+            <div className="relative w-full max-w-[220px] sm:max-w-[280px] md:max-w-sm mx-auto">
+              {/* Decorative borders - only on larger screens */}
+              <div className="hidden sm:block absolute -inset-4 md:-inset-6 rounded-2xl border-2 border-primary/15" />
+              <div className="hidden md:block absolute -inset-2 md:-inset-3 rounded-xl border-2 border-primary/25" />
               
               {/* Background glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-[2rem]" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-xl" />
               
-              <div className="relative p-1 sm:p-3 md:p-6">
+              {/* Image container */}
+              <div className="relative rounded-xl border-2 border-primary/30 overflow-hidden bg-background/50 p-2 sm:p-3">
                 <img 
                   src={qivaroImage} 
                   alt="Qivaro Supplements" 
-                  className="relative w-full h-auto rounded-xl drop-shadow-2xl group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-auto rounded-lg"
                 />
               </div>
             </div>
