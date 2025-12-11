@@ -17,7 +17,7 @@ export function WhyChooseUsSection() {
   return (
     <section className="section-padding relative overflow-hidden">
       {/* Background decoration - hidden on mobile */}
-      <div className="absolute inset-0 opacity-40 hidden sm:block">
+      <div className="absolute inset-0 opacity-40 hidden lg:block">
         <div className="absolute top-1/3 left-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-1/3 right-0 w-96 h-96 bg-primary/3 rounded-full blur-3xl" />
       </div>
@@ -25,14 +25,14 @@ export function WhyChooseUsSection() {
       <div className="container-custom relative z-10">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Image - First on mobile */}
-          <div className="order-1 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center">
-            <div className="relative w-full max-w-sm sm:max-w-md aspect-square flex items-center justify-center">
-              <div className="absolute -inset-4 bg-gradient-to-br from-primary/10 to-transparent rounded-[2rem] blur-2xl opacity-60" />
-              <div className="relative bg-card/50 backdrop-blur-sm rounded-[2rem] p-4 sm:p-8 w-full h-full flex items-center justify-center border border-border/30 shadow-card overflow-hidden">
+          <div className="order-1 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center w-full">
+            <div className="relative w-full max-w-md lg:max-w-lg mx-auto">
+              <div className="absolute -inset-4 bg-gradient-to-br from-primary/10 to-transparent rounded-2xl blur-2xl opacity-60" />
+              <div className="relative bg-card/50 backdrop-blur-sm rounded-2xl p-4 sm:p-6 w-full flex items-center justify-center border border-border/30 shadow-card overflow-hidden">
                 <img 
                   src={despreImage} 
                   alt="VAIAVITA Products" 
-                  className="w-full h-auto max-h-[85%] object-contain hover:scale-105 transition-transform duration-700 rounded-2xl"
+                  className="w-full h-auto object-contain hover:scale-105 transition-transform duration-700 rounded-xl"
                 />
               </div>
             </div>

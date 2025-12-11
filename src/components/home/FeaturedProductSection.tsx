@@ -14,29 +14,29 @@ export function FeaturedProductSection() {
   return (
     <section className="section-padding relative overflow-hidden">
       {/* Subtle background pattern - hidden on mobile */}
-      <div className="absolute inset-0 opacity-30 hidden sm:block">
+      <div className="absolute inset-0 opacity-30 hidden lg:block">
         <div className="absolute top-1/4 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 left-0 w-96 h-96 bg-primary/3 rounded-full blur-3xl" />
       </div>
       
       <div className="container-custom relative z-10">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-          {/* Image - First on mobile, Clickable link to product */}
+          {/* Image - First on mobile */}
           <Link 
             to="/produse/dent-tastic"
-            className="order-1 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center group"
+            className="order-1 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center group w-full"
           >
             {/* Single elegant frame */}
-            <div className="relative p-4 sm:p-6">
+            <div className="relative w-full max-w-md lg:max-w-lg mx-auto p-3 sm:p-4">
               {/* Glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-primary/5 rounded-3xl blur-xl" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-primary/5 rounded-2xl blur-xl" />
               
               {/* Single border frame */}
               <div className="relative rounded-2xl border-2 border-primary/30 bg-background/5 p-3 sm:p-4 shadow-xl">
                 <img 
                   src={dentTasticImage} 
                   alt="Dent-Tastic Fresh Mint" 
-                  className="relative w-full h-auto max-w-sm rounded-xl group-hover:scale-105 transition-transform duration-500"
+                  className="relative w-full h-auto rounded-xl group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
             </div>
