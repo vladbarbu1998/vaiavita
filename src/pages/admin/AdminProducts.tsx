@@ -25,7 +25,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Search, Loader2, Upload, X, Image as ImageIcon, Languages, Download, ChevronDown, Check } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Loader2, Upload, X, Image as ImageIcon, Languages, Download, ChevronDown, Check, Copy } from 'lucide-react';
 import { SpecificationsEditor, ProductSpecifications } from '@/components/admin/SpecificationsEditor';
 
 interface Product {
@@ -726,7 +726,17 @@ const AdminProducts = () => {
                       </div>
                     </td>
                     <td className="p-4">
-                      <code className="text-xs bg-muted px-2 py-1 rounded font-mono">{product.id.slice(0, 8)}...</code>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(product.id);
+                          toast.success('ID copiat în clipboard');
+                        }}
+                        className="flex items-center gap-1 group cursor-pointer"
+                        title={product.id}
+                      >
+                        <code className="text-xs bg-muted px-2 py-1 rounded font-mono group-hover:bg-primary/10 transition-colors">{product.id.slice(0, 8)}...</code>
+                        <Copy className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </button>
                     </td>
                     <td className="p-4">
                       <p className="font-medium">{Number(product.price).toFixed(2)} lei</p>
