@@ -129,6 +129,12 @@ const AdminCustomers = () => {
     }
 
     try {
+      // First delete reviews by this customer
+      await supabase.from('reviews').delete().eq('customer_email', customer.email);
+      
+      // Delete coupons restricted to this email
+      await supabase.from('coupons').delete().eq('allowed_email', customer.email);
+      
       // Delete all orders for this customer (order_items will cascade)
       const { error } = await supabase
         .from('orders')

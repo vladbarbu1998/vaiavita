@@ -543,7 +543,56 @@ const AdminProducts = () => {
     // Find product to get images
     const productToDelete = products.find(p => p.id === id);
     
-    // Delete product from database first
+    // First, clean up related data
+    // Delete product_categories associations
+    await supabase.from('product_categories').delete().eq('product_id', id);
+    
+    // Delete reviews for this product (and their images)
+    const { data: productReviews } = await supabase
+      .from('reviews')
+      .select('id, images')
+      .eq('product_id', id);
+    
+    if (productReviews && productReviews.length > 0) {
+      // Delete review images from storage
+      for (const review of productReviews) {
+        if (review.images && (review.images as string[]).length > 0) {
+          const reviewPaths = (review.images as string[])
+            .map(url => {
+              try {
+                const urlObj = new URL(url);
+                const pathParts = urlObj.pathname.split('/storage/v1/object/public/reviews/');
+                return pathParts.length > 1 ? pathParts[1] : null;
+              } catch { return null; }
+            })
+            .filter((path): path is string => path !== null);
+          
+          if (reviewPaths.length > 0) {
+            await supabase.storage.from('reviews').remove(reviewPaths);
+          }
+        }
+      }
+      // Delete the reviews themselves
+      await supabase.from('reviews').delete().eq('product_id', id);
+    }
+    
+    // Delete coupons that reference this product
+    await supabase.from('coupons').delete().eq('product_id', id);
+    
+    // Update related_products arrays in other products to remove this ID
+    const { data: relatedProducts } = await supabase
+      .from('products')
+      .select('id, related_products')
+      .contains('related_products', [id]);
+    
+    if (relatedProducts && relatedProducts.length > 0) {
+      for (const rp of relatedProducts) {
+        const updatedRelated = (rp.related_products as string[]).filter(rpId => rpId !== id);
+        await supabase.from('products').update({ related_products: updatedRelated }).eq('id', rp.id);
+      }
+    }
+    
+    // Delete product from database
     const { error } = await supabase
       .from('products')
       .delete()
@@ -554,7 +603,7 @@ const AdminProducts = () => {
       return;
     }
 
-    // Delete all images from storage
+    // Delete all product images from storage
     if (productToDelete?.images && productToDelete.images.length > 0) {
       const pathsToDelete = productToDelete.images
         .map(url => getStoragePathFromUrl(url))

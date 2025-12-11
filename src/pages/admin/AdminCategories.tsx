@@ -181,6 +181,12 @@ const AdminCategories = () => {
 
     if (!confirm('Ești sigur că vrei să ștergi această categorie?')) return;
 
+    // First delete any product_categories associations (in case of orphaned records)
+    await supabase.from('product_categories').delete().eq('category_id', id);
+    
+    // Also remove coupons that reference this category
+    await supabase.from('coupons').delete().eq('category_id', id);
+
     const { error } = await supabase
       .from('categories')
       .delete()
