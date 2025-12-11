@@ -1048,12 +1048,11 @@ const Checkout = () => {
                             }
                           </p>
                         </div>
-                        <p className={`font-medium text-xs sm:text-sm shrink-0 text-right ${item.isGift ? 'text-green-600' : ''}`}>
-                          {item.isGift 
-                            ? (language === 'ro' ? 'GR.' : 'FREE')
-                            : formatPrice(item.price * item.quantity)
-                          }
-                        </p>
+                        {!item.isGift && (
+                          <p className="font-medium text-xs sm:text-sm shrink-0 text-right">
+                            {formatPrice(item.price * item.quantity)}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
