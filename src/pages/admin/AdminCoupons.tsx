@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -18,10 +19,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Loader2, Tag, Percent, Trash2, Edit, Copy, Package, FolderOpen, Globe } from 'lucide-react';
+import { Plus, Loader2, Tag, Percent, Trash2, Edit, Copy, Package, FolderOpen, Globe, Mail, Hash } from 'lucide-react';
 
 interface Coupon {
   id: string;
+  coupon_number: number;
   code: string;
   description: string | null;
   discount_type: string;
@@ -35,7 +37,10 @@ interface Coupon {
   created_at: string;
   scope: string;
   product_id: string | null;
+  product_ids: string[] | null;
   category_id: string | null;
+  allowed_email: string | null;
+  review_id: string | null;
   products?: { name_ro: string } | null;
   categories?: { name_ro: string } | null;
 }
@@ -70,8 +75,9 @@ const AdminCoupons = () => {
     valid_until: '',
     is_active: true,
     scope: 'all',
-    product_id: '',
+    product_ids: [] as string[],
     category_id: '',
+    allowed_email: '',
   });
 
   useEffect(() => {
@@ -88,7 +94,7 @@ const AdminCoupons = () => {
         products:product_id(name_ro),
         categories:category_id(name_ro)
       `)
-      .order('created_at', { ascending: false });
+      .order('coupon_number', { ascending: false });
 
     if (error) {
       toast.error('Eroare la încărcarea cupoanelor');
@@ -127,8 +133,9 @@ const AdminCoupons = () => {
       valid_until: '',
       is_active: true,
       scope: 'all',
-      product_id: '',
+      product_ids: [],
       category_id: '',
+      allowed_email: '',
     });
     setEditingCoupon(null);
   };
@@ -140,6 +147,15 @@ const AdminCoupons = () => {
 
   const openEditDialog = (coupon: Coupon) => {
     setEditingCoupon(coupon);
+    
+    // Handle product_ids - merge old product_id with new product_ids array
+    let productIds: string[] = [];
+    if (coupon.product_ids && coupon.product_ids.length > 0) {
+      productIds = coupon.product_ids;
+    } else if (coupon.product_id) {
+      productIds = [coupon.product_id];
+    }
+    
     setForm({
       code: coupon.code,
       description: coupon.description || '',
@@ -151,8 +167,9 @@ const AdminCoupons = () => {
       valid_until: coupon.valid_until ? coupon.valid_until.split('T')[0] : '',
       is_active: coupon.is_active ?? true,
       scope: coupon.scope || 'all',
-      product_id: coupon.product_id || '',
+      product_ids: productIds,
       category_id: coupon.category_id || '',
+      allowed_email: coupon.allowed_email || '',
     });
     setDialogOpen(true);
   };
@@ -163,8 +180,8 @@ const AdminCoupons = () => {
       return;
     }
 
-    if (form.scope === 'product' && !form.product_id) {
-      toast.error('Selectează un produs');
+    if (form.scope === 'products' && form.product_ids.length === 0) {
+      toast.error('Selectează cel puțin un produs');
       return;
     }
 
@@ -186,8 +203,10 @@ const AdminCoupons = () => {
       valid_until: form.valid_until || null,
       is_active: form.is_active,
       scope: form.scope,
-      product_id: form.scope === 'product' ? form.product_id : null,
+      product_id: form.scope === 'products' && form.product_ids.length === 1 ? form.product_ids[0] : null,
+      product_ids: form.scope === 'products' ? form.product_ids : [],
       category_id: form.scope === 'category' ? form.category_id : null,
+      allowed_email: form.allowed_email.trim().toLowerCase() || null,
     };
 
     let error;
@@ -254,8 +273,21 @@ const AdminCoupons = () => {
   };
 
   const getScopeLabel = (coupon: Coupon) => {
-    if (coupon.scope === 'product' && coupon.products) {
-      return coupon.products.name_ro;
+    if (coupon.scope === 'products' || coupon.scope === 'product') {
+      // Multiple products
+      if (coupon.product_ids && coupon.product_ids.length > 1) {
+        return `${coupon.product_ids.length} produse`;
+      }
+      // Single product
+      if (coupon.products) {
+        return coupon.products.name_ro;
+      }
+      // Fallback to product_ids
+      if (coupon.product_ids && coupon.product_ids.length === 1) {
+        const prod = products.find(p => p.id === coupon.product_ids![0]);
+        return prod?.name_ro || 'Produs selectat';
+      }
+      return 'Produse selectate';
     }
     if (coupon.scope === 'category' && coupon.categories) {
       return coupon.categories.name_ro;
@@ -264,9 +296,18 @@ const AdminCoupons = () => {
   };
 
   const getScopeIcon = (scope: string) => {
-    if (scope === 'product') return <Package className="w-3 h-3" />;
+    if (scope === 'product' || scope === 'products') return <Package className="w-3 h-3" />;
     if (scope === 'category') return <FolderOpen className="w-3 h-3" />;
     return <Globe className="w-3 h-3" />;
+  };
+
+  const toggleProductSelection = (productId: string) => {
+    setForm(prev => ({
+      ...prev,
+      product_ids: prev.product_ids.includes(productId)
+        ? prev.product_ids.filter(id => id !== productId)
+        : [...prev.product_ids, productId]
+    }));
   };
 
   return (
@@ -298,6 +339,18 @@ const AdminCoupons = () => {
         </div>
       </div>
 
+      {/* Info Box */}
+      <div className="card-premium p-4 bg-primary/5 border-primary/20">
+        <h3 className="font-medium mb-2">Cum funcționează cupoanele:</h3>
+        <ul className="text-sm text-muted-foreground space-y-1">
+          <li>• <strong>Toate produsele</strong> - Cuponul se aplică la orice produs din coș</li>
+          <li>• <strong>Produse specifice</strong> - Selectezi unul sau mai multe produse pentru care se aplică reducerea</li>
+          <li>• <strong>Categorie</strong> - Cuponul se aplică doar produselor din categoria selectată</li>
+          <li>• <strong>Email restricționat</strong> - Cuponul funcționează doar pentru un anumit email (pentru cupoane de review)</li>
+          <li>• <strong>Nr. max utilizări</strong> - Câte ori poate fi folosit cuponul în total (nelimitat dacă e gol)</li>
+        </ul>
+      </div>
+
       {/* Coupons List */}
       <div className="space-y-4">
         {loading ? (
@@ -321,7 +374,10 @@ const AdminCoupons = () => {
                     )}
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs text-muted-foreground font-mono">
+                        <Hash className="w-3 h-3 inline" />{coupon.coupon_number}
+                      </span>
                       <code className="font-mono font-bold text-lg">{coupon.code}</code>
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyCode(coupon.code)}>
                         <Copy className="w-3 h-3" />
@@ -336,6 +392,12 @@ const AdminCoupons = () => {
                         {getScopeIcon(coupon.scope)}
                         {getScopeLabel(coupon)}
                       </span>
+                      {coupon.allowed_email && (
+                        <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 flex items-center gap-1">
+                          <Mail className="w-3 h-3" />
+                          {coupon.allowed_email}
+                        </span>
+                      )}
                       {coupon.min_order_value && (
                         <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                           Min. {coupon.min_order_value} lei
@@ -347,6 +409,11 @@ const AdminCoupons = () => {
                       {coupon.valid_until && (
                         <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                           Până la {formatDate(coupon.valid_until)}
+                        </span>
+                      )}
+                      {coupon.review_id && (
+                        <span className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-600">
+                          Review
                         </span>
                       )}
                     </div>
@@ -427,7 +494,7 @@ const AdminCoupons = () => {
             {/* Scope Selection */}
             <div className="space-y-2">
               <Label>Se aplică pentru</Label>
-              <Select value={form.scope} onValueChange={(v) => setForm({ ...form, scope: v, product_id: '', category_id: '' })}>
+              <Select value={form.scope} onValueChange={(v) => setForm({ ...form, scope: v, product_ids: [], category_id: '' })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -438,10 +505,10 @@ const AdminCoupons = () => {
                       Toate produsele
                     </div>
                   </SelectItem>
-                  <SelectItem value="product">
+                  <SelectItem value="products">
                     <div className="flex items-center gap-2">
                       <Package className="w-4 h-4" />
-                      Produs specific
+                      Produse specifice
                     </div>
                   </SelectItem>
                   <SelectItem value="category">
@@ -454,22 +521,27 @@ const AdminCoupons = () => {
               </Select>
             </div>
 
-            {/* Product Selection */}
-            {form.scope === 'product' && (
+            {/* Multiple Products Selection */}
+            {form.scope === 'products' && (
               <div className="space-y-2">
-                <Label>Selectează produsul *</Label>
-                <Select value={form.product_id} onValueChange={(v) => setForm({ ...form, product_id: v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Alege un produs" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {products.filter(product => product.id).map((product) => (
-                      <SelectItem key={product.id} value={product.id}>
-                        {product.name_ro}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Selectează produsele * ({form.product_ids.length} selectate)</Label>
+                <div className="max-h-48 overflow-y-auto border rounded-lg p-2 space-y-1">
+                  {products.map((product) => (
+                    <div 
+                      key={product.id} 
+                      className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
+                        form.product_ids.includes(product.id) ? 'bg-primary/10' : ''
+                      }`}
+                      onClick={() => toggleProductSelection(product.id)}
+                    >
+                      <Checkbox 
+                        checked={form.product_ids.includes(product.id)}
+                        onCheckedChange={() => toggleProductSelection(product.id)}
+                      />
+                      <span className="text-sm">{product.name_ro}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -492,6 +564,20 @@ const AdminCoupons = () => {
               </div>
             )}
 
+            {/* Allowed Email */}
+            <div className="space-y-2">
+              <Label>Email restricționat (opțional)</Label>
+              <Input
+                type="email"
+                value={form.allowed_email}
+                onChange={(e) => setForm({ ...form, allowed_email: e.target.value })}
+                placeholder="email@exemplu.com"
+              />
+              <p className="text-xs text-muted-foreground">
+                Dacă completezi, cuponul va funcționa doar pentru acest email
+              </p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Comandă minimă (lei)</Label>
@@ -508,7 +594,7 @@ const AdminCoupons = () => {
                   type="number"
                   value={form.max_uses}
                   onChange={(e) => setForm({ ...form, max_uses: e.target.value })}
-                  placeholder="100"
+                  placeholder="Nelimitat"
                 />
               </div>
             </div>
