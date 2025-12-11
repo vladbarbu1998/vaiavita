@@ -201,9 +201,9 @@ const Produse = () => {
                       </p>
                       
                       {/* Price and CTA - fixed position */}
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 pt-3 mt-4 border-t border-border/50">
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 pt-3 mt-4 border-t border-border/50">
                         {product.status !== 'coming_soon' && product.price > 0 ? (
-                          <span className="text-base md:text-lg font-bold text-primary">
+                          <span className="text-base lg:text-lg font-bold text-primary">
                             {formatPrice(Number(product.price))}
                           </span>
                         ) : (
@@ -212,9 +212,9 @@ const Produse = () => {
                           </span>
                         )}
                         {isClickable && (
-                          <span className="text-primary font-medium text-xs md:text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
+                          <span className="text-primary font-medium text-xs lg:text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
                             {t('common.viewProduct')}
-                            <ArrowRight className="w-3 h-3 md:w-4 md:h-4" />
+                            <ArrowRight className="w-3 h-3 lg:w-4 lg:h-4" />
                           </span>
                         )}
                       </div>
