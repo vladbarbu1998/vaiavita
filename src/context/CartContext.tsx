@@ -21,12 +21,23 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
+  hasPromoFreeShipping: boolean;
 }
 
 // Gift promotion: product_number 1 with qty >= 2 gets product_number 2 as gift
+// Free shipping: product_number 1 with qty >= 4 gets free shipping
 const PROMO_TRIGGER_PRODUCT_NUMBER = 1;
 const PROMO_GIFT_PRODUCT_NUMBER = 2;
-const PROMO_MIN_QUANTITY = 2;
+const PROMO_MIN_QUANTITY_GIFT = 2;
+const PROMO_MIN_QUANTITY_FREE_SHIPPING = 4;
+
+// Export for use in other components
+export const PROMO_CONFIG = {
+  triggerProductNumber: PROMO_TRIGGER_PRODUCT_NUMBER,
+  giftProductNumber: PROMO_GIFT_PRODUCT_NUMBER,
+  minQuantityGift: PROMO_MIN_QUANTITY_GIFT,
+  minQuantityFreeShipping: PROMO_MIN_QUANTITY_FREE_SHIPPING,
+};
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -69,7 +80,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const regularGiftItem = currentItems.find(i => i.id === promoProductIds.giftId && !i.isGift);
 
     // If trigger product has qty >= 2 and gift not already added as gift
-    if (triggerItem && triggerItem.quantity >= PROMO_MIN_QUANTITY && !giftItem) {
+    if (triggerItem && triggerItem.quantity >= PROMO_MIN_QUANTITY_GIFT && !giftItem) {
       // Fetch gift product data
       const { data: giftProduct } = await supabase
         .from('products')
@@ -96,7 +107,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     // If trigger product qty < 2 and gift was added, remove it
-    if ((!triggerItem || triggerItem.quantity < PROMO_MIN_QUANTITY) && giftItem) {
+    if ((!triggerItem || triggerItem.quantity < PROMO_MIN_QUANTITY_GIFT) && giftItem) {
       toast.info('Cadoul a fost eliminat din coș');
       return currentItems.filter(i => !(i.id === promoProductIds.giftId && i.isGift));
     }
@@ -155,6 +166,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  
+  // Check if promo free shipping applies (4+ trigger products)
+  const hasPromoFreeShipping = items.some(
+    item => item.id === promoProductIds.triggerId && !item.isGift && item.quantity >= PROMO_MIN_QUANTITY_FREE_SHIPPING
+  );
 
   return (
     <CartContext.Provider value={{
@@ -165,6 +181,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       clearCart,
       totalItems,
       totalPrice,
+      hasPromoFreeShipping,
     }}>
       {children}
     </CartContext.Provider>

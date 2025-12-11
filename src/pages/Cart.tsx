@@ -9,7 +9,7 @@ import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Package, Truck, Gift } fr
 const Cart = () => {
   const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
-  const { items, updateQuantity, removeItem, totalPrice } = useCart();
+  const { items, updateQuantity, removeItem, totalPrice, hasPromoFreeShipping } = useCart();
 
   if (items.length === 0) {
     return (
@@ -165,7 +165,16 @@ const Cart = () => {
                 </div>
 
                 {/* Free shipping notice */}
-                {totalPrice < 150 && (
+                {hasPromoFreeShipping ? (
+                  <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-sm">
+                    <p className="text-green-600 font-medium flex items-center gap-2">
+                      <Truck className="w-4 h-4" />
+                      {language === 'ro' 
+                        ? '🎉 Transport gratuit! (promoție 4+ paste)'
+                        : '🎉 Free shipping! (4+ toothpaste promo)'}
+                    </p>
+                  </div>
+                ) : totalPrice < 150 && (
                   <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 text-sm">
                     <p className="text-muted-foreground">
                       {language === 'ro' 
