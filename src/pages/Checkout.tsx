@@ -83,7 +83,7 @@ const COUNTRIES = [
 ];
 
 type DeliveryMethod = 'shipping' | 'pickup' | 'locker';
-type PaymentMethod = 'stripe' | 'cash_on_delivery';
+type PaymentMethod = 'stripe' | 'cash_on_delivery' | 'card_at_locker';
 
 interface CheckoutForm {
   firstName: string;
@@ -385,7 +385,26 @@ const Checkout = () => {
   };
 
   const updateForm = (field: keyof CheckoutForm, value: string) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm(prev => {
+      // If changing delivery method, reset payment method if needed
+      if (field === 'deliveryMethod') {
+        let newPaymentMethod = prev.paymentMethod;
+        
+        // If switching to locker and payment is cash_on_delivery, reset to stripe
+        if (value === 'locker' && prev.paymentMethod === 'cash_on_delivery') {
+          newPaymentMethod = 'stripe';
+        }
+        
+        // If switching away from locker and payment is card_at_locker, reset to stripe
+        if (value !== 'locker' && prev.paymentMethod === 'card_at_locker') {
+          newPaymentMethod = 'stripe';
+        }
+        
+        return { ...prev, deliveryMethod: value as DeliveryMethod, paymentMethod: newPaymentMethod };
+      }
+      
+      return { ...prev, [field]: value };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -434,7 +453,7 @@ const Checkout = () => {
           customer_first_name: form.firstName,
           customer_last_name: form.lastName,
           delivery_method: form.deliveryMethod as 'shipping' | 'pickup' | 'locker',
-          payment_method: form.paymentMethod as 'stripe' | 'netopia' | 'cash_on_delivery',
+          payment_method: (form.paymentMethod === 'card_at_locker' ? 'stripe' : form.paymentMethod) as 'stripe' | 'netopia' | 'cash_on_delivery',
           shipping_address: form.deliveryMethod === 'shipping' ? {
             country: countryDisplayName,
             countryCode: form.country,
@@ -450,7 +469,9 @@ const Checkout = () => {
           discount: discount,
           coupon_code: appliedCoupon?.code || null,
           total: finalTotal,
-          customer_notes: form.notes || null,
+          customer_notes: form.paymentMethod === 'card_at_locker' 
+            ? `${form.notes ? form.notes + '\n' : ''}[Plată cu cardul la locker]`
+            : (form.notes || null),
         }])
         .select()
         .single();
@@ -479,7 +500,7 @@ const Checkout = () => {
 
       if (itemsError) throw itemsError;
 
-      if (form.paymentMethod === 'cash_on_delivery') {
+      if (form.paymentMethod === 'cash_on_delivery' || form.paymentMethod === 'card_at_locker') {
         clearCart();
         navigate(`/comanda-confirmata?order=${order.order_number}`);
       } else if (form.paymentMethod === 'stripe') {
@@ -894,8 +915,8 @@ const Checkout = () => {
                     onValueChange={(value) => updateForm('paymentMethod', value)}
                     className="space-y-3"
                   >
-                    {/* Cash on delivery - only for Romania */}
-                    {isRomania && (
+                    {/* Cash on delivery - only for Romania and not locker */}
+                    {isRomania && form.deliveryMethod !== 'locker' && (
                       <label 
                         className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
                           form.paymentMethod === 'cash_on_delivery' 
@@ -916,6 +937,7 @@ const Checkout = () => {
                       </label>
                     )}
 
+                    {/* Card payment online */}
                     <label 
                       className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
                         form.paymentMethod === 'stripe' 
@@ -934,6 +956,28 @@ const Checkout = () => {
                         </p>
                       </div>
                     </label>
+
+                    {/* Card at locker - only for locker delivery */}
+                    {form.deliveryMethod === 'locker' && (
+                      <label 
+                        className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                          form.paymentMethod === 'card_at_locker' 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <RadioGroupItem value="card_at_locker" id="card_at_locker" />
+                        <Package className="w-5 h-5 text-primary" />
+                        <div className="flex-1">
+                          <p className="font-medium">
+                            {language === 'ro' ? 'Card la locker' : 'Card at locker'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {language === 'ro' ? 'Plătești cu cardul la ridicare' : 'Pay with card at pickup'}
+                          </p>
+                        </div>
+                      </label>
+                    )}
                   </RadioGroup>
                 </div>
 
