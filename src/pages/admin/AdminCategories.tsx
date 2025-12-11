@@ -31,8 +31,6 @@ const emptyCategory = {
   slug: '',
   name_ro: '',
   name_en: '',
-  description_ro: '',
-  description_en: '',
   sort_order: 0,
 };
 
@@ -95,8 +93,6 @@ const AdminCategories = () => {
       slug: category.slug,
       name_ro: category.name_ro,
       name_en: category.name_en,
-      description_ro: category.description_ro || '',
-      description_en: category.description_en || '',
       sort_order: category.sort_order || 0,
     });
     setDialogOpen(true);
@@ -112,29 +108,17 @@ const AdminCategories = () => {
 
     try {
       let nameEn = form.name_en;
-      let descriptionEn = form.description_en;
 
-      // Auto-translate if English fields are empty
-      if (!nameEn || !descriptionEn) {
-        const textsToTranslate: Record<string, string> = {};
-        if (!nameEn && form.name_ro) textsToTranslate.name = form.name_ro;
-        if (!descriptionEn && form.description_ro) textsToTranslate.description = form.description_ro;
+      // Auto-translate if English name is empty
+      if (!nameEn && form.name_ro) {
+        toast.info('Se traduce automat în engleză...');
+        
+        const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-text', {
+          body: { texts: { name: form.name_ro }, sourceLanguage: 'ro', targetLanguage: 'en' }
+        });
 
-        if (Object.keys(textsToTranslate).length > 0) {
-          toast.info('Se traduce automat în engleză...');
-          
-          const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-text', {
-            body: { texts: textsToTranslate, sourceLanguage: 'ro', targetLanguage: 'en' }
-          });
-
-          if (!translationError && translationData?.translations) {
-            if (translationData.translations.name && !nameEn) {
-              nameEn = translationData.translations.name;
-            }
-            if (translationData.translations.description && !descriptionEn) {
-              descriptionEn = translationData.translations.description;
-            }
-          }
+        if (!translationError && translationData?.translations?.name) {
+          nameEn = translationData.translations.name;
         }
       }
 
@@ -142,8 +126,6 @@ const AdminCategories = () => {
         slug: form.slug,
         name_ro: form.name_ro,
         name_en: nameEn || form.name_ro,
-        description_ro: form.description_ro || null,
-        description_en: descriptionEn || form.description_ro || null,
         sort_order: form.sort_order,
       };
 
@@ -307,24 +289,6 @@ const AdminCategories = () => {
                 value={form.slug}
                 onChange={(e) => setForm({ ...form, slug: e.target.value })}
                 placeholder="ingrijire-dentara"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Descriere (RO)</Label>
-              <Textarea
-                value={form.description_ro}
-                onChange={(e) => setForm({ ...form, description_ro: e.target.value })}
-                rows={2}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Descriere (EN)</Label>
-              <Textarea
-                value={form.description_en}
-                onChange={(e) => setForm({ ...form, description_en: e.target.value })}
-                rows={2}
               />
             </div>
 
