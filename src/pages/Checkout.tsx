@@ -1005,20 +1005,20 @@ const Checkout = () => {
               </div>
 
               {/* Right Column - Order Summary */}
-              <div className="opacity-0 animate-fade-up animation-delay-200">
-                <div className="card-premium p-3 sm:p-4 md:p-6 sticky top-24 space-y-4 sm:space-y-6 hover:scale-100">
+              <div className="opacity-0 animate-fade-up animation-delay-200 p-1">
+                <div className="card-premium p-3 sm:p-4 md:p-6 sticky top-24 space-y-4 sm:space-y-6">
                   <h2 className="font-display text-lg sm:text-xl tracking-wide">
                     {language === 'ro' ? 'Sumar comandă' : 'Order summary'}
                   </h2>
 
                   {/* Items */}
-                  <div className="space-y-3 max-h-64 overflow-y-auto -mx-1 px-1">
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
                     {items.map((item) => (
                       <div 
                         key={`${item.id}-${item.isGift ? 'gift' : 'regular'}`} 
                         className={`flex gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl ${item.isGift ? 'bg-green-500/10 ring-1 ring-green-500/30' : 'bg-muted/30'}`}
                       >
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-muted overflow-hidden shrink-0 relative">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-muted shrink-0 relative">
                           <img 
                             src={item.image} 
                             alt={language === 'ro' ? item.name : item.nameEn}
@@ -1030,7 +1030,7 @@ const Checkout = () => {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-start gap-1 flex-wrap">
                             <p className="font-medium text-xs sm:text-sm line-clamp-2 break-words">
                               {language === 'ro' ? item.name : item.nameEn}
