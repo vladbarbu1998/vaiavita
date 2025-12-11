@@ -299,6 +299,7 @@ const AdminCategories = () => {
                 onChange={(e) => setForm({ ...form, name_en: e.target.value })}
                 placeholder="Ex: Dental care"
               />
+              <p className="text-xs text-muted-foreground">Se traduce automat dacă lași gol</p>
             </div>
 
             <div className="space-y-2">
@@ -328,6 +329,7 @@ const AdminCategories = () => {
                 rows={2}
                 placeholder="SEO description"
               />
+              <p className="text-xs text-muted-foreground">Se traduce automat dacă lași gol</p>
             </div>
 
             <div className="space-y-2">
