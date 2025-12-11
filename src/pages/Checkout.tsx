@@ -26,7 +26,8 @@ import {
   Banknote, 
   ArrowLeft,
   ShoppingBag,
-  Loader2
+  Loader2,
+  Gift
 } from 'lucide-react';
 
 // Romanian counties
@@ -300,14 +301,14 @@ const Checkout = () => {
           .eq('id', appliedCoupon.id);
       }
 
-      // Create order items
+      // Create order items (including gifts)
       const orderItems = items.map(item => ({
         order_id: order.id,
-        product_id: null, // Will link to actual products later
+        product_id: item.id,
         product_name: language === 'ro' ? item.name : item.nameEn,
         quantity: item.quantity,
-        unit_price: item.price,
-        total_price: item.price * item.quantity,
+        unit_price: item.isGift ? 0 : item.price,
+        total_price: item.isGift ? 0 : item.price * item.quantity,
       }));
 
       const { error: itemsError } = await supabase
@@ -710,24 +711,45 @@ const Checkout = () => {
                   {/* Items */}
                   <div className="space-y-3 max-h-64 overflow-y-auto">
                     {items.map((item) => (
-                      <div key={item.id} className="flex gap-3 p-3 bg-muted/30 rounded-xl">
-                        <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden shrink-0">
+                      <div 
+                        key={`${item.id}-${item.isGift ? 'gift' : 'regular'}`} 
+                        className={`flex gap-3 p-3 rounded-xl ${item.isGift ? 'bg-green-500/10 ring-1 ring-green-500/30' : 'bg-muted/30'}`}
+                      >
+                        <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden shrink-0 relative">
                           <img 
                             src={item.image} 
                             alt={language === 'ro' ? item.name : item.nameEn}
                             className="w-full h-full object-contain p-1"
                           />
+                          {item.isGift && (
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                              <Gift className="w-3 h-3 text-white" />
+                            </div>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">
-                            {language === 'ro' ? item.name : item.nameEn}
-                          </p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="font-medium text-sm truncate">
+                              {language === 'ro' ? item.name : item.nameEn}
+                            </p>
+                            {item.isGift && (
+                              <span className="shrink-0 px-1.5 py-0.5 bg-green-500/20 text-green-600 text-[10px] font-semibold rounded">
+                                {language === 'ro' ? 'CADOU' : 'GIFT'}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">
-                            {item.quantity} x {formatPrice(item.price)}
+                            {item.isGift 
+                              ? (language === 'ro' ? '1 x Gratuit' : '1 x Free')
+                              : `${item.quantity} x ${formatPrice(item.price)}`
+                            }
                           </p>
                         </div>
-                        <p className="font-medium text-sm shrink-0">
-                          {formatPrice(item.price * item.quantity)}
+                        <p className={`font-medium text-sm shrink-0 ${item.isGift ? 'text-green-600' : ''}`}>
+                          {item.isGift 
+                            ? (language === 'ro' ? 'GRATUIT' : 'FREE')
+                            : formatPrice(item.price * item.quantity)
+                          }
                         </p>
                       </div>
                     ))}
