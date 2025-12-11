@@ -424,7 +424,7 @@ const ProductPage = () => {
         }
       }
 
-      const { error } = await supabase
+      const { data: newReview, error } = await supabase
         .from('reviews')
         .insert({
           product_id: product.id,
@@ -441,9 +441,29 @@ const ProductPage = () => {
           order_id: orderId,
           is_approved: true,
           images: uploadedImageUrls.length > 0 ? uploadedImageUrls : null,
-        });
+        })
+        .select('id')
+        .single();
       
       if (error) throw error;
+      
+      // Send review coupon email
+      if (newReview?.id) {
+        try {
+          await supabase.functions.invoke('send-review-coupon', {
+            body: {
+              review_id: newReview.id,
+              customer_email: reviewForm.customer_email.trim().toLowerCase(),
+              customer_name: reviewForm.customer_name.trim(),
+              product_name: language === 'ro' ? product.name_ro : product.name_en,
+              language: language,
+            }
+          });
+        } catch (couponError) {
+          console.error('Error sending review coupon:', couponError);
+          // Don't block review submission if coupon fails
+        }
+      }
       
       // Refresh reviews to show the new one immediately
       const { data: reviewsData } = await supabase
@@ -1265,22 +1285,55 @@ const ProductPage = () => {
 
                     {/* Review Submitted Message */}
                     {reviewSubmitted && (
-                      <div className="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                        <p className="text-green-700 dark:text-green-400">
-                          {language === 'ro' 
-                            ? 'Mulțumim pentru recenzie! A fost publicată cu succes.' 
-                            : 'Thank you for your review! It has been published successfully.'}
+                      <div className="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                        <div className="flex items-center gap-3 mb-2">
+                          <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
+                          <p className="text-green-700 dark:text-green-400 font-medium">
+                            {language === 'ro' 
+                              ? 'Mulțumim pentru recenzie! A fost publicată cu succes.' 
+                              : 'Thank you for your review! It has been published successfully.'}
+                          </p>
+                        </div>
+                        <p className="text-sm text-green-600/90 dark:text-green-400/90 ml-8">
+                          {language === 'ro'
+                            ? '🎁 Ai primit un cupon de 15% reducere pe email! Verifică inbox-ul.'
+                            : '🎁 You received a 15% discount coupon via email! Check your inbox.'}
                         </p>
+                      </div>
+                    )}
+
+                    {/* Discount Offer Banner */}
+                    {!reviewSubmitted && !showReviewForm && (
+                      <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20">
+                        <div className="flex items-start gap-3">
+                          <Gift className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {language === 'ro' 
+                                ? '🎁 Primești 15% reducere la următoarea comandă!' 
+                                : '🎁 Get 15% off your next order!'}
+                            </p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {language === 'ro'
+                                ? 'Lasă o recenzie pentru acest produs și primești un cupon de 15% reducere pe email. Folosește adresa de email de la comanda ta.'
+                                : 'Leave a review for this product and receive a 15% discount coupon via email. Use the same email address from your order.'}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     )}
 
                     {/* Review Form */}
                     {showReviewForm && (
                       <form onSubmit={handleSubmitReview} className="mb-8 p-6 rounded-xl bg-muted/30 border border-border space-y-4">
-                        <h3 className="font-display text-lg mb-4">
+                        <h3 className="font-display text-lg mb-2">
                           {language === 'ro' ? 'Scrie o recenzie' : 'Write a review'}
                         </h3>
+                        <p className="text-sm text-primary mb-4">
+                          {language === 'ro' 
+                            ? '🎁 După trimiterea recenziei, vei primi un cupon de 15% reducere pe email!' 
+                            : '🎁 After submitting your review, you will receive a 15% discount coupon via email!'}
+                        </p>
                         
                         {/* Rating */}
                         <div className="space-y-2">

@@ -108,6 +108,7 @@ interface Coupon {
   discount_value: number;
   scope: string;
   product_id: string | null;
+  product_ids: string[] | null;
   category_id: string | null;
   min_order_value: number | null;
   max_uses: number | null;
@@ -115,6 +116,7 @@ interface Coupon {
   is_active: boolean | null;
   valid_from: string | null;
   valid_until: string | null;
+  allowed_email: string | null;
 }
 
 const Checkout = () => {
@@ -277,23 +279,54 @@ const Checkout = () => {
   const shippingCost = getShippingCost();
   const finalTotal = totalPrice - discount + shippingCost;
 
-  // Validate coupon against cart items
-  const validateCouponScope = async (coupon: Coupon): Promise<{ valid: boolean; message: string }> => {
+  // Validate coupon against cart items and customer email
+  const validateCouponScope = async (coupon: Coupon, customerEmail: string): Promise<{ valid: boolean; message: string }> => {
+    // Check allowed_email restriction
+    if (coupon.allowed_email) {
+      const couponEmail = coupon.allowed_email.trim().toLowerCase();
+      const checkEmail = customerEmail.trim().toLowerCase();
+      if (couponEmail !== checkEmail) {
+        return { 
+          valid: false, 
+          message: language === 'ro' 
+            ? 'Acest cupon este personal și poate fi folosit doar cu adresa de email pentru care a fost generat.' 
+            : 'This coupon is personal and can only be used with the email address it was generated for.' 
+        };
+      }
+    }
+
     if (coupon.scope === 'all') {
       return { valid: true, message: '' };
     }
 
-    if (coupon.scope === 'product' && coupon.product_id) {
-      const hasProduct = items.some(item => item.id === coupon.product_id);
-      if (!hasProduct) {
-        return { 
-          valid: false, 
-          message: language === 'ro' 
-            ? 'Cuponul este valabil doar pentru un anumit produs care nu este în coș.' 
-            : 'Coupon is only valid for a specific product not in your cart.' 
-        };
+    // Handle both 'product' (single) and 'products' (multiple) scopes
+    if ((coupon.scope === 'product' || coupon.scope === 'products')) {
+      // Check product_ids array first
+      if (coupon.product_ids && coupon.product_ids.length > 0) {
+        const hasProduct = items.some(item => coupon.product_ids!.includes(item.id));
+        if (!hasProduct) {
+          return { 
+            valid: false, 
+            message: language === 'ro' 
+              ? 'Cuponul este valabil doar pentru anumite produse care nu sunt în coș.' 
+              : 'Coupon is only valid for specific products not in your cart.' 
+          };
+        }
+        return { valid: true, message: '' };
       }
-      return { valid: true, message: '' };
+      // Fallback to single product_id
+      if (coupon.product_id) {
+        const hasProduct = items.some(item => item.id === coupon.product_id);
+        if (!hasProduct) {
+          return { 
+            valid: false, 
+            message: language === 'ro' 
+              ? 'Cuponul este valabil doar pentru un anumit produs care nu este în coș.' 
+              : 'Coupon is only valid for a specific product not in your cart.' 
+          };
+        }
+        return { valid: true, message: '' };
+      }
     }
 
     if (coupon.scope === 'category' && coupon.category_id) {
@@ -368,7 +401,7 @@ const Checkout = () => {
         return;
       }
 
-      const scopeValidation = await validateCouponScope(coupon);
+      const scopeValidation = await validateCouponScope(coupon, form.email);
       if (!scopeValidation.valid) {
         setCouponError(scopeValidation.message);
         setIsApplyingCoupon(false);

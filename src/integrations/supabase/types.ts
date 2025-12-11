@@ -66,8 +66,10 @@ export type Database = {
       }
       coupons: {
         Row: {
+          allowed_email: string | null
           category_id: string | null
           code: string
+          coupon_number: number
           created_at: string
           description: string | null
           discount_type: string
@@ -77,14 +79,18 @@ export type Database = {
           max_uses: number | null
           min_order_value: number | null
           product_id: string | null
+          product_ids: string[] | null
+          review_id: string | null
           scope: string
           uses_count: number | null
           valid_from: string | null
           valid_until: string | null
         }
         Insert: {
+          allowed_email?: string | null
           category_id?: string | null
           code: string
+          coupon_number?: number
           created_at?: string
           description?: string | null
           discount_type: string
@@ -94,14 +100,18 @@ export type Database = {
           max_uses?: number | null
           min_order_value?: number | null
           product_id?: string | null
+          product_ids?: string[] | null
+          review_id?: string | null
           scope?: string
           uses_count?: number | null
           valid_from?: string | null
           valid_until?: string | null
         }
         Update: {
+          allowed_email?: string | null
           category_id?: string | null
           code?: string
+          coupon_number?: number
           created_at?: string
           description?: string | null
           discount_type?: string
@@ -111,6 +121,8 @@ export type Database = {
           max_uses?: number | null
           min_order_value?: number | null
           product_id?: string | null
+          product_ids?: string[] | null
+          review_id?: string | null
           scope?: string
           uses_count?: number | null
           valid_from?: string | null
@@ -129,6 +141,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupons_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
             referencedColumns: ["id"]
           },
         ]
