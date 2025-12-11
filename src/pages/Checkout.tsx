@@ -253,20 +253,27 @@ const Checkout = () => {
 
   const discount = calculateDiscount();
   
-  // Shipping cost calculation
-  const getShippingCost = () => {
-    if (form.deliveryMethod !== 'shipping') return 0;
+  // Shipping cost calculation for display purposes (always calculates as if shipping is selected)
+  const getShippingDisplayCost = () => {
+    // Only free with promo (4+ paste)
     if (hasPromoFreeShipping) return 0;
     
     if (isRomania) {
-      // Romania: free over 150 lei, otherwise 19.99
-      return totalPrice >= 150 ? 0 : 19.99;
+      // Romania: always 19.99 unless promo
+      return 19.99;
     } else {
-      // International: flat rate (can be adjusted)
+      // International: flat rate
       return 29.99;
     }
   };
   
+  // Actual shipping cost for the order (depends on selected delivery method)
+  const getShippingCost = () => {
+    if (form.deliveryMethod !== 'shipping') return 0;
+    return getShippingDisplayCost();
+  };
+  
+  const shippingDisplayCost = getShippingDisplayCost();
   const shippingCost = getShippingCost();
   const finalTotal = totalPrice - discount + shippingCost;
 
@@ -822,9 +829,9 @@ const Checkout = () => {
                           </p>
                         </div>
                         <span className="font-medium">
-                          {shippingCost === 0 
+                          {shippingDisplayCost === 0 
                             ? (language === 'ro' ? 'Gratuit' : 'Free')
-                            : `${shippingCost} lei`}
+                            : `${shippingDisplayCost} lei`}
                         </span>
                       </label>
 
