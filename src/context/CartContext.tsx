@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export interface CartItem {
   id: string;
@@ -8,6 +10,7 @@ export interface CartItem {
   quantity: number;
   image: string;
   slug: string;
+  isGift?: boolean;
 }
 
 interface CartContextType {
@@ -20,6 +23,11 @@ interface CartContextType {
   totalPrice: number;
 }
 
+// Gift promotion: product_number 1 with qty >= 2 gets product_number 2 as gift
+const PROMO_TRIGGER_PRODUCT_NUMBER = 1;
+const PROMO_GIFT_PRODUCT_NUMBER = 2;
+const PROMO_MIN_QUANTITY = 2;
+
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -27,17 +35,98 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem('vaiavita-cart');
     return saved ? JSON.parse(saved) : [];
   });
+  const [promoProductIds, setPromoProductIds] = useState<{ triggerId: string | null; giftId: string | null }>({
+    triggerId: null,
+    giftId: null,
+  });
+
+  // Fetch promo product IDs on mount
+  useEffect(() => {
+    const fetchPromoProducts = async () => {
+      const { data } = await supabase
+        .from('products')
+        .select('id, product_number, name_ro, name_en, slug, images, price')
+        .in('product_number', [PROMO_TRIGGER_PRODUCT_NUMBER, PROMO_GIFT_PRODUCT_NUMBER]);
+      
+      if (data) {
+        const trigger = data.find(p => p.product_number === PROMO_TRIGGER_PRODUCT_NUMBER);
+        const gift = data.find(p => p.product_number === PROMO_GIFT_PRODUCT_NUMBER);
+        setPromoProductIds({
+          triggerId: trigger?.id || null,
+          giftId: gift?.id || null,
+        });
+      }
+    };
+    fetchPromoProducts();
+  }, []);
+
+  // Check and apply gift promotion
+  const applyGiftPromotion = useCallback(async (currentItems: CartItem[]) => {
+    if (!promoProductIds.triggerId || !promoProductIds.giftId) return currentItems;
+
+    const triggerItem = currentItems.find(i => i.id === promoProductIds.triggerId && !i.isGift);
+    const giftItem = currentItems.find(i => i.id === promoProductIds.giftId && i.isGift);
+    const regularGiftItem = currentItems.find(i => i.id === promoProductIds.giftId && !i.isGift);
+
+    // If trigger product has qty >= 2 and gift not already added as gift
+    if (triggerItem && triggerItem.quantity >= PROMO_MIN_QUANTITY && !giftItem) {
+      // Fetch gift product data
+      const { data: giftProduct } = await supabase
+        .from('products')
+        .select('id, name_ro, name_en, slug, images, price')
+        .eq('product_number', PROMO_GIFT_PRODUCT_NUMBER)
+        .maybeSingle();
+
+      if (giftProduct) {
+        toast.success('🎁 Cadou adăugat: Periuță de dinți VAIAVITA!');
+        return [
+          ...currentItems,
+          {
+            id: giftProduct.id,
+            name: giftProduct.name_ro,
+            nameEn: giftProduct.name_en,
+            price: 0,
+            quantity: 1,
+            image: giftProduct.images?.[0] || '',
+            slug: giftProduct.slug,
+            isGift: true,
+          },
+        ];
+      }
+    }
+
+    // If trigger product qty < 2 and gift was added, remove it
+    if ((!triggerItem || triggerItem.quantity < PROMO_MIN_QUANTITY) && giftItem) {
+      toast.info('Cadoul a fost eliminat din coș');
+      return currentItems.filter(i => !(i.id === promoProductIds.giftId && i.isGift));
+    }
+
+    return currentItems;
+  }, [promoProductIds]);
 
   useEffect(() => {
     localStorage.setItem('vaiavita-cart', JSON.stringify(items));
   }, [items]);
 
+  // Apply promotion when items or promo IDs change
+  useEffect(() => {
+    if (!promoProductIds.triggerId || !promoProductIds.giftId) return;
+    
+    const checkPromotion = async () => {
+      const updatedItems = await applyGiftPromotion(items);
+      if (JSON.stringify(updatedItems) !== JSON.stringify(items)) {
+        setItems(updatedItems);
+      }
+    };
+    checkPromotion();
+  }, [items.find(i => i.id === promoProductIds.triggerId)?.quantity, promoProductIds, applyGiftPromotion]);
+
   const addItem = (item: Omit<CartItem, 'quantity'>) => {
     setItems(prev => {
-      const existing = prev.find(i => i.id === item.id);
+      const existing = prev.find(i => i.id === item.id && !i.isGift);
       if (existing) {
         return prev.map(i => 
-          i.id === item.id 
+          i.id === item.id && !i.isGift
             ? { ...i, quantity: i.quantity + 1 }
             : i
         );
@@ -47,7 +136,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const removeItem = (id: string) => {
-    setItems(prev => prev.filter(i => i.id !== id));
+    setItems(prev => prev.filter(i => i.id !== id || i.isGift));
   };
 
   const updateQuantity = (id: string, quantity: number) => {
@@ -56,7 +145,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
     setItems(prev => prev.map(i => 
-      i.id === id ? { ...i, quantity } : i
+      i.id === id && !i.isGift ? { ...i, quantity } : i
     ));
   };
 
