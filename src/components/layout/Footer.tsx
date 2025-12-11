@@ -4,6 +4,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { Heart, Mail, MapPin } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.png';
 import logoLight from '@/assets/logo-light.png';
+import logoLightNew from '@/assets/logo-light-new.png';
 import anpcBadge from '@/assets/anpc-badge.png';
 
 export function Footer() {
@@ -23,7 +24,7 @@ export function Footer() {
           <div className="space-y-5">
             <Link to="/" className="inline-block transition-transform hover:scale-105">
               <img 
-                src={theme === 'dark' ? logoLight : logoDark} 
+                src={theme === 'dark' ? logoLight : logoLightNew} 
                 alt="VAIAVITA" 
                 className="h-12 w-auto"
               />

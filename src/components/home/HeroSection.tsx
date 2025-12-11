@@ -15,22 +15,8 @@ export function HeroSection() {
       
       <div className="container-custom section-padding relative z-10">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-          {/* Hero Image - First on mobile */}
-          <div className="order-1 lg:order-2 relative opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center w-full">
-            <div className="relative w-full max-w-md lg:max-w-lg mx-auto">
-              {/* Glow effect behind image */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-2xl blur-3xl scale-110" />
-              
-              <img 
-                src={heroImage} 
-                alt="Dent-Tastic Toothpaste" 
-                className="relative w-full h-auto rounded-2xl drop-shadow-2xl hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-          </div>
-
-          {/* Text Content - Second on mobile */}
-          <div className="order-2 lg:order-1 space-y-6 opacity-0 animate-fade-up">
+          {/* Text Content - First on mobile */}
+          <div className="order-1 lg:order-1 space-y-6 opacity-0 animate-fade-up">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
               <Sparkles className="w-4 h-4" />
               <span>{t('hero.badge')}</span>
@@ -54,6 +40,20 @@ export function HeroSection() {
               <Button variant="heroOutline" size="lg" asChild>
                 <Link to="/despre">{t('hero.cta.about')}</Link>
               </Button>
+            </div>
+          </div>
+
+          {/* Hero Image - Second on mobile */}
+          <div className="order-2 lg:order-2 relative opacity-0 animate-fade-up animation-delay-200 flex items-center justify-center w-full">
+            <div className="relative w-full max-w-md lg:max-w-lg mx-auto">
+              {/* Glow effect behind image */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-2xl blur-3xl scale-110" />
+              
+              <img 
+                src={heroImage} 
+                alt="Dent-Tastic Toothpaste" 
+                className="relative w-full h-auto rounded-2xl drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+              />
             </div>
           </div>
         </div>
