@@ -181,8 +181,8 @@ const Cart = () => {
                     <p className="text-green-600 font-medium flex items-center gap-2">
                       <Truck className="w-4 h-4" />
                       {language === 'ro' 
-                        ? '🎉 Transport gratuit! (promoție 4+ paste)'
-                        : '🎉 Free shipping! (4+ toothpaste promo)'}
+                        ? '🎉 Transport gratuit (România)! (promoție 4+ paste)'
+                        : '🎉 Free shipping (Romania)! (4+ toothpaste promo)'}
                     </p>
                   </div>
                 ) : totalPrice < 150 && (
