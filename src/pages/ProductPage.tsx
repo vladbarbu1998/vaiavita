@@ -666,12 +666,12 @@ const ProductPage = () => {
               </div>
 
               {/* Price */}
-              <div className="flex items-center gap-4">
-                <span className="text-4xl font-bold text-primary">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">
                   {formatPrice(Number(product.price))}
                 </span>
                 {product.compare_at_price && product.compare_at_price > product.price && (
-                  <span className="text-xl text-muted-foreground line-through">
+                  <span className="text-base sm:text-lg md:text-xl text-muted-foreground line-through">
                     {formatPrice(Number(product.compare_at_price))}
                   </span>
                 )}
@@ -679,8 +679,8 @@ const ProductPage = () => {
 
               {/* Quantity & Add to Cart */}
               {isInStock && (
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="inline-flex items-center gap-1 card-premium px-2 py-1">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <div className="inline-flex items-center gap-1 card-premium px-2 py-1 w-fit">
                     <button 
                       onClick={() => setQuantity(Math.max(1, quantity - 1))} 
                       className="w-10 h-10 rounded-lg hover:bg-muted hover:text-primary transition-all flex items-center justify-center"
@@ -707,7 +707,7 @@ const ProductPage = () => {
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
-                  <Button variant="hero" size="lg" className="flex-1" onClick={handleAddToCart}>
+                  <Button variant="hero" size="lg" className="w-full sm:flex-1 py-3 sm:py-2" onClick={handleAddToCart}>
                     <ShoppingCart className="w-5 h-5 mr-2" />
                     {t('common.addToCart')}
                   </Button>
@@ -716,13 +716,72 @@ const ProductPage = () => {
             </div>
           </div>
 
-          {/* Related Products Section */}
+          {/* Related Products Section - Carousel on mobile */}
           {relatedProducts.length > 0 && (
             <div className="mt-10 opacity-0 animate-fade-up animation-delay-300">
               <h4 className="font-display text-sm md:text-base tracking-wide mb-4 text-muted-foreground">
                 {language === 'ro' ? 'Clienții au cumpărat și' : 'Customers also bought'}
               </h4>
-              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+              {/* Mobile: Horizontal scroll carousel */}
+              <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide md:hidden -mx-4 px-4">
+                {relatedProducts.map((relProd) => (
+                  <div
+                    key={relProd.id}
+                    className="group card-premium overflow-hidden hover:shadow-sm transition-all duration-300 snap-center shrink-0 w-[75vw] max-w-[280px]"
+                  >
+                    {/* Image with Quick Add button */}
+                    <div className="relative">
+                      <a href={`/produse/${relProd.slug}`} className="block">
+                        <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-4 rounded-t-2xl">
+                          {relProd.images?.[0] ? (
+                            <img
+                              src={relProd.images[0]}
+                              alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
+                              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ShoppingCart className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                      </a>
+                      {/* Quick Add Button */}
+                      <button
+                        onClick={() => handleQuickAddRelated(relProd)}
+                        className="absolute bottom-0 right-3 translate-y-1/2 w-9 h-9 rounded-full bg-primary text-primary-foreground shadow-md flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
+                        title={language === 'ro' ? 'Adaugă în coș' : 'Add to cart'}
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <a href={`/produse/${relProd.slug}`} className="block p-4 pt-6">
+                      {/* Title */}
+                      <h5 className="font-medium text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                        {language === 'ro' ? relProd.name_ro : relProd.name_en}
+                      </h5>
+                      {/* Card description */}
+                      <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+                        {language === 'ro' 
+                          ? (relProd.card_description_ro || '') 
+                          : (relProd.card_description_en || '')}
+                      </p>
+                      {/* Price and CTA */}
+                      <div className="flex items-center justify-between gap-2 pt-3 mt-3 border-t border-border/50">
+                        <p className="text-primary font-semibold text-base">
+                          {formatPrice(relProd.price)}
+                        </p>
+                        <span className="text-primary font-medium text-sm flex items-center gap-1">
+                          {language === 'ro' ? 'Vezi' : 'View'}
+                          <ArrowRight className="w-4 h-4" />
+                        </span>
+                      </div>
+                    </a>
+                  </div>
+                ))}
+              </div>
+              {/* Desktop: Grid layout */}
+              <div className="hidden md:grid md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {relatedProducts.map((relProd) => (
                   <div
                     key={relProd.id}
@@ -748,10 +807,10 @@ const ProductPage = () => {
                       {/* Quick Add Button */}
                       <button
                         onClick={() => handleQuickAddRelated(relProd)}
-                        className="absolute bottom-0 right-2 translate-y-1/2 w-7 h-7 md:w-8 md:h-8 rounded-full bg-primary text-primary-foreground shadow-md flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
+                        className="absolute bottom-0 right-2 translate-y-1/2 w-8 h-8 rounded-full bg-primary text-primary-foreground shadow-md flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
                         title={language === 'ro' ? 'Adaugă în coș' : 'Add to cart'}
                       >
-                        <ShoppingCart className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                        <ShoppingCart className="w-4 h-4" />
                       </button>
                     </div>
                     <a href={`/produse/${relProd.slug}`} className="block p-3 pt-5">

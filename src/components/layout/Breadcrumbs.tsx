@@ -38,23 +38,23 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
     ];
 
     return (
-      <nav aria-label="Breadcrumb" className="py-5">
-        <ol className="flex items-center gap-2 text-sm">
+      <nav aria-label="Breadcrumb" className="py-5 overflow-x-auto">
+        <ol className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm flex-nowrap min-w-0">
           {breadcrumbs.map((item, index) => (
-            <li key={index} className="flex items-center gap-2">
-              {index > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />}
+            <li key={index} className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink-0 last:shrink">
+              {index > 0 && <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground/60 shrink-0" />}
               {item.href ? (
                 <Link
                   to={item.href}
-                  className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors duration-200"
+                  className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground hover:text-primary transition-colors duration-200 whitespace-nowrap"
                 >
-                  {index === 0 && <Home className="h-3.5 w-3.5" />}
+                  {index === 0 && <Home className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />}
                   <span className="hover:underline underline-offset-4">
                     {language === 'ro' ? item.label : (item.labelEn || item.label)}
                   </span>
                 </Link>
               ) : (
-                <span className="text-foreground font-medium truncate max-w-[200px] sm:max-w-none">
+                <span className="text-foreground font-medium truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
                   {language === 'ro' ? item.label : (item.labelEn || item.label)}
                 </span>
               )}
@@ -85,21 +85,21 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
   });
 
   return (
-    <nav aria-label="Breadcrumb" className="py-5">
-      <ol className="flex items-center gap-2 text-sm">
+    <nav aria-label="Breadcrumb" className="py-5 overflow-x-auto">
+      <ol className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm flex-nowrap min-w-0">
         {breadcrumbs.map((item, index) => (
-          <li key={index} className="flex items-center gap-2">
-            {index > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />}
+          <li key={index} className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink-0 last:shrink">
+            {index > 0 && <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground/60 shrink-0" />}
             {item.href ? (
               <Link
                 to={item.href}
-                className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors duration-200"
+                className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground hover:text-primary transition-colors duration-200 whitespace-nowrap"
               >
-                {index === 0 && <Home className="h-3.5 w-3.5" />}
+                {index === 0 && <Home className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />}
                 <span className="hover:underline underline-offset-4">{item.label}</span>
               </Link>
             ) : (
-              <span className="text-foreground font-medium truncate max-w-[200px] sm:max-w-none">
+              <span className="text-foreground font-medium truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
                 {item.label}
               </span>
             )}
