@@ -78,7 +78,7 @@ interface Coupon {
 const Checkout = () => {
   const { language } = useLanguage();
   const { formatPrice } = useCurrency();
-  const { items, totalPrice, clearCart } = useCart();
+  const { items, totalPrice, clearCart, hasPromoFreeShipping } = useCart();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [couponCode, setCouponCode] = useState('');
@@ -113,7 +113,8 @@ const Checkout = () => {
   };
 
   const discount = calculateDiscount();
-  const shippingCost = form.deliveryMethod === 'shipping' && totalPrice < 150 ? 19.99 : 0;
+  // Free shipping if: promo applies (4+ trigger products) OR total >= 150
+  const shippingCost = form.deliveryMethod === 'shipping' && !hasPromoFreeShipping && totalPrice < 150 ? 19.99 : 0;
   const finalTotal = totalPrice - discount + shippingCost;
 
   // Validate coupon against cart items
