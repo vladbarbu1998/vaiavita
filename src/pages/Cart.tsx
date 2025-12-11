@@ -45,42 +45,42 @@ const Cart = () => {
 
   return (
     <MainLayout>
-      <section className="section-padding">
+      <section className="section-padding overflow-hidden">
         <div className="container-custom">
-          <h1 className="font-display text-4xl md:text-5xl tracking-wide mb-10 opacity-0 animate-fade-up">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wide mb-8 sm:mb-10 opacity-0 animate-fade-up">
             {language === 'ro' ? 'Coșul tău' : 'Your cart'}
           </h1>
 
-          <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
+          <div className="grid lg:grid-cols-3 gap-6 lg:gap-12">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4 opacity-0 animate-fade-up animation-delay-100">
               {items.map((item, index) => (
                 <div 
                   key={`${item.id}-${item.isGift ? 'gift' : 'regular'}`} 
-                  className={`card-premium p-5 flex gap-5 group ${item.isGift ? 'ring-2 ring-green-500/30 bg-green-500/5' : ''}`}
+                  className={`card-premium p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:gap-5 group ${item.isGift ? 'ring-2 ring-green-500/30 bg-green-500/5' : ''}`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <Link 
-                    to={`/produse/${item.slug}`}
-                    className="w-28 h-28 rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 overflow-hidden shrink-0 p-3 hover:ring-2 hover:ring-primary/30 transition-all relative"
-                  >
-                    <img 
-                      src={item.image} 
-                      alt={language === 'ro' ? item.name : item.nameEn}
-                      className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                    />
-                    {item.isGift && (
-                      <div className="absolute top-1 right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                        <Gift className="w-3.5 h-3.5 text-white" />
-                      </div>
-                    )}
-                  </Link>
-                  <div className="flex-1 min-w-0 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
+                  <div className="flex gap-4">
+                    <Link 
+                      to={`/produse/${item.slug}`}
+                      className="w-20 h-20 sm:w-28 sm:h-28 rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 overflow-hidden shrink-0 p-2 sm:p-3 hover:ring-2 hover:ring-primary/30 transition-all relative"
+                    >
+                      <img 
+                        src={item.image} 
+                        alt={language === 'ro' ? item.name : item.nameEn}
+                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+                      />
+                      {item.isGift && (
+                        <div className="absolute top-1 right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                          <Gift className="w-3.5 h-3.5 text-white" />
+                        </div>
+                      )}
+                    </Link>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Link 
                           to={`/produse/${item.slug}`}
-                          className="font-display text-lg tracking-wide truncate block hover:text-primary transition-colors"
+                          className="font-display text-base sm:text-lg tracking-wide line-clamp-2 block hover:text-primary transition-colors"
                         >
                           {language === 'ro' ? item.name : item.nameEn}
                         </Link>
@@ -90,65 +90,71 @@ const Cart = () => {
                           </span>
                         )}
                       </div>
-                      <p className={`font-bold text-xl mt-1 ${item.isGift ? 'text-green-600' : 'text-primary'}`}>
+                      <p className={`font-bold text-lg sm:text-xl mt-1 ${item.isGift ? 'text-green-600' : 'text-primary'}`}>
                         {item.isGift 
                           ? (language === 'ro' ? 'GRATUIT' : 'FREE')
                           : formatPrice(item.price)
                         }
                       </p>
                     </div>
+                  </div>
+                  <div className="flex items-center justify-between sm:flex-col sm:items-end sm:justify-between sm:ml-auto">
                     {!item.isGift && (
-                      <div className="flex items-center gap-4 mt-3">
-                        <div className="inline-flex items-center gap-1 bg-muted/80 rounded-xl p-1">
-                          <button 
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-9 h-9 rounded-lg hover:bg-background hover:text-primary transition-all flex items-center justify-center"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <input
-                            type="number"
-                            min="1"
-                            value={item.quantity}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value, 10);
-                              if (!isNaN(val) && val >= 1) {
-                                updateQuantity(item.id, val);
-                              }
-                            }}
-                            className="w-12 text-center text-sm font-semibold bg-transparent border-none focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          />
-                          <button 
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-9 h-9 rounded-lg hover:bg-background hover:text-primary transition-all flex items-center justify-center"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
-                        </div>
+                      <div className="inline-flex items-center gap-1 bg-muted/80 rounded-xl p-1">
                         <button 
-                          onClick={() => removeItem(item.id)}
-                          className="w-9 h-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all flex items-center justify-center"
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-background hover:text-primary transition-all flex items-center justify-center"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value, 10);
+                            if (!isNaN(val) && val >= 1) {
+                              updateQuantity(item.id, val);
+                            }
+                          }}
+                          className="w-10 sm:w-12 text-center text-sm font-semibold bg-transparent border-none focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <button 
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg hover:bg-background hover:text-primary transition-all flex items-center justify-center"
+                        >
+                          <Plus className="w-4 h-4" />
                         </button>
                       </div>
                     )}
                     {item.isGift && (
-                      <p className="text-xs text-muted-foreground mt-2">
+                      <p className="text-xs text-muted-foreground">
                         {language === 'ro' 
-                          ? 'Cadou pentru achiziția a 2+ paste de dinți Dent-Tastic'
-                          : 'Gift for purchasing 2+ Dent-Tastic toothpastes'
+                          ? 'Cadou pentru achiziția a 2+ paste de dinți'
+                          : 'Gift for purchasing 2+ toothpastes'
                         }
                       </p>
                     )}
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className={`font-bold text-xl ${item.isGift ? 'text-green-600' : ''}`}>
-                      {item.isGift 
-                        ? (language === 'ro' ? 'GRATUIT' : 'FREE')
-                        : formatPrice(item.price * item.quantity)
-                      }
-                    </p>
+                    <div className="flex items-center gap-2">
+                      {!item.isGift && (
+                        <>
+                          <p className="font-bold text-lg sm:text-xl">
+                            {formatPrice(item.price * item.quantity)}
+                          </p>
+                          <button 
+                            onClick={() => removeItem(item.id)}
+                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all flex items-center justify-center"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                      {item.isGift && (
+                        <p className="font-bold text-lg text-green-600">
+                          {language === 'ro' ? 'GRATUIT' : 'FREE'}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -156,7 +162,7 @@ const Cart = () => {
 
             {/* Order Summary */}
             <div className="opacity-0 animate-fade-up animation-delay-200">
-              <div className="card-premium p-6 sticky top-24 space-y-6">
+              <div className="card-premium p-4 sm:p-6 sticky top-24 space-y-6">
                 <h2 className="font-display text-xl tracking-wide">
                   {language === 'ro' ? 'Sumar comandă' : 'Order summary'}
                 </h2>

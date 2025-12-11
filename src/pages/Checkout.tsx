@@ -556,7 +556,7 @@ const Checkout = () => {
 
   return (
     <MainLayout>
-      <section className="section-padding">
+      <section className="section-padding overflow-hidden">
         <div className="container-custom">
           <div className="mb-8">
             <Button variant="ghost" size="sm" asChild className="mb-4">
@@ -565,18 +565,18 @@ const Checkout = () => {
                 {language === 'ro' ? 'Înapoi la coș' : 'Back to cart'}
               </Link>
             </Button>
-            <h1 className="font-display text-3xl md:text-4xl tracking-wide opacity-0 animate-fade-up">
+            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl tracking-wide opacity-0 animate-fade-up">
               {language === 'ro' ? 'Finalizare comandă' : 'Checkout'}
             </h1>
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
+            <div className="grid lg:grid-cols-3 gap-6 lg:gap-12">
               {/* Left Column - Form */}
-              <div className="lg:col-span-2 space-y-8 opacity-0 animate-fade-up animation-delay-100">
+              <div className="lg:col-span-2 space-y-6 opacity-0 animate-fade-up animation-delay-100">
                 
                 {/* Billing / Shipping Info */}
-                <div className="card-premium p-6 space-y-5">
+                <div className="card-premium p-4 sm:p-6 space-y-5">
                   <h2 className="font-display text-xl tracking-wide flex items-center gap-2">
                     <Truck className="w-5 h-5 text-primary" />
                     {language === 'ro' ? 'Date facturare și livrare' : 'Billing & shipping info'}
@@ -911,7 +911,7 @@ const Checkout = () => {
                 </div>
 
                 {/* Payment Method */}
-                <div className="card-premium p-6 space-y-5">
+                <div className="card-premium p-4 sm:p-6 space-y-5">
                   <h2 className="font-display text-xl tracking-wide flex items-center gap-2">
                     <CreditCard className="w-5 h-5 text-primary" />
                     {language === 'ro' ? 'Metoda de plată' : 'Payment method'}
@@ -989,7 +989,7 @@ const Checkout = () => {
                 </div>
 
                 {/* Notes */}
-                <div className="card-premium p-6 space-y-4">
+                <div className="card-premium p-4 sm:p-6 space-y-4">
                   <h2 className="font-display text-xl tracking-wide">
                     {language === 'ro' ? 'Observații (opțional)' : 'Notes (optional)'}
                   </h2>
@@ -1006,7 +1006,7 @@ const Checkout = () => {
 
               {/* Right Column - Order Summary */}
               <div className="opacity-0 animate-fade-up animation-delay-200">
-                <div className="card-premium p-6 sticky top-24 space-y-6">
+                <div className="card-premium p-4 sm:p-6 sticky top-24 space-y-6">
                   <h2 className="font-display text-xl tracking-wide">
                     {language === 'ro' ? 'Sumar comandă' : 'Order summary'}
                   </h2>
