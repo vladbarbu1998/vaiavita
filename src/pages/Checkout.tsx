@@ -853,21 +853,21 @@ const Checkout = () => {
                       {/* Locker - only for Romania */}
                       {availableDeliveryMethods.includes('locker') && (
                         <label 
-                          className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all opacity-60 ${
+                          className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
                             form.deliveryMethod === 'locker' 
                               ? 'border-primary bg-primary/5' 
-                              : 'border-border'
+                              : 'border-border hover:border-primary/50'
                           }`}
                         >
-                          <RadioGroupItem value="locker" id="locker" disabled />
-                          <Package className="w-5 h-5 text-muted-foreground" />
+                          <RadioGroupItem value="locker" id="locker" />
+                          <Package className="w-5 h-5 text-primary" />
                           <div className="flex-1">
                             <p className="font-medium">
                               {language === 'ro' ? 'Easybox / Locker' : 'Easybox / Locker'}
                             </p>
                           </div>
-                          <span className="text-sm text-muted-foreground">
-                            {language === 'ro' ? 'În curând' : 'Soon'}
+                          <span className="font-medium">
+                            {language === 'ro' ? 'Gratuit' : 'Free'}
                           </span>
                         </label>
                       )}
