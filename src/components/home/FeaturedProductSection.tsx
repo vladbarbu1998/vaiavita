@@ -26,8 +26,8 @@ export function FeaturedProductSection() {
             to="/produse/dent-tastic"
             className="order-1 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center group w-full"
           >
-            {/* Single elegant frame */}
-            <div className="relative w-full max-w-md lg:max-w-lg mx-auto p-3 sm:p-4">
+            {/* Single elegant frame - same width as text */}
+            <div className="relative w-full mx-auto">
               {/* Glow effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-primary/5 rounded-2xl blur-xl" />
               

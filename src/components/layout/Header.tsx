@@ -14,6 +14,7 @@ import { useCart } from '@/context/CartContext';
 import { useCurrency, currencies } from '@/context/CurrencyContext';
 import logoDark from '@/assets/logo-dark.png';
 import logoLight from '@/assets/logo-light.png';
+import logoLightNew from '@/assets/logo-light-new.png';
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,7 +37,7 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center transition-transform hover:scale-105">
             <img 
-              src={theme === 'dark' ? logoLight : logoDark} 
+              src={theme === 'dark' ? logoLight : logoLightNew} 
               alt="VAIAVITA" 
               className="h-11 w-auto"
             />
