@@ -50,36 +50,36 @@ const ROMANIAN_COUNTIES = [
   'Vâlcea', 'Vaslui', 'Vrancea'
 ];
 
-// EU countries + UK
+// EU countries + UK with postal code formats
 const COUNTRIES = [
-  { code: 'RO', name: 'România', nameEn: 'Romania' },
-  { code: 'AT', name: 'Austria', nameEn: 'Austria' },
-  { code: 'BE', name: 'Belgia', nameEn: 'Belgium' },
-  { code: 'BG', name: 'Bulgaria', nameEn: 'Bulgaria' },
-  { code: 'HR', name: 'Croația', nameEn: 'Croatia' },
-  { code: 'CY', name: 'Cipru', nameEn: 'Cyprus' },
-  { code: 'CZ', name: 'Cehia', nameEn: 'Czech Republic' },
-  { code: 'DK', name: 'Danemarca', nameEn: 'Denmark' },
-  { code: 'EE', name: 'Estonia', nameEn: 'Estonia' },
-  { code: 'FI', name: 'Finlanda', nameEn: 'Finland' },
-  { code: 'FR', name: 'Franța', nameEn: 'France' },
-  { code: 'DE', name: 'Germania', nameEn: 'Germany' },
-  { code: 'GR', name: 'Grecia', nameEn: 'Greece' },
-  { code: 'HU', name: 'Ungaria', nameEn: 'Hungary' },
-  { code: 'IE', name: 'Irlanda', nameEn: 'Ireland' },
-  { code: 'IT', name: 'Italia', nameEn: 'Italy' },
-  { code: 'LV', name: 'Letonia', nameEn: 'Latvia' },
-  { code: 'LT', name: 'Lituania', nameEn: 'Lithuania' },
-  { code: 'LU', name: 'Luxemburg', nameEn: 'Luxembourg' },
-  { code: 'MT', name: 'Malta', nameEn: 'Malta' },
-  { code: 'NL', name: 'Țările de Jos', nameEn: 'Netherlands' },
-  { code: 'PL', name: 'Polonia', nameEn: 'Poland' },
-  { code: 'PT', name: 'Portugalia', nameEn: 'Portugal' },
-  { code: 'SK', name: 'Slovacia', nameEn: 'Slovakia' },
-  { code: 'SI', name: 'Slovenia', nameEn: 'Slovenia' },
-  { code: 'ES', name: 'Spania', nameEn: 'Spain' },
-  { code: 'SE', name: 'Suedia', nameEn: 'Sweden' },
-  { code: 'GB', name: 'Regatul Unit', nameEn: 'United Kingdom' },
+  { code: 'RO', name: 'România', nameEn: 'Romania', postalFormat: /^\d{6}$/, postalExample: '500001' },
+  { code: 'AT', name: 'Austria', nameEn: 'Austria', postalFormat: /^\d{4}$/, postalExample: '1010' },
+  { code: 'BE', name: 'Belgia', nameEn: 'Belgium', postalFormat: /^\d{4}$/, postalExample: '1000' },
+  { code: 'BG', name: 'Bulgaria', nameEn: 'Bulgaria', postalFormat: /^\d{4}$/, postalExample: '1000' },
+  { code: 'HR', name: 'Croația', nameEn: 'Croatia', postalFormat: /^\d{5}$/, postalExample: '10000' },
+  { code: 'CY', name: 'Cipru', nameEn: 'Cyprus', postalFormat: /^\d{4}$/, postalExample: '1010' },
+  { code: 'CZ', name: 'Cehia', nameEn: 'Czech Republic', postalFormat: /^\d{3}\s?\d{2}$/, postalExample: '110 00' },
+  { code: 'DK', name: 'Danemarca', nameEn: 'Denmark', postalFormat: /^\d{4}$/, postalExample: '1000' },
+  { code: 'EE', name: 'Estonia', nameEn: 'Estonia', postalFormat: /^\d{5}$/, postalExample: '10001' },
+  { code: 'FI', name: 'Finlanda', nameEn: 'Finland', postalFormat: /^\d{5}$/, postalExample: '00100' },
+  { code: 'FR', name: 'Franța', nameEn: 'France', postalFormat: /^\d{5}$/, postalExample: '75001' },
+  { code: 'DE', name: 'Germania', nameEn: 'Germany', postalFormat: /^\d{5}$/, postalExample: '10115' },
+  { code: 'GR', name: 'Grecia', nameEn: 'Greece', postalFormat: /^\d{3}\s?\d{2}$/, postalExample: '104 31' },
+  { code: 'HU', name: 'Ungaria', nameEn: 'Hungary', postalFormat: /^\d{4}$/, postalExample: '1011' },
+  { code: 'IE', name: 'Irlanda', nameEn: 'Ireland', postalFormat: /^[A-Za-z0-9]{3}\s?[A-Za-z0-9]{4}$/, postalExample: 'D01 F5P2' },
+  { code: 'IT', name: 'Italia', nameEn: 'Italy', postalFormat: /^\d{5}$/, postalExample: '00100' },
+  { code: 'LV', name: 'Letonia', nameEn: 'Latvia', postalFormat: /^LV-\d{4}$/i, postalExample: 'LV-1001' },
+  { code: 'LT', name: 'Lituania', nameEn: 'Lithuania', postalFormat: /^LT-\d{5}$/i, postalExample: 'LT-01001' },
+  { code: 'LU', name: 'Luxemburg', nameEn: 'Luxembourg', postalFormat: /^\d{4}$/, postalExample: '1111' },
+  { code: 'MT', name: 'Malta', nameEn: 'Malta', postalFormat: /^[A-Za-z]{3}\s?\d{4}$/, postalExample: 'VLT 1000' },
+  { code: 'NL', name: 'Țările de Jos', nameEn: 'Netherlands', postalFormat: /^\d{4}\s?[A-Za-z]{2}$/, postalExample: '1011 AB' },
+  { code: 'PL', name: 'Polonia', nameEn: 'Poland', postalFormat: /^\d{2}-\d{3}$/, postalExample: '00-001' },
+  { code: 'PT', name: 'Portugalia', nameEn: 'Portugal', postalFormat: /^\d{4}-\d{3}$/, postalExample: '1000-001' },
+  { code: 'SK', name: 'Slovacia', nameEn: 'Slovakia', postalFormat: /^\d{3}\s?\d{2}$/, postalExample: '811 01' },
+  { code: 'SI', name: 'Slovenia', nameEn: 'Slovenia', postalFormat: /^\d{4}$/, postalExample: '1000' },
+  { code: 'ES', name: 'Spania', nameEn: 'Spain', postalFormat: /^\d{5}$/, postalExample: '28001' },
+  { code: 'SE', name: 'Suedia', nameEn: 'Sweden', postalFormat: /^\d{3}\s?\d{2}$/, postalExample: '111 22' },
+  { code: 'GB', name: 'Regatul Unit', nameEn: 'United Kingdom', postalFormat: /^[A-Za-z]{1,2}\d[A-Za-z\d]?\s?\d[A-Za-z]{2}$/, postalExample: 'SW1A 1AA' },
 ];
 
 type DeliveryMethod = 'shipping' | 'pickup' | 'locker';
@@ -129,7 +129,7 @@ const Checkout = () => {
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
   const [countyOpen, setCountyOpen] = useState(false);
-  const [citySearch, setCitySearch] = useState('');
+  const [postalCodeError, setPostalCodeError] = useState('');
   
   const [form, setForm] = useState<CheckoutForm>({
     firstName: '',
@@ -179,9 +179,11 @@ const Checkout = () => {
         ...prev, 
         country: countryCode,
         county: newIsRomania ? prev.county : '',
+        postalCode: '', // Reset postal code when country changes
         deliveryMethod: newDeliveryMethod
       };
     });
+    setPostalCodeError(''); // Clear postal code error
     setCountryOpen(false);
   };
 
@@ -204,11 +206,33 @@ const Checkout = () => {
     setCountyOpen(false);
   };
 
-  // Get selected country name
+  // Get selected country name and postal format
   const selectedCountry = COUNTRIES.find(c => c.code === form.country);
   const countryDisplayName = selectedCountry 
     ? (language === 'ro' ? selectedCountry.name : selectedCountry.nameEn)
     : '';
+
+  // Validate postal code format
+  const validatePostalCode = (postalCode: string, countryCode: string): boolean => {
+    if (!postalCode.trim()) return true; // Empty is valid (optional field)
+    const country = COUNTRIES.find(c => c.code === countryCode);
+    if (!country) return true;
+    return country.postalFormat.test(postalCode.trim());
+  };
+
+  const handlePostalCodeChange = (value: string) => {
+    updateForm('postalCode', value);
+    if (value.trim() && !validatePostalCode(value, form.country)) {
+      const country = COUNTRIES.find(c => c.code === form.country);
+      setPostalCodeError(
+        language === 'ro' 
+          ? `Format invalid. Exemplu: ${country?.postalExample || ''}`
+          : `Invalid format. Example: ${country?.postalExample || ''}`
+      );
+    } else {
+      setPostalCodeError('');
+    }
+  };
 
   // Calculate discount based on coupon
   const calculateDiscount = () => {
@@ -377,6 +401,17 @@ const Checkout = () => {
 
     if (isRomania && form.deliveryMethod === 'shipping' && !form.county) {
       toast.error(language === 'ro' ? 'Selectează județul' : 'Select county');
+      return;
+    }
+
+    // Validate postal code format
+    if (form.postalCode.trim() && !validatePostalCode(form.postalCode, form.country)) {
+      const country = COUNTRIES.find(c => c.code === form.country);
+      toast.error(
+        language === 'ro' 
+          ? `Cod poștal invalid. Exemplu: ${country?.postalExample || ''}`
+          : `Invalid postal code. Example: ${country?.postalExample || ''}`
+      );
       return;
     }
 
@@ -714,13 +749,22 @@ const Checkout = () => {
                   <div className="space-y-2 max-w-xs">
                     <Label htmlFor="postalCode">
                       {language === 'ro' ? 'Cod poștal' : 'Postal code'}
+                      {selectedCountry && (
+                        <span className="text-xs text-muted-foreground ml-2">
+                          ({language === 'ro' ? 'ex:' : 'e.g.'} {selectedCountry.postalExample})
+                        </span>
+                      )}
                     </Label>
                     <Input
                       id="postalCode"
                       value={form.postalCode}
-                      onChange={(e) => updateForm('postalCode', e.target.value)}
-                      placeholder={language === 'ro' ? 'Cod poștal' : 'Postal code'}
+                      onChange={(e) => handlePostalCodeChange(e.target.value)}
+                      placeholder={selectedCountry?.postalExample || (language === 'ro' ? 'Cod poștal' : 'Postal code')}
+                      className={postalCodeError ? 'border-destructive' : ''}
                     />
+                    {postalCodeError && (
+                      <p className="text-xs text-destructive">{postalCodeError}</p>
+                    )}
                   </div>
 
                   {/* Delivery Method Section */}
