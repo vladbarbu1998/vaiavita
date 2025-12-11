@@ -42,7 +42,7 @@ const translations: Record<Language, Record<string, string>> = {
     'qivaro.title': 'Qivaro: Transformăm vieți, supliment cu supliment',
     'qivaro.description': 'VAIAVITA vă aduce brandul premium Qivaro, recunoscut pentru formulele sale inovatoare și ingredientele de calitate superioară. Suplimentele Qivaro reprezintă vârful excelenței în nutriție targetată, fiind create în laboratoare avansate din SUA după standarde stricte de calitate. Fiecare produs Qivaro combină știința modernă cu ingrediente naturale potente pentru rezultate remarcabile.',
     'qivaro.description2': 'VAIAVITA a selectat brandul Qivaro pentru angajamentul său față de puritate, eficacitate și inovație continuă în domeniul suplimentelor nutritive de elită.',
-    'qivaro.cta': 'Comandă acum pentru vitalitate fără compromisuri (în curând)',
+    'qivaro.cta': 'În curând',
     
     // Why Choose Us
     'why.title': 'De ce să ne alegi?',
@@ -115,7 +115,7 @@ const translations: Record<Language, Record<string, string>> = {
     'qivaro.title': 'Qivaro: Transforming lives, supplement by supplement',
     'qivaro.description': 'VAIAVITA brings you the premium Qivaro brand, recognized for its innovative formulas and superior quality ingredients. Qivaro supplements represent the pinnacle of excellence in targeted nutrition, created in advanced laboratories in the USA following strict quality standards. Each Qivaro product combines modern science with potent natural ingredients for remarkable results.',
     'qivaro.description2': 'VAIAVITA selected the Qivaro brand for its commitment to purity, efficacy and continuous innovation in the field of elite nutritional supplements.',
-    'qivaro.cta': 'Order now for uncompromised vitality (coming soon)',
+    'qivaro.cta': 'Coming soon',
     
     // Why Choose Us
     'why.title': 'Why choose us?',
