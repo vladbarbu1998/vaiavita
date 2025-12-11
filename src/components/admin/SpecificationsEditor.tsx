@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,6 +44,7 @@ export function SpecificationsEditor({
   productDescriptionRo 
 }: SpecificationsEditorProps) {
   const [generating, setGenerating] = useState(false);
+  const [translating, setTranslating] = useState<number | null>(null);
   
   // Ensure specifications.items always exists
   const items = specifications?.items ?? [];
@@ -79,6 +80,55 @@ export function SpecificationsEditor({
       items: items.filter((_, i) => i !== index),
     });
   };
+
+  // Auto-translate a single specification item
+  const translateSpecItem = useCallback(async (index: number) => {
+    const item = items[index];
+    if (!item) return;
+
+    // Check if there's anything to translate
+    const needsLabelTranslation = item.label_ro && !item.label_en;
+    const needsValueTranslation = item.value_ro && !item.value_en;
+
+    if (!needsLabelTranslation && !needsValueTranslation) return;
+
+    setTranslating(index);
+    try {
+      const textsToTranslate: string[] = [];
+      if (needsLabelTranslation) textsToTranslate.push(item.label_ro);
+      if (needsValueTranslation) textsToTranslate.push(item.value_ro);
+
+      const { data, error } = await supabase.functions.invoke('translate-text', {
+        body: {
+          texts: textsToTranslate,
+          sourceLanguage: 'Romanian',
+          targetLanguage: 'English'
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.translations) {
+        const newItems = [...items];
+        let translationIndex = 0;
+        
+        if (needsLabelTranslation) {
+          newItems[index] = { ...newItems[index], label_en: data.translations[translationIndex] };
+          translationIndex++;
+        }
+        if (needsValueTranslation) {
+          newItems[index] = { ...newItems[index], value_en: data.translations[translationIndex] };
+        }
+        
+        onChange({ items: newItems });
+      }
+    } catch (error: any) {
+      console.error('Translation error:', error);
+      // Silent fail - don't show error toast for auto-translation
+    } finally {
+      setTranslating(null);
+    }
+  }, [items, onChange]);
 
   const generateWithAI = async () => {
     if (!productNameRo) {
@@ -181,18 +231,22 @@ export function SpecificationsEditor({
                 <Input
                   value={item.label_ro}
                   onChange={(e) => updateSpecification(index, 'label_ro', e.target.value)}
+                  onBlur={() => translateSpecItem(index)}
                   placeholder="ex: Ingrediente"
                   className="h-9"
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Etichetă EN</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Etichetă EN {translating === index && <Loader2 className="inline w-3 h-3 animate-spin ml-1" />}
+                </Label>
                 <Input
                   value={item.label_en}
                   onChange={(e) => updateSpecification(index, 'label_en', e.target.value)}
                   placeholder="ex: Ingredients"
                   className="h-9"
                 />
+                <p className="text-xs text-muted-foreground">Se traduce automat dacă lași gol</p>
               </div>
             </div>
 
@@ -203,6 +257,7 @@ export function SpecificationsEditor({
                   <Textarea
                     value={item.value_ro}
                     onChange={(e) => updateSpecification(index, 'value_ro', e.target.value)}
+                    onBlur={() => translateSpecItem(index)}
                     placeholder="O valoare per linie..."
                     rows={3}
                     className="text-sm"
@@ -211,13 +266,16 @@ export function SpecificationsEditor({
                   <Input
                     value={item.value_ro}
                     onChange={(e) => updateSpecification(index, 'value_ro', e.target.value)}
+                    onBlur={() => translateSpecItem(index)}
                     placeholder="Valoare..."
                     className="h-9"
                   />
                 )}
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Valoare EN</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Valoare EN {translating === index && <Loader2 className="inline w-3 h-3 animate-spin ml-1" />}
+                </Label>
                 {item.type === 'list' ? (
                   <Textarea
                     value={item.value_en}
@@ -234,6 +292,7 @@ export function SpecificationsEditor({
                     className="h-9"
                   />
                 )}
+                <p className="text-xs text-muted-foreground">Se traduce automat dacă lași gol</p>
               </div>
             </div>
 
