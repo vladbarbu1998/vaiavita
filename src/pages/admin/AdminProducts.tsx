@@ -736,7 +736,7 @@ const AdminProducts = () => {
                         className="flex items-center gap-1 group cursor-pointer"
                         title={`UUID: ${product.id}`}
                       >
-                        <code className="text-xs bg-muted px-2 py-1 rounded font-mono group-hover:bg-primary/10 transition-colors">#{product.product_number}</code>
+                        <code className="text-xs bg-muted px-2 py-1 rounded font-mono group-hover:bg-primary/10 transition-colors">{product.product_number}</code>
                         <Copy className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </button>
                     </td>

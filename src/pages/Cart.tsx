@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Package, Truck } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Package, Truck, Gift } from 'lucide-react';
 
 const Cart = () => {
   const { language, t } = useLanguage();
@@ -56,59 +56,87 @@ const Cart = () => {
             <div className="lg:col-span-2 space-y-4 opacity-0 animate-fade-up animation-delay-100">
               {items.map((item, index) => (
                 <div 
-                  key={item.id} 
-                  className="card-premium p-5 flex gap-5 group"
+                  key={`${item.id}-${item.isGift ? 'gift' : 'regular'}`} 
+                  className={`card-premium p-5 flex gap-5 group ${item.isGift ? 'ring-2 ring-green-500/30 bg-green-500/5' : ''}`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <Link 
                     to={`/produse/${item.slug}`}
-                    className="w-28 h-28 rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 overflow-hidden shrink-0 p-3 hover:ring-2 hover:ring-primary/30 transition-all"
+                    className="w-28 h-28 rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 overflow-hidden shrink-0 p-3 hover:ring-2 hover:ring-primary/30 transition-all relative"
                   >
                     <img 
                       src={item.image} 
                       alt={language === 'ro' ? item.name : item.nameEn}
                       className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                     />
+                    {item.isGift && (
+                      <div className="absolute top-1 right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                        <Gift className="w-3.5 h-3.5 text-white" />
+                      </div>
+                    )}
                   </Link>
                   <div className="flex-1 min-w-0 flex flex-col justify-between">
                     <div>
-                      <Link 
-                        to={`/produse/${item.slug}`}
-                        className="font-display text-lg tracking-wide truncate block hover:text-primary transition-colors"
-                      >
-                        {language === 'ro' ? item.name : item.nameEn}
-                      </Link>
-                      <p className="text-primary font-bold text-xl mt-1">
-                        {formatPrice(item.price)}
+                      <div className="flex items-center gap-2">
+                        <Link 
+                          to={`/produse/${item.slug}`}
+                          className="font-display text-lg tracking-wide truncate block hover:text-primary transition-colors"
+                        >
+                          {language === 'ro' ? item.name : item.nameEn}
+                        </Link>
+                        {item.isGift && (
+                          <span className="shrink-0 px-2 py-0.5 bg-green-500/10 text-green-600 text-xs font-medium rounded-full">
+                            {language === 'ro' ? 'CADOU' : 'GIFT'}
+                          </span>
+                        )}
+                      </div>
+                      <p className={`font-bold text-xl mt-1 ${item.isGift ? 'text-green-600' : 'text-primary'}`}>
+                        {item.isGift 
+                          ? (language === 'ro' ? 'GRATUIT' : 'FREE')
+                          : formatPrice(item.price)
+                        }
                       </p>
                     </div>
-                    <div className="flex items-center gap-4 mt-3">
-                      <div className="inline-flex items-center gap-1 bg-muted/80 rounded-xl p-1">
+                    {!item.isGift && (
+                      <div className="flex items-center gap-4 mt-3">
+                        <div className="inline-flex items-center gap-1 bg-muted/80 rounded-xl p-1">
+                          <button 
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className="w-9 h-9 rounded-lg hover:bg-background hover:text-primary transition-all flex items-center justify-center"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="w-10 text-center text-sm font-semibold">{item.quantity}</span>
+                          <button 
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="w-9 h-9 rounded-lg hover:bg-background hover:text-primary transition-all flex items-center justify-center"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
                         <button 
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="w-9 h-9 rounded-lg hover:bg-background hover:text-primary transition-all flex items-center justify-center"
+                          onClick={() => removeItem(item.id)}
+                          className="w-9 h-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all flex items-center justify-center"
                         >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                        <span className="w-10 text-center text-sm font-semibold">{item.quantity}</span>
-                        <button 
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="w-9 h-9 rounded-lg hover:bg-background hover:text-primary transition-all flex items-center justify-center"
-                        >
-                          <Plus className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                      <button 
-                        onClick={() => removeItem(item.id)}
-                        className="w-9 h-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all flex items-center justify-center"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    )}
+                    {item.isGift && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {language === 'ro' 
+                          ? 'Cadou pentru achiziția a 2+ paste de dinți Dent-Tastic'
+                          : 'Gift for purchasing 2+ Dent-Tastic toothpastes'
+                        }
+                      </p>
+                    )}
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-bold text-xl">
-                      {formatPrice(item.price * item.quantity)}
+                    <p className={`font-bold text-xl ${item.isGift ? 'text-green-600' : ''}`}>
+                      {item.isGift 
+                        ? (language === 'ro' ? 'GRATUIT' : 'FREE')
+                        : formatPrice(item.price * item.quantity)
+                      }
                     </p>
                   </div>
                 </div>
