@@ -687,6 +687,7 @@ const AdminProducts = () => {
             <thead className="bg-muted/50">
               <tr>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Produs</th>
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground">ID</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Preț</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Stoc</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
@@ -696,13 +697,13 @@ const AdminProducts = () => {
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center">
+                  <td colSpan={6} className="p-8 text-center">
                     <Loader2 className="w-6 h-6 animate-spin mx-auto" />
                   </td>
                 </tr>
               ) : filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
                     Nu există produse
                   </td>
                 </tr>
@@ -723,6 +724,9 @@ const AdminProducts = () => {
                           <p className="text-sm text-muted-foreground">{product.sku || '-'}</p>
                         </div>
                       </div>
+                    </td>
+                    <td className="p-4">
+                      <code className="text-xs bg-muted px-2 py-1 rounded font-mono">{product.id.slice(0, 8)}...</code>
                     </td>
                     <td className="p-4">
                       <p className="font-medium">{Number(product.price).toFixed(2)} lei</p>
