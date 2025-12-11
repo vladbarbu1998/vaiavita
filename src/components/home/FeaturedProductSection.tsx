@@ -13,8 +13,8 @@ export function FeaturedProductSection() {
 
   return (
     <section className="section-padding relative overflow-hidden">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 opacity-30">
+      {/* Subtle background pattern - hidden on mobile */}
+      <div className="absolute inset-0 opacity-30 hidden sm:block">
         <div className="absolute top-1/4 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 left-0 w-96 h-96 bg-primary/3 rounded-full blur-3xl" />
       </div>
