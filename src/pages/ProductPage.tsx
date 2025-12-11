@@ -545,11 +545,11 @@ const ProductPage = () => {
 
   return (
     <MainLayout breadcrumbItems={breadcrumbItems}>
-      <section className="section-padding">
+      <section className="section-padding overflow-hidden">
         <div className="container-custom">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
             {/* Image Gallery */}
-            <div className="relative">
+            <div className="relative overflow-hidden">
               <ImageGallery 
                 images={images} 
                 productName={language === 'ro' ? product.name_ro : product.name_en} 
@@ -557,7 +557,7 @@ const ProductPage = () => {
             </div>
 
             {/* Product Details */}
-            <div className="space-y-6 opacity-0 animate-fade-up animation-delay-200">
+            <div className="space-y-6 opacity-0 animate-fade-up animation-delay-200 overflow-hidden">
               <div>
                 <Badge className={`mb-4 ${
                   isInStock 
@@ -577,7 +577,7 @@ const ProductPage = () => {
                   </div>
                 )}
                 
-                <h1 className="font-display text-3xl md:text-4xl tracking-wide">
+                <h1 className="font-display text-2xl sm:text-3xl md:text-4xl tracking-wide break-words">
                   {language === 'ro' ? product.name_ro : product.name_en}
                 </h1>
                 

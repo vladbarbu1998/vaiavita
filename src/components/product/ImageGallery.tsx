@@ -52,7 +52,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
 
   return (
     <>
-      <div className="flex gap-4 opacity-0 animate-fade-up">
+      <div className="flex gap-4 opacity-0 animate-fade-up overflow-hidden">
         {/* Thumbnails - Left Side */}
         {images.length > 1 && (
           <div 
@@ -122,7 +122,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
 
         {/* Main Image Container - Square with same height as thumbnail column */}
         <div 
-          className="flex-1 relative"
+          className="flex-1 relative min-w-0"
           style={{ height: `${totalColumnHeight}px` }}
         >
           {/* Navigation Arrows - Outside main image */}
@@ -130,15 +130,15 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-background border border-border shadow-md hover:bg-muted h-10 w-10"
+              className="absolute left-0 md:-left-4 top-1/2 -translate-y-1/2 z-10 bg-background border border-border shadow-md hover:bg-muted h-8 w-8 md:h-10 md:w-10"
               onClick={goToPrevious}
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
             </Button>
           )}
           
           <div 
-            className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-muted/30 to-muted/10 cursor-zoom-in group w-full h-full"
+            className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-muted/30 to-muted/10 cursor-zoom-in group w-full h-full mx-auto"
             onClick={() => setZoomOpen(true)}
           >
             <img 
@@ -157,10 +157,10 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 bg-background border border-border shadow-md hover:bg-muted h-10 w-10"
+              className="absolute right-0 md:-right-4 top-1/2 -translate-y-1/2 z-10 bg-background border border-border shadow-md hover:bg-muted h-8 w-8 md:h-10 md:w-10"
               onClick={goToNext}
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
             </Button>
           )}
         </div>
