@@ -9,6 +9,7 @@ interface ImageGalleryProps {
 }
 
 const VISIBLE_THUMBNAILS = 5;
+const MOBILE_VISIBLE_THUMBNAILS = 4;
 const THUMBNAIL_HEIGHT = 88; // Fixed height for each thumbnail in px
 const THUMBNAIL_GAP = 8; // Gap between thumbnails in px
 const ARROW_HEIGHT = 32; // Fixed height for arrows in px
@@ -166,22 +167,52 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
         </div>
       </div>
 
-      {/* Mobile Thumbnails - Bottom */}
+      {/* Mobile Thumbnails - Carousel with arrows */}
       {images.length > 1 && (
-        <div className="md:hidden flex gap-2 mt-4 overflow-x-auto pb-2">
-          {images.map((img, index) => (
-            <button
-              key={index}
-              onClick={() => setActiveImage(index)}
-              className={`shrink-0 overflow-hidden w-16 h-16 rounded-lg border-2 transition-all bg-muted/30 ${
-                activeImage === index 
-                  ? 'border-primary shadow-md' 
-                  : 'border-border opacity-60'
-              }`}
+        <div className="md:hidden mt-4 relative">
+          <div className="flex items-center gap-2">
+            {/* Left Arrow */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`shrink-0 h-8 w-8 ${thumbnailStart <= 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+              onClick={() => setThumbnailStart(prev => Math.max(0, prev - 1))}
+              disabled={thumbnailStart <= 0}
             >
-              <img src={img} alt="" className="w-full h-full object-contain p-1" />
-            </button>
-          ))}
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            
+            {/* Thumbnails */}
+            <div className="flex gap-2 overflow-hidden flex-1 justify-center">
+              {images.slice(thumbnailStart, thumbnailStart + MOBILE_VISIBLE_THUMBNAILS).map((img, index) => {
+                const actualIndex = thumbnailStart + index;
+                return (
+                  <button
+                    key={actualIndex}
+                    onClick={() => setActiveImage(actualIndex)}
+                    className={`shrink-0 overflow-hidden w-14 h-14 rounded-lg border-2 transition-all bg-muted/30 ${
+                      activeImage === actualIndex 
+                        ? 'border-primary shadow-md' 
+                        : 'border-border opacity-60'
+                    }`}
+                  >
+                    <img src={img} alt="" className="w-full h-full object-contain p-1" />
+                  </button>
+                );
+              })}
+            </div>
+            
+            {/* Right Arrow */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`shrink-0 h-8 w-8 ${thumbnailStart + MOBILE_VISIBLE_THUMBNAILS >= images.length ? 'opacity-30 cursor-not-allowed' : ''}`}
+              onClick={() => setThumbnailStart(prev => Math.min(images.length - MOBILE_VISIBLE_THUMBNAILS, prev + 1))}
+              disabled={thumbnailStart + MOBILE_VISIBLE_THUMBNAILS >= images.length}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       )}
 

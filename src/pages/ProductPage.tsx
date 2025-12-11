@@ -8,11 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart, PROMO_CONFIG } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
-import { Star, Minus, Plus, ShoppingCart, Loader2, CheckCircle, ImagePlus, X, Gift, ArrowRight } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, Loader2, CheckCircle, ImagePlus, X, Gift, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductSpecificationsDisplay, ProductSpecifications } from '@/components/product/ProductSpecifications';
 import { ImageGallery } from '@/components/product/ImageGallery';
@@ -108,6 +109,7 @@ const ProductPage = () => {
   const [promoGiftProduct, setPromoGiftProduct] = useState<{ slug: string; name_ro: string; name_en: string } | null>(null);
   const [promoTriggerProduct, setPromoTriggerProduct] = useState<{ slug: string; name_ro: string; name_en: string } | null>(null);
   const [activeTab, setActiveTab] = useState('description');
+  const [mobileRelatedIndex, setMobileRelatedIndex] = useState(0);
   const tabsRef = useRef<HTMLDivElement>(null);
   
   // Review form state
@@ -719,66 +721,114 @@ const ProductPage = () => {
           {/* Related Products Section - Carousel on mobile */}
           {relatedProducts.length > 0 && (
             <div className="mt-10 opacity-0 animate-fade-up animation-delay-300">
-              <h4 className="font-display text-sm md:text-base tracking-wide mb-4 text-muted-foreground">
+              <h4 className="font-display text-sm md:text-base tracking-wide mb-4 text-muted-foreground text-center md:text-left">
                 {language === 'ro' ? 'Clienții au cumpărat și' : 'Customers also bought'}
               </h4>
-              {/* Mobile: Horizontal scroll carousel */}
-              <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide md:hidden -mx-4 px-4">
-                {relatedProducts.map((relProd) => (
-                  <div
-                    key={relProd.id}
-                    className="group card-premium overflow-hidden hover:shadow-sm transition-all duration-300 snap-center shrink-0 w-[75vw] max-w-[280px]"
-                  >
-                    {/* Image with Quick Add button */}
-                    <div className="relative">
-                      <a href={`/produse/${relProd.slug}`} className="block">
-                        <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-4 rounded-t-2xl">
-                          {relProd.images?.[0] ? (
-                            <img
-                              src={relProd.images[0]}
-                              alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
-                              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <ShoppingCart className="w-6 h-6 text-muted-foreground" />
+              {/* Mobile: Centered card with navigation arrows */}
+              <div className="md:hidden">
+                <div className="flex items-center justify-center gap-2">
+                  {/* Left Arrow */}
+                  {relatedProducts.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={`shrink-0 h-10 w-10 ${mobileRelatedIndex <= 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                      onClick={() => setMobileRelatedIndex(prev => Math.max(0, prev - 1))}
+                      disabled={mobileRelatedIndex <= 0}
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </Button>
+                  )}
+                  
+                  {/* Single Centered Card */}
+                  <div className="w-full max-w-[280px]">
+                    {relatedProducts[mobileRelatedIndex] && (() => {
+                      const relProd = relatedProducts[mobileRelatedIndex];
+                      return (
+                        <div className="group card-premium overflow-hidden hover:shadow-sm transition-all duration-300">
+                          {/* Image with Quick Add button */}
+                          <div className="relative">
+                            <a href={`/produse/${relProd.slug}`} className="block">
+                              <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-4 rounded-t-2xl">
+                                {relProd.images?.[0] ? (
+                                  <img
+                                    src={relProd.images[0]}
+                                    alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
+                                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <ShoppingCart className="w-6 h-6 text-muted-foreground" />
+                                  </div>
+                                )}
+                              </div>
+                            </a>
+                            {/* Quick Add Button */}
+                            <button
+                              onClick={() => handleQuickAddRelated(relProd)}
+                              className="absolute bottom-0 right-3 translate-y-1/2 w-9 h-9 rounded-full bg-primary text-primary-foreground shadow-md flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
+                              title={language === 'ro' ? 'Adaugă în coș' : 'Add to cart'}
+                            >
+                              <ShoppingCart className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <a href={`/produse/${relProd.slug}`} className="block p-4 pt-6">
+                            {/* Title */}
+                            <h5 className="font-medium text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                              {language === 'ro' ? relProd.name_ro : relProd.name_en}
+                            </h5>
+                            {/* Card description */}
+                            <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+                              {language === 'ro' 
+                                ? (relProd.card_description_ro || '') 
+                                : (relProd.card_description_en || '')}
+                            </p>
+                            {/* Price and CTA */}
+                            <div className="flex items-center justify-between gap-2 pt-3 mt-3 border-t border-border/50">
+                              <p className="text-primary font-semibold text-base">
+                                {formatPrice(relProd.price)}
+                              </p>
+                              <span className="text-primary font-medium text-sm flex items-center gap-1">
+                                {language === 'ro' ? 'Vezi' : 'View'}
+                                <ArrowRight className="w-4 h-4" />
+                              </span>
                             </div>
-                          )}
+                          </a>
                         </div>
-                      </a>
-                      {/* Quick Add Button */}
-                      <button
-                        onClick={() => handleQuickAddRelated(relProd)}
-                        className="absolute bottom-0 right-3 translate-y-1/2 w-9 h-9 rounded-full bg-primary text-primary-foreground shadow-md flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
-                        title={language === 'ro' ? 'Adaugă în coș' : 'Add to cart'}
-                      >
-                        <ShoppingCart className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <a href={`/produse/${relProd.slug}`} className="block p-4 pt-6">
-                      {/* Title */}
-                      <h5 className="font-medium text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-                        {language === 'ro' ? relProd.name_ro : relProd.name_en}
-                      </h5>
-                      {/* Card description */}
-                      <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
-                        {language === 'ro' 
-                          ? (relProd.card_description_ro || '') 
-                          : (relProd.card_description_en || '')}
-                      </p>
-                      {/* Price and CTA */}
-                      <div className="flex items-center justify-between gap-2 pt-3 mt-3 border-t border-border/50">
-                        <p className="text-primary font-semibold text-base">
-                          {formatPrice(relProd.price)}
-                        </p>
-                        <span className="text-primary font-medium text-sm flex items-center gap-1">
-                          {language === 'ro' ? 'Vezi' : 'View'}
-                          <ArrowRight className="w-4 h-4" />
-                        </span>
-                      </div>
-                    </a>
+                      );
+                    })()}
                   </div>
-                ))}
+                  
+                  {/* Right Arrow */}
+                  {relatedProducts.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={`shrink-0 h-10 w-10 ${mobileRelatedIndex >= relatedProducts.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                      onClick={() => setMobileRelatedIndex(prev => Math.min(relatedProducts.length - 1, prev + 1))}
+                      disabled={mobileRelatedIndex >= relatedProducts.length - 1}
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </Button>
+                  )}
+                </div>
+                
+                {/* Dots indicator */}
+                {relatedProducts.length > 1 && (
+                  <div className="flex justify-center gap-1.5 mt-4">
+                    {relatedProducts.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setMobileRelatedIndex(index)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          index === mobileRelatedIndex 
+                            ? 'bg-primary w-4' 
+                            : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
               {/* Desktop: Grid layout */}
               <div className="hidden md:grid md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -841,8 +891,232 @@ const ProductPage = () => {
             </div>
           )}
 
-          {/* Tabs Section */}
-          <div ref={tabsRef} className="mt-16 opacity-0 animate-fade-up animation-delay-400">
+          {/* Mobile: Accordion Section */}
+          <div ref={tabsRef} className="mt-12 md:hidden opacity-0 animate-fade-up animation-delay-400">
+            <Accordion type="single" collapsible defaultValue="description" className="w-full space-y-3">
+              {/* Description Accordion */}
+              <AccordionItem value="description" className="card-premium border-none">
+                <AccordionTrigger className="px-4 py-3 font-display text-base hover:no-underline">
+                  {language === 'ro' ? 'Descriere' : 'Description'}
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4">
+                  {product.description_ro || product.description_en ? (
+                    <div className="prose prose-sm max-w-none text-foreground whitespace-pre-line leading-relaxed">
+                      {(language === 'ro' ? product.description_ro : product.description_en) || ''}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">
+                      {language === 'ro' ? 'Nu există descriere disponibilă.' : 'No description available.'}
+                    </p>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Specifications Accordion */}
+              <AccordionItem value="specifications" className="card-premium border-none">
+                <AccordionTrigger className="px-4 py-3 font-display text-base hover:no-underline">
+                  {language === 'ro' ? 'Specificații' : 'Specifications'}
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4">
+                  <ProductSpecificationsDisplay specifications={product.specifications} />
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Reviews Accordion */}
+              <AccordionItem value="reviews" className="card-premium border-none">
+                <AccordionTrigger className="px-4 py-3 font-display text-base hover:no-underline">
+                  {language === 'ro' ? 'Recenzii' : 'Reviews'} ({reviewStats.reviewCount})
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4 space-y-4">
+                  {/* Reviews Overview */}
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-transparent">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-display text-base">
+                        {language === 'ro' ? 'Sumar Recenzii' : 'Reviews Summary'}
+                      </h3>
+                      {!reviewSubmitted && !showReviewForm && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setShowReviewForm(true)}
+                        >
+                          {language === 'ro' ? 'Scrie' : 'Write'}
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      {/* Average Rating */}
+                      <div className="flex items-center gap-4">
+                        <span className="text-3xl font-bold text-foreground">
+                          {reviewStats.averageRating > 0 ? reviewStats.averageRating.toFixed(1) : '0.0'}
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star 
+                                key={star} 
+                                className={`w-4 h-4 ${
+                                  star <= Math.floor(reviewStats.averageRating) 
+                                    ? 'fill-yellow-400 text-yellow-400' 
+                                    : star <= reviewStats.averageRating + 0.5
+                                      ? 'fill-yellow-400/50 text-yellow-400' 
+                                      : 'text-muted-foreground/40'
+                                }`} 
+                              />
+                            ))}
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {reviewStats.reviewCount} {language === 'ro' ? 'recenzii' : 'reviews'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Review Submitted Message */}
+                  {reviewSubmitted && (
+                    <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <p className="text-sm text-green-700 dark:text-green-400">
+                        {language === 'ro' ? 'Recenzie publicată!' : 'Review published!'}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Review Form - Compact for mobile */}
+                  {showReviewForm && (
+                    <form onSubmit={handleSubmitReview} className="p-4 rounded-xl bg-muted/30 border border-border space-y-3">
+                      <h3 className="font-display text-base mb-3">
+                        {language === 'ro' ? 'Scrie o recenzie' : 'Write a review'}
+                      </h3>
+                      
+                      {/* Rating */}
+                      <div className="space-y-1">
+                        <Label className="text-sm">{language === 'ro' ? 'Rating *' : 'Rating *'}</Label>
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))}
+                              className="p-0.5 hover:scale-110 transition-transform"
+                            >
+                              <Star 
+                                className={`w-7 h-7 ${star <= reviewForm.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground hover:text-yellow-400'}`} 
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="review_name_mobile" className="text-sm">{language === 'ro' ? 'Nume *' : 'Name *'}</Label>
+                        <Input
+                          id="review_name_mobile"
+                          value={reviewForm.customer_name}
+                          onChange={(e) => setReviewForm(prev => ({ ...prev, customer_name: e.target.value }))}
+                          placeholder={language === 'ro' ? 'Numele tău' : 'Your name'}
+                          maxLength={100}
+                          required
+                          className="h-9"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="review_email_mobile" className="text-sm">{language === 'ro' ? 'Email *' : 'Email *'}</Label>
+                        <Input
+                          id="review_email_mobile"
+                          type="email"
+                          value={reviewForm.customer_email}
+                          onChange={(e) => setReviewForm(prev => ({ ...prev, customer_email: e.target.value }))}
+                          placeholder={language === 'ro' ? 'email@exemplu.com' : 'email@example.com'}
+                          maxLength={255}
+                          required
+                          className="h-9"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label htmlFor="review_content_mobile" className="text-sm">{language === 'ro' ? 'Recenzia ta *' : 'Your review *'}</Label>
+                        <Textarea
+                          id="review_content_mobile"
+                          value={reviewForm.content}
+                          onChange={(e) => setReviewForm(prev => ({ ...prev, content: e.target.value }))}
+                          placeholder={language === 'ro' ? 'Spune-ne părerea ta...' : 'Tell us what you think...'}
+                          rows={3}
+                          maxLength={2000}
+                          required
+                        />
+                      </div>
+
+                      <div className="flex gap-2 pt-1">
+                        <Button type="submit" variant="hero" size="sm" disabled={reviewSubmitting || uploadingImages}>
+                          {reviewSubmitting ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            language === 'ro' ? 'Trimite' : 'Submit'
+                          )}
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setShowReviewForm(false)}
+                          disabled={reviewSubmitting}
+                        >
+                          {language === 'ro' ? 'Anulează' : 'Cancel'}
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* Reviews List */}
+                  {reviewStats.reviewCount > 0 ? (
+                    <div className="space-y-4">
+                      {reviews.map((review) => (
+                        <div key={review.id} className="pb-4 border-b border-border last:border-0 last:pb-0">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-medium text-sm">{review.customer_name}</span>
+                                {review.is_verified_purchase && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 border border-green-500/20">
+                                    ✓
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-0.5">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star 
+                                    key={star} 
+                                    className={`w-3 h-3 ${star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} 
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          {(() => {
+                            const displayContent = language === 'ro' 
+                              ? (review.content_ro || review.content) 
+                              : (review.content_en || review.content_ro || review.content);
+                            return displayContent && (
+                              <p className="text-muted-foreground text-sm leading-relaxed">{displayContent}</p>
+                            );
+                          })()}
+                        </div>
+                      ))}
+                    </div>
+                  ) : !showReviewForm && !reviewSubmitted && (
+                    <p className="text-muted-foreground text-sm">
+                      {language === 'ro' ? 'Nu există recenzii încă.' : 'No reviews yet.'}
+                    </p>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+
+          {/* Desktop: Tabs Section */}
+          <div className="hidden md:block mt-16 opacity-0 animate-fade-up animation-delay-400">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="w-full justify-start border-b border-border rounded-none bg-transparent h-auto p-0 mb-8 overflow-x-auto">
                 <TabsTrigger
