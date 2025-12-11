@@ -164,15 +164,21 @@ const Checkout = () => {
     return ['shipping', 'locker'] as DeliveryMethod[];
   }, [isRomania, isBrasov]);
 
-  // Reset delivery method when it becomes unavailable
+  // Reset delivery method and payment method when it becomes unavailable
   const handleCountryChange = (countryCode: string) => {
     setForm(prev => {
       const newIsRomania = countryCode === 'RO';
       let newDeliveryMethod = prev.deliveryMethod;
+      let newPaymentMethod = prev.paymentMethod;
       
       // If switching away from Romania and method is not shipping, reset to shipping
       if (!newIsRomania && (prev.deliveryMethod === 'pickup' || prev.deliveryMethod === 'locker')) {
         newDeliveryMethod = 'shipping';
+      }
+      
+      // If switching away from Romania and payment is cash_on_delivery, reset to stripe
+      if (!newIsRomania && prev.paymentMethod === 'cash_on_delivery') {
+        newPaymentMethod = 'stripe';
       }
       
       return { 
@@ -180,7 +186,8 @@ const Checkout = () => {
         country: countryCode,
         county: newIsRomania ? prev.county : '',
         postalCode: '', // Reset postal code when country changes
-        deliveryMethod: newDeliveryMethod
+        deliveryMethod: newDeliveryMethod,
+        paymentMethod: newPaymentMethod
       };
     });
     setPostalCodeError(''); // Clear postal code error
@@ -887,24 +894,27 @@ const Checkout = () => {
                     onValueChange={(value) => updateForm('paymentMethod', value)}
                     className="space-y-3"
                   >
-                    <label 
-                      className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
-                        form.paymentMethod === 'cash_on_delivery' 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <RadioGroupItem value="cash_on_delivery" id="cod" />
-                      <Banknote className="w-5 h-5 text-primary" />
-                      <div className="flex-1">
-                        <p className="font-medium">
-                          {language === 'ro' ? 'Ramburs' : 'Cash on delivery'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {language === 'ro' ? 'Plătești la primirea coletului' : 'Pay when you receive the package'}
-                        </p>
-                      </div>
-                    </label>
+                    {/* Cash on delivery - only for Romania */}
+                    {isRomania && (
+                      <label 
+                        className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                          form.paymentMethod === 'cash_on_delivery' 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <RadioGroupItem value="cash_on_delivery" id="cod" />
+                        <Banknote className="w-5 h-5 text-primary" />
+                        <div className="flex-1">
+                          <p className="font-medium">
+                            {language === 'ro' ? 'Ramburs' : 'Cash on delivery'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {language === 'ro' ? 'Plătești la primirea coletului' : 'Pay when you receive the package'}
+                          </p>
+                        </div>
+                      </label>
+                    )}
 
                     <label 
                       className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
