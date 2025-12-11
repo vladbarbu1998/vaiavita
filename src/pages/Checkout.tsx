@@ -1012,13 +1012,13 @@ const Checkout = () => {
                   </h2>
 
                   {/* Items */}
-                  <div className="space-y-3 max-h-64 overflow-y-auto py-1">
+                  <div className="space-y-3 max-h-64 overflow-y-auto overflow-x-visible px-1 py-1 -mx-1">
                     {items.map((item) => (
                       <div 
                         key={`${item.id}-${item.isGift ? 'gift' : 'regular'}`} 
-                        className={`flex gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl overflow-visible ${item.isGift ? 'bg-green-500/10 ring-1 ring-green-500/30' : 'bg-muted/30'}`}
+                        className={`flex gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl ${item.isGift ? 'bg-green-500/10 ring-1 ring-green-500/30' : 'bg-muted/30'}`}
                       >
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-muted shrink-0 relative overflow-visible">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-muted shrink-0 relative">
                           <img 
                             src={item.image} 
                             alt={language === 'ro' ? item.name : item.nameEn}
