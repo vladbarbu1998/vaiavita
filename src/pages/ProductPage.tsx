@@ -11,7 +11,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
-import { Star, Minus, Plus, ShoppingCart, Loader2, CheckCircle, ImagePlus, X, Gift } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, Loader2, CheckCircle, ImagePlus, X, Gift, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductSpecificationsDisplay, ProductSpecifications } from '@/components/product/ProductSpecifications';
 import { ImageGallery } from '@/components/product/ImageGallery';
@@ -732,10 +732,16 @@ const ProductPage = () => {
                           ? (relProd.card_description_ro || '') 
                           : (relProd.card_description_en || '')}
                       </p>
-                      {/* Price - always at bottom */}
-                      <p className="text-primary font-semibold text-sm pt-2">
-                        {formatPrice(relProd.price)}
-                      </p>
+                      {/* Price and CTA */}
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-1 pt-2 mt-2 border-t border-border/50">
+                        <p className="text-primary font-semibold text-sm">
+                          {formatPrice(relProd.price)}
+                        </p>
+                        <span className="text-primary font-medium text-xs flex items-center gap-1">
+                          {language === 'ro' ? 'Vezi produsul' : 'View product'}
+                          <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </div>
                     </a>
                   </div>
                 ))}
