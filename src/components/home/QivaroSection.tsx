@@ -14,9 +14,9 @@ export function QivaroSection() {
 
   return (
     <section className="section-padding section-gradient-2 relative overflow-hidden">
-      {/* Decorative elements */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-primary/3 rounded-full blur-3xl" />
+      {/* Decorative elements - hidden on mobile */}
+      <div className="hidden sm:block absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+      <div className="hidden sm:block absolute bottom-0 left-1/4 w-80 h-80 bg-primary/3 rounded-full blur-3xl" />
       
       <div className="container-custom relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
