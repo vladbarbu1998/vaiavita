@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { MainLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,12 +11,19 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
-import { Star, Minus, Plus, ShoppingCart, Loader2, CheckCircle, ImagePlus, X } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, Loader2, CheckCircle, ImagePlus, X, Gift } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductSpecificationsDisplay, ProductSpecifications } from '@/components/product/ProductSpecifications';
 import { ImageGallery } from '@/components/product/ImageGallery';
 import dentTasticImage from '@/assets/dent-tastic-product.webp';
 import qivaroImage from '@/assets/qivaro.webp';
+
+// Promo configuration
+const PROMO_CONFIG = {
+  triggerProductNumber: 1, // Dent-Tastic
+  giftProductNumber: 2,    // Toothbrush
+  minQuantity: 2,
+};
 
 // Fallback images for products without uploaded images
 const fallbackImages: Record<string, string> = {
@@ -47,6 +54,7 @@ interface Product {
   images: string[] | null;
   specifications: ProductSpecifications | null;
   related_products: string[] | null;
+  product_number: number;
 }
 
 interface RelatedProduct {
@@ -103,6 +111,8 @@ const ProductPage = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([]);
+  const [promoGiftProduct, setPromoGiftProduct] = useState<{ slug: string; name_ro: string; name_en: string } | null>(null);
+  const [promoTriggerProduct, setPromoTriggerProduct] = useState<{ slug: string; name_ro: string; name_en: string } | null>(null);
   const [activeTab, setActiveTab] = useState('description');
   const tabsRef = useRef<HTMLDivElement>(null);
   
@@ -213,6 +223,19 @@ const ProductPage = () => {
           const avg = reviewsData.reduce((sum, r) => sum + r.rating, 0) / reviewsData.length;
           setReviewStats({ averageRating: avg, reviewCount: reviewsData.length });
           setReviews(reviewsData);
+        }
+
+        // Fetch promo products for banner display
+        const { data: promoProducts } = await supabase
+          .from('products')
+          .select('product_number, slug, name_ro, name_en')
+          .in('product_number', [PROMO_CONFIG.triggerProductNumber, PROMO_CONFIG.giftProductNumber]);
+        
+        if (promoProducts) {
+          const trigger = promoProducts.find(p => p.product_number === PROMO_CONFIG.triggerProductNumber);
+          const gift = promoProducts.find(p => p.product_number === PROMO_CONFIG.giftProductNumber);
+          if (trigger) setPromoTriggerProduct({ slug: trigger.slug, name_ro: trigger.name_ro, name_en: trigger.name_en });
+          if (gift) setPromoGiftProduct({ slug: gift.slug, name_ro: gift.name_ro, name_en: gift.name_en });
         }
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -574,6 +597,50 @@ const ProductPage = () => {
                   <p className="text-muted-foreground leading-relaxed mt-4 whitespace-pre-line">
                     {language === 'ro' ? product.short_description_ro : product.short_description_en}
                   </p>
+                )}
+
+                {/* Promo Banner - Show on trigger product (ID 1) */}
+                {product.product_number === PROMO_CONFIG.triggerProductNumber && promoGiftProduct && (
+                  <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                        <Gift className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-green-700 dark:text-green-400">
+                          {language === 'ro' ? '🎁 Ofertă specială!' : '🎁 Special offer!'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {language === 'ro' 
+                            ? <>La {PROMO_CONFIG.minQuantity} paste cumpărate, primești cadou o <Link to={`/produse/${promoGiftProduct.slug}`} className="text-green-600 hover:underline font-medium">{promoGiftProduct.name_ro}</Link>!</>
+                            : <>Buy {PROMO_CONFIG.minQuantity} toothpastes and get a free <Link to={`/produse/${promoGiftProduct.slug}`} className="text-green-600 hover:underline font-medium">{promoGiftProduct.name_en}</Link>!</>
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Promo Banner - Show on gift product (ID 2) */}
+                {product.product_number === PROMO_CONFIG.giftProductNumber && promoTriggerProduct && (
+                  <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                        <Gift className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-green-700 dark:text-green-400">
+                          {language === 'ro' ? '🎁 Poți primi acest produs cadou!' : '🎁 Get this product for free!'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {language === 'ro' 
+                            ? <>Cumpără {PROMO_CONFIG.minQuantity} <Link to={`/produse/${promoTriggerProduct.slug}`} className="text-green-600 hover:underline font-medium">{promoTriggerProduct.name_ro}</Link> și primești această periuță cadou!</>
+                            : <>Buy {PROMO_CONFIG.minQuantity} <Link to={`/produse/${promoTriggerProduct.slug}`} className="text-green-600 hover:underline font-medium">{promoTriggerProduct.name_en}</Link> and get this toothbrush for free!</>
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 
