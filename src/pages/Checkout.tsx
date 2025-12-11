@@ -1005,52 +1005,52 @@ const Checkout = () => {
               </div>
 
               {/* Right Column - Order Summary */}
-              <div className="opacity-0 animate-fade-up animation-delay-200">
-                <div className="card-premium p-4 sm:p-6 sticky top-24 space-y-6">
-                  <h2 className="font-display text-xl tracking-wide">
+              <div className="opacity-0 animate-fade-up animation-delay-200 overflow-hidden">
+                <div className="card-premium p-3 sm:p-4 md:p-6 sticky top-24 space-y-4 sm:space-y-6">
+                  <h2 className="font-display text-lg sm:text-xl tracking-wide">
                     {language === 'ro' ? 'Sumar comandă' : 'Order summary'}
                   </h2>
 
                   {/* Items */}
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                  <div className="space-y-3 max-h-64 overflow-y-auto -mx-1 px-1">
                     {items.map((item) => (
                       <div 
                         key={`${item.id}-${item.isGift ? 'gift' : 'regular'}`} 
-                        className={`flex gap-3 p-3 rounded-xl ${item.isGift ? 'bg-green-500/10 ring-1 ring-green-500/30' : 'bg-muted/30'}`}
+                        className={`flex gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl ${item.isGift ? 'bg-green-500/10 ring-1 ring-green-500/30' : 'bg-muted/30'}`}
                       >
-                        <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden shrink-0 relative">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-muted overflow-hidden shrink-0 relative">
                           <img 
                             src={item.image} 
                             alt={language === 'ro' ? item.name : item.nameEn}
                             className="w-full h-full object-contain p-1"
                           />
                           {item.isGift && (
-                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                              <Gift className="w-3 h-3 text-white" />
+                            <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full flex items-center justify-center">
+                              <Gift className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
                             </div>
                           )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="font-medium text-sm truncate">
+                        <div className="flex-1 min-w-0 overflow-hidden">
+                          <div className="flex items-start gap-1 flex-wrap">
+                            <p className="font-medium text-xs sm:text-sm line-clamp-2 break-words">
                               {language === 'ro' ? item.name : item.nameEn}
                             </p>
                             {item.isGift && (
-                              <span className="shrink-0 px-1.5 py-0.5 bg-green-500/20 text-green-600 text-[10px] font-semibold rounded">
+                              <span className="shrink-0 px-1 py-0.5 bg-green-500/20 text-green-600 text-[9px] sm:text-[10px] font-semibold rounded">
                                 {language === 'ro' ? 'CADOU' : 'GIFT'}
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             {item.isGift 
                               ? (language === 'ro' ? '1 x Gratuit' : '1 x Free')
                               : `${item.quantity} x ${formatPrice(item.price)}`
                             }
                           </p>
                         </div>
-                        <p className={`font-medium text-sm shrink-0 ${item.isGift ? 'text-green-600' : ''}`}>
+                        <p className={`font-medium text-xs sm:text-sm shrink-0 text-right ${item.isGift ? 'text-green-600' : ''}`}>
                           {item.isGift 
-                            ? (language === 'ro' ? 'GRATUIT' : 'FREE')
+                            ? (language === 'ro' ? 'GR.' : 'FREE')
                             : formatPrice(item.price * item.quantity)
                           }
                         </p>
@@ -1060,13 +1060,13 @@ const Checkout = () => {
 
                   {/* Coupon Code */}
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium">
+                    <Label className="text-xs sm:text-sm font-medium">
                       {language === 'ro' ? 'Cod cupon' : 'Coupon code'}
                     </Label>
                     {appliedCoupon ? (
-                      <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                        <div>
-                          <p className="font-medium text-green-600">{appliedCoupon.code}</p>
+                      <div className="flex items-center justify-between gap-2 p-2 sm:p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                        <div className="min-w-0">
+                          <p className="font-medium text-green-600 text-sm truncate">{appliedCoupon.code}</p>
                           <p className="text-xs text-muted-foreground">
                             {appliedCoupon.discount_type === 'percentage' 
                               ? `-${appliedCoupon.discount_value}%` 
@@ -1078,7 +1078,7 @@ const Checkout = () => {
                           variant="ghost" 
                           size="sm" 
                           onClick={removeCoupon}
-                          className="text-destructive hover:text-destructive"
+                          className="text-destructive hover:text-destructive shrink-0 h-8 px-2"
                         >
                           {language === 'ro' ? 'Elimină' : 'Remove'}
                         </Button>
@@ -1089,13 +1089,15 @@ const Checkout = () => {
                           value={couponCode}
                           onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                           placeholder={language === 'ro' ? 'Introdu codul' : 'Enter code'}
-                          className="flex-1"
+                          className="flex-1 min-w-0 text-sm"
                         />
                         <Button 
                           type="button" 
                           variant="outline" 
+                          size="sm"
                           onClick={applyCoupon}
                           disabled={isApplyingCoupon || !couponCode.trim()}
+                          className="shrink-0"
                         >
                           {isApplyingCoupon ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -1110,20 +1112,20 @@ const Checkout = () => {
                     )}
                   </div>
 
-                  <div className="space-y-3 pt-4 border-t border-border">
-                    <div className="flex justify-between text-sm">
+                  <div className="space-y-2 sm:space-y-3 pt-3 sm:pt-4 border-t border-border">
+                    <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
                       <span>{formatPrice(totalPrice)}</span>
                     </div>
                     {discount > 0 && (
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-xs sm:text-sm">
                         <span className="text-muted-foreground">
                           {language === 'ro' ? 'Reducere' : 'Discount'}
                         </span>
                         <span className="text-green-600">-{formatPrice(discount)}</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-muted-foreground">
                         {language === 'ro' ? 'Livrare' : 'Shipping'}
                       </span>
@@ -1135,10 +1137,10 @@ const Checkout = () => {
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-border">
-                    <div className="flex justify-between text-lg">
-                      <span className="font-display">Total</span>
-                      <span className="font-bold text-primary text-xl">
+                  <div className="pt-3 sm:pt-4 border-t border-border">
+                    <div className="flex justify-between items-baseline">
+                      <span className="font-display text-base sm:text-lg">TOTAL</span>
+                      <span className="font-bold text-primary text-lg sm:text-xl">
                         {formatPrice(finalTotal)}
                       </span>
                     </div>
@@ -1161,7 +1163,7 @@ const Checkout = () => {
                     )}
                   </Button>
 
-                  <p className="text-xs text-muted-foreground text-center">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground text-center leading-relaxed">
                     {language === 'ro' 
                       ? 'Prin plasarea comenzii, ești de acord cu termenii și condițiile noastre.'
                       : 'By placing your order, you agree to our terms and conditions.'}

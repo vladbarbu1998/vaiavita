@@ -1048,6 +1048,40 @@ const ProductPage = () => {
                         />
                       </div>
 
+                      {/* Image Upload for Mobile */}
+                      <div className="space-y-2">
+                        <Label className="text-sm">{language === 'ro' ? 'Imagini (opțional)' : 'Images (optional)'}</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {reviewImagePreviews.map((preview, index) => (
+                            <div key={index} className="relative w-16 h-16 rounded-lg overflow-hidden">
+                              <img src={preview} alt="" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setReviewImages(prev => prev.filter((_, i) => i !== index));
+                                  setReviewImagePreviews(prev => prev.filter((_, i) => i !== index));
+                                }}
+                                className="absolute top-0.5 right-0.5 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                          {reviewImages.length < 5 && (
+                            <button
+                              type="button"
+                              onClick={() => reviewImageInputRef.current?.click()}
+                              className="w-16 h-16 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center cursor-pointer transition-colors"
+                            >
+                              <ImagePlus className="w-5 h-5 text-muted-foreground" />
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {language === 'ro' ? `${reviewImages.length}/5 imagini` : `${reviewImages.length}/5 images`}
+                        </p>
+                      </div>
+
                       <div className="flex gap-2 pt-1">
                         <Button type="submit" variant="hero" size="sm" disabled={reviewSubmitting || uploadingImages}>
                           {reviewSubmitting ? (
