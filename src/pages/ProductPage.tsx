@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { MainLayout } from '@/components/layout';
+import { BreadcrumbItem } from '@/components/layout/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -521,8 +522,29 @@ const ProductPage = () => {
   const images = getProductImages();
   const isInStock = product.stock > 0 && product.status === 'active';
 
+  // Build breadcrumb items
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: 'Produse', labelEn: 'Products', href: '/produse' },
+  ];
+  
+  // Add first category if exists
+  if (categories.length > 0) {
+    const firstCategory = categories[0];
+    breadcrumbItems.push({
+      label: firstCategory.name_ro,
+      labelEn: firstCategory.name_en,
+      href: `/produse?categorie=${firstCategory.slug}`,
+    });
+  }
+  
+  // Add product name (no href = current page)
+  breadcrumbItems.push({
+    label: product.name_ro,
+    labelEn: product.name_en,
+  });
+
   return (
-    <MainLayout>
+    <MainLayout breadcrumbItems={breadcrumbItems}>
       <section className="section-padding">
         <div className="container-custom">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
