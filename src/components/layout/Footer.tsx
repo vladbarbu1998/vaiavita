@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
-import { Heart, Mail, MapPin } from 'lucide-react';
+import { Mail, MapPin } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.png';
 import logoLight from '@/assets/logo-light.png';
 import logoLightNew from '@/assets/logo-light-new.png';
@@ -34,10 +34,6 @@ export function Footer() {
                 ? 'Produse premium pentru sănătate și vitalitate, selectate riguros din SUA și Hong Kong.'
                 : 'Premium health and vitality products, carefully selected from the USA and Hong Kong.'}
             </p>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Heart className="w-4 h-4 text-primary" />
-              <span>{language === 'ro' ? 'Creat cu pasiune în România' : 'Created with passion in Romania'}</span>
-            </div>
           </div>
 
           {/* Navigation Links */}

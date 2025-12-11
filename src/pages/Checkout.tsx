@@ -1005,8 +1005,8 @@ const Checkout = () => {
               </div>
 
               {/* Right Column - Order Summary */}
-              <div className="opacity-0 animate-fade-up animation-delay-200 overflow-hidden">
-                <div className="card-premium p-3 sm:p-4 md:p-6 sticky top-24 space-y-4 sm:space-y-6">
+              <div className="opacity-0 animate-fade-up animation-delay-200">
+                <div className="card-premium p-3 sm:p-4 md:p-6 sticky top-24 space-y-4 sm:space-y-6 hover:scale-100">
                   <h2 className="font-display text-lg sm:text-xl tracking-wide">
                     {language === 'ro' ? 'Sumar comandă' : 'Order summary'}
                   </h2>
