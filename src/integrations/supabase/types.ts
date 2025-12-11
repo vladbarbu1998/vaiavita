@@ -435,6 +435,8 @@ export type Database = {
       reviews: {
         Row: {
           content: string | null
+          content_en: string | null
+          content_ro: string | null
           created_at: string
           customer_email: string
           customer_name: string
@@ -447,9 +449,13 @@ export type Database = {
           rating: number
           review_token: string | null
           title: string | null
+          title_en: string | null
+          title_ro: string | null
         }
         Insert: {
           content?: string | null
+          content_en?: string | null
+          content_ro?: string | null
           created_at?: string
           customer_email: string
           customer_name: string
@@ -462,9 +468,13 @@ export type Database = {
           rating: number
           review_token?: string | null
           title?: string | null
+          title_en?: string | null
+          title_ro?: string | null
         }
         Update: {
           content?: string | null
+          content_en?: string | null
+          content_ro?: string | null
           created_at?: string
           customer_email?: string
           customer_name?: string
@@ -477,6 +487,8 @@ export type Database = {
           rating?: number
           review_token?: string | null
           title?: string | null
+          title_en?: string | null
+          title_ro?: string | null
         }
         Relationships: [
           {

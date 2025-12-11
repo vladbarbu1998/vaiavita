@@ -71,6 +71,10 @@ interface Review {
   rating: number;
   content: string | null;
   title: string | null;
+  content_ro: string | null;
+  content_en: string | null;
+  title_ro: string | null;
+  title_en: string | null;
   created_at: string;
   is_verified_purchase: boolean | null;
   images: string[] | null;
@@ -200,7 +204,7 @@ const ProductPage = () => {
         // Fetch reviews
         const { data: reviewsData } = await supabase
           .from('reviews')
-          .select('id, customer_name, rating, content, title, created_at, is_verified_purchase, images')
+          .select('id, customer_name, rating, content, title, content_ro, content_en, title_ro, title_en, created_at, is_verified_purchase, images')
           .eq('product_id', data.id)
           .eq('is_approved', true)
           .order('created_at', { ascending: false });
@@ -370,6 +374,37 @@ const ProductPage = () => {
         setUploadingImages(false);
       }
       
+      // Detect language and translate
+      const titleText = reviewForm.title.trim() || null;
+      const contentText = reviewForm.content.trim();
+      
+      // Assume Romanian by default, translate to English
+      let titleRo = titleText;
+      let titleEn = null as string | null;
+      let contentRo = contentText;
+      let contentEn = null as string | null;
+
+      // Auto-translate to English
+      const textsToTranslate: Record<string, string> = {};
+      if (titleText) textsToTranslate.title = titleText;
+      if (contentText) textsToTranslate.content = contentText;
+
+      if (Object.keys(textsToTranslate).length > 0) {
+        try {
+          const { data: translationData } = await supabase.functions.invoke('translate-text', {
+            body: { texts: textsToTranslate, sourceLanguage: 'ro', targetLanguage: 'en' }
+          });
+
+          if (translationData?.translations) {
+            if (translationData.translations.title) titleEn = translationData.translations.title;
+            if (translationData.translations.content) contentEn = translationData.translations.content;
+          }
+        } catch (transError) {
+          console.error('Translation error:', transError);
+          // Continue without translation
+        }
+      }
+
       const { error } = await supabase
         .from('reviews')
         .insert({
@@ -377,8 +412,12 @@ const ProductPage = () => {
           customer_name: reviewForm.customer_name.trim(),
           customer_email: reviewForm.customer_email.trim().toLowerCase(),
           rating: reviewForm.rating,
-          title: reviewForm.title.trim() || null,
-          content: reviewForm.content.trim(),
+          title: titleText,
+          content: contentText,
+          title_ro: titleRo,
+          title_en: titleEn,
+          content_ro: contentRo,
+          content_en: contentEn,
           is_verified_purchase: true,
           order_id: orderId,
           is_approved: true,
@@ -390,7 +429,7 @@ const ProductPage = () => {
       // Refresh reviews to show the new one immediately
       const { data: reviewsData } = await supabase
         .from('reviews')
-        .select('id, customer_name, rating, content, title, created_at, is_verified_purchase, images')
+        .select('id, customer_name, rating, content, title, content_ro, content_en, title_ro, title_en, created_at, is_verified_purchase, images')
         .eq('product_id', product.id)
         .eq('is_approved', true)
         .order('created_at', { ascending: false });
@@ -968,12 +1007,22 @@ const ProductPage = () => {
                                 </div>
                               </div>
                             </div>
-                            {review.title && (
-                              <h4 className="font-medium mb-2">{review.title}</h4>
-                            )}
-                            {review.content && (
-                              <p className="text-muted-foreground leading-relaxed mb-3">{review.content}</p>
-                            )}
+                            {(() => {
+                              const displayTitle = language === 'ro' 
+                                ? (review.title_ro || review.title) 
+                                : (review.title_en || review.title_ro || review.title);
+                              return displayTitle && (
+                                <h4 className="font-medium mb-2">{displayTitle}</h4>
+                              );
+                            })()}
+                            {(() => {
+                              const displayContent = language === 'ro' 
+                                ? (review.content_ro || review.content) 
+                                : (review.content_en || review.content_ro || review.content);
+                              return displayContent && (
+                                <p className="text-muted-foreground leading-relaxed mb-3">{displayContent}</p>
+                              );
+                            })()}
                             {/* Review Images */}
                             {review.images && review.images.length > 0 && (
                               <div className="flex flex-wrap gap-2 mt-3">

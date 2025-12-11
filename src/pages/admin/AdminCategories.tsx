@@ -111,12 +111,39 @@ const AdminCategories = () => {
     setSaving(true);
 
     try {
+      let nameEn = form.name_en;
+      let descriptionEn = form.description_en;
+
+      // Auto-translate if English fields are empty
+      if (!nameEn || !descriptionEn) {
+        const textsToTranslate: Record<string, string> = {};
+        if (!nameEn && form.name_ro) textsToTranslate.name = form.name_ro;
+        if (!descriptionEn && form.description_ro) textsToTranslate.description = form.description_ro;
+
+        if (Object.keys(textsToTranslate).length > 0) {
+          toast.info('Se traduce automat în engleză...');
+          
+          const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-text', {
+            body: { texts: textsToTranslate, sourceLanguage: 'ro', targetLanguage: 'en' }
+          });
+
+          if (!translationError && translationData?.translations) {
+            if (translationData.translations.name && !nameEn) {
+              nameEn = translationData.translations.name;
+            }
+            if (translationData.translations.description && !descriptionEn) {
+              descriptionEn = translationData.translations.description;
+            }
+          }
+        }
+      }
+
       const categoryData = {
         slug: form.slug,
         name_ro: form.name_ro,
-        name_en: form.name_en || form.name_ro,
+        name_en: nameEn || form.name_ro,
         description_ro: form.description_ro || null,
-        description_en: form.description_en || form.description_ro || null,
+        description_en: descriptionEn || form.description_ro || null,
         sort_order: form.sort_order,
       };
 
