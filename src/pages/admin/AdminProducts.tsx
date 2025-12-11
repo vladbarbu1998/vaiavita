@@ -30,6 +30,7 @@ import { SpecificationsEditor, ProductSpecifications } from '@/components/admin/
 
 interface Product {
   id: string;
+  product_number: number;
   slug: string;
   name_ro: string;
   name_en: string;
@@ -591,8 +592,9 @@ const AdminProducts = () => {
   const galleryImages = form.images.slice(1);
 
   const exportProducts = () => {
-    const headers = ['Nume RO', 'Nume EN', 'Slug', 'SKU', 'Preț', 'Preț vechi', 'Stoc', 'Status', 'Categorie', 'Creat la'];
+    const headers = ['Nr.', 'Nume RO', 'Nume EN', 'Slug', 'SKU', 'Preț', 'Preț vechi', 'Stoc', 'Status', 'Categorie', 'Creat la'];
     const rows = filteredProducts.map(p => [
+      p.product_number.toString(),
       p.name_ro,
       p.name_en,
       p.slug,
@@ -687,7 +689,7 @@ const AdminProducts = () => {
             <thead className="bg-muted/50">
               <tr>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Produs</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">ID</th>
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Nr.</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Preț</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Stoc</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
@@ -728,13 +730,13 @@ const AdminProducts = () => {
                     <td className="p-4">
                       <button
                         onClick={() => {
-                          navigator.clipboard.writeText(product.id);
-                          toast.success('ID copiat în clipboard');
+                          navigator.clipboard.writeText(product.product_number.toString());
+                          toast.success('Nr. produs copiat în clipboard');
                         }}
                         className="flex items-center gap-1 group cursor-pointer"
-                        title={product.id}
+                        title={`UUID: ${product.id}`}
                       >
-                        <code className="text-xs bg-muted px-2 py-1 rounded font-mono group-hover:bg-primary/10 transition-colors">{product.id.slice(0, 8)}...</code>
+                        <code className="text-xs bg-muted px-2 py-1 rounded font-mono group-hover:bg-primary/10 transition-colors">#{product.product_number}</code>
                         <Copy className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </button>
                     </td>
