@@ -20,19 +20,19 @@ export function FeaturedProductSection() {
       </div>
       
       <div className="container-custom relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Image - Clickable link to product */}
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+          {/* Image - First on mobile, Clickable link to product */}
           <Link 
             to="/produse/dent-tastic"
-            className="order-2 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center group"
+            className="order-1 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center group"
           >
             {/* Single elegant frame */}
-            <div className="relative p-6">
+            <div className="relative p-4 sm:p-6">
               {/* Glow effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-primary/5 rounded-3xl blur-xl" />
               
               {/* Single border frame */}
-              <div className="relative rounded-2xl border-2 border-primary/30 bg-background/5 p-4 shadow-xl">
+              <div className="relative rounded-2xl border-2 border-primary/30 bg-background/5 p-3 sm:p-4 shadow-xl">
                 <img 
                   src={dentTasticImage} 
                   alt="Dent-Tastic Fresh Mint" 
@@ -42,8 +42,8 @@ export function FeaturedProductSection() {
             </div>
           </Link>
 
-          {/* Content */}
-          <div className="order-1 lg:order-2 space-y-5 opacity-0 animate-fade-up animation-delay-200">
+          {/* Content - Second on mobile */}
+          <div className="order-2 lg:order-2 space-y-5 opacity-0 animate-fade-up animation-delay-200">
             <h2 className="font-display text-2xl md:text-3xl lg:text-4xl tracking-wide">
               {t('featured.title')}
             </h2>
@@ -63,7 +63,7 @@ export function FeaturedProductSection() {
               ))}
             </div>
 
-            <Button variant="hero" size="lg" asChild className="group mt-4">
+            <Button variant="hero" size="lg" asChild className="group mt-4 w-full sm:w-auto">
               <Link to="/produse/dent-tastic">
                 {t('featured.cta')}
                 <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
