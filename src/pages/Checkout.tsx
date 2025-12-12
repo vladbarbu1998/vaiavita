@@ -262,11 +262,11 @@ const Checkout = () => {
     
     switch (method) {
       case 'shipping':
-        return isRomania ? 18.99 : 25; // Curier la adresă
+        return isRomania ? 19 : 25; // Curier la adresă
       case 'postal':
-        return 14; // Poșta Română
+        return 15; // Poșta Română
       case 'locker':
-        return 15.99; // Easybox / Locker
+        return 15; // Easybox / Locker
       case 'pickup':
         return 0; // Ridicare personală
       default:
@@ -916,7 +916,7 @@ const Checkout = () => {
                             </p>
                           </div>
                           <span className="font-medium">
-                            14 lei
+                            15 lei
                           </span>
                         </label>
                       )}
@@ -938,7 +938,7 @@ const Checkout = () => {
                             </p>
                           </div>
                           <span className="font-medium">
-                            15,99 lei
+                            15 lei
                           </span>
                         </label>
                       )}
