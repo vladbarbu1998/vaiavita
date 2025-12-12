@@ -82,7 +82,7 @@ const COUNTRIES = [
   { code: 'GB', name: 'Regatul Unit', nameEn: 'United Kingdom', postalFormat: /^[A-Za-z]{1,2}\d[A-Za-z\d]?\s?\d[A-Za-z]{2}$/, postalExample: 'SW1A 1AA' },
 ];
 
-type DeliveryMethod = 'shipping' | 'pickup' | 'locker';
+type DeliveryMethod = 'shipping' | 'pickup' | 'locker' | 'postal';
 type PaymentMethod = 'stripe' | 'cash_on_delivery' | 'card_at_locker';
 
 interface CheckoutForm {
@@ -159,11 +159,11 @@ const Checkout = () => {
       return ['shipping'] as DeliveryMethod[];
     }
     if (isBrasov) {
-      // Brașov: shipping, pickup, locker
-      return ['shipping', 'pickup', 'locker'] as DeliveryMethod[];
+      // Brașov: shipping, postal, pickup, locker
+      return ['shipping', 'postal', 'pickup', 'locker'] as DeliveryMethod[];
     }
-    // Rest of Romania: shipping, locker
-    return ['shipping', 'locker'] as DeliveryMethod[];
+    // Rest of Romania: shipping, postal, locker
+    return ['shipping', 'postal', 'locker'] as DeliveryMethod[];
   }, [isRomania, isBrasov]);
 
   // Reset delivery method and payment method when it becomes unavailable
@@ -255,24 +255,33 @@ const Checkout = () => {
 
   const discount = calculateDiscount();
   
+  // Shipping cost calculation based on delivery method
+  const getDeliveryCost = (method: DeliveryMethod): number => {
+    // Free shipping promo only applies to courier shipping
+    if (method === 'shipping' && hasPromoFreeShipping && isRomania) return 0;
+    
+    switch (method) {
+      case 'shipping':
+        return isRomania ? 18.99 : 25; // Curier la adresă
+      case 'postal':
+        return 14; // Poșta Română
+      case 'locker':
+        return 15.99; // Easybox / Locker
+      case 'pickup':
+        return 0; // Ridicare personală
+      default:
+        return 0;
+    }
+  };
+  
   // Shipping cost calculation for display purposes (always calculates as if shipping is selected)
   const getShippingDisplayCost = () => {
-    // Only free with promo (4+ paste)
-    if (hasPromoFreeShipping) return 0;
-    
-    if (isRomania) {
-      // Romania: always 19.99 unless promo
-      return 19.99;
-    } else {
-      // International: flat rate
-      return 29.99;
-    }
+    return getDeliveryCost('shipping');
   };
   
   // Actual shipping cost for the order (depends on selected delivery method)
   const getShippingCost = () => {
-    if (form.deliveryMethod !== 'shipping') return 0;
-    return getShippingDisplayCost();
+    return getDeliveryCost(form.deliveryMethod);
   };
   
   const shippingDisplayCost = getShippingDisplayCost();
@@ -890,6 +899,28 @@ const Checkout = () => {
                         </label>
                       )}
 
+                      {/* Postal - Poșta Română - only for Romania */}
+                      {availableDeliveryMethods.includes('postal') && (
+                        <label 
+                          className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                            form.deliveryMethod === 'postal' 
+                              ? 'border-primary bg-primary/5' 
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                        >
+                          <RadioGroupItem value="postal" id="postal" />
+                          <Package className="w-5 h-5 text-primary" />
+                          <div className="flex-1">
+                            <p className="font-medium">
+                              {language === 'ro' ? 'Poșta Română' : 'Romanian Post'}
+                            </p>
+                          </div>
+                          <span className="font-medium">
+                            14 lei
+                          </span>
+                        </label>
+                      )}
+
                       {/* Locker - only for Romania */}
                       {availableDeliveryMethods.includes('locker') && (
                         <label 
@@ -907,7 +938,7 @@ const Checkout = () => {
                             </p>
                           </div>
                           <span className="font-medium">
-                            {language === 'ro' ? 'Gratuit' : 'Free'}
+                            15,99 lei
                           </span>
                         </label>
                       )}

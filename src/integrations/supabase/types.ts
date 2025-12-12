@@ -587,7 +587,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "manager" | "support"
-      delivery_method: "shipping" | "pickup" | "locker"
+      delivery_method: "shipping" | "pickup" | "locker" | "postal"
       order_status:
         | "pending"
         | "processing"
@@ -723,7 +723,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "manager", "support"],
-      delivery_method: ["shipping", "pickup", "locker"],
+      delivery_method: ["shipping", "pickup", "locker", "postal"],
       order_status: [
         "pending",
         "processing",
