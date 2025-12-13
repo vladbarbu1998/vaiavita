@@ -1,16 +1,24 @@
-import React, { useState, useCallback, useEffect, lazy, Suspense, useRef, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, lazy, Suspense, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, MapPin, Loader2, Package, CheckCircle2, Crosshair, Filter, X, Clock, ChevronDown } from 'lucide-react';
+import { Search, MapPin, Loader2, Package, CheckCircle2, Crosshair, Filter, X, Clock, ChevronsUpDown, Check } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from '@/lib/utils';
 
 export interface Locker {
   id: string;
@@ -100,7 +108,6 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
-  const [countySearchQuery, setCountySearchQuery] = useState('');
   const [countyDropdownOpen, setCountyDropdownOpen] = useState(false);
   const [selectedLocker, setSelectedLocker] = useState<Locker | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([45.9432, 24.9668]); // Romania center
@@ -354,65 +361,63 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         <div className="p-3 md:p-4 border-b space-y-2 md:space-y-3">
           {/* Row 1: County selector + Locate me */}
           <div className="flex gap-2">
-            {/* County dropdown with search */}
+            {/* County dropdown with search - same style as Checkout */}
             <Popover open={countyDropdownOpen} onOpenChange={setCountyDropdownOpen}>
               <PopoverTrigger asChild>
                 <Button 
                   variant="outline" 
                   role="combobox" 
                   aria-expanded={countyDropdownOpen}
-                  className="flex-1 justify-between text-xs md:text-sm"
+                  className="flex-1 justify-between text-xs md:text-sm bg-background"
                 >
                   <span className="truncate">
                     {selectedCounty || (language === 'ro' ? 'Selectează județ...' : 'Select county...')}
                   </span>
-                  <ChevronDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
+                  <ChevronsUpDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[220px] p-0 z-[200]" align="start">
-                <div className="p-2 border-b">
-                  <Input
-                    placeholder={language === 'ro' ? 'Caută județ...' : 'Search county...'}
-                    value={countySearchQuery}
-                    onChange={(e) => setCountySearchQuery(e.target.value)}
-                    className="h-8 text-sm"
-                  />
-                </div>
-                <ScrollArea className="h-[250px]">
-                  <div className="p-1">
-                    <button
-                      onClick={() => {
-                        setSelectedCounty('');
-                        setCountyDropdownOpen(false);
-                        setCountySearchQuery('');
-                      }}
-                      className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-accent ${
-                        !selectedCounty ? 'bg-accent' : ''
-                      }`}
-                    >
-                      {language === 'ro' ? 'Toate județele' : 'All counties'}
-                    </button>
-                    {availableCounties
-                      .filter(county => 
-                        county.toLowerCase().includes(countySearchQuery.toLowerCase())
-                      )
-                      .map((county) => (
-                        <button
+              <PopoverContent className="w-[220px] p-0 bg-background z-[200]" align="start">
+                <Command>
+                  <CommandInput placeholder={language === 'ro' ? 'Caută județ...' : 'Search county...'} />
+                  <CommandList>
+                    <CommandEmpty>{language === 'ro' ? 'Nu s-a găsit.' : 'Not found.'}</CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem
+                        value="toate-judetele"
+                        onSelect={() => {
+                          setSelectedCounty('');
+                          setCountyDropdownOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            !selectedCounty ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {language === 'ro' ? 'Toate județele' : 'All counties'}
+                      </CommandItem>
+                      {availableCounties.map((county) => (
+                        <CommandItem
                           key={county}
-                          onClick={() => {
+                          value={county}
+                          onSelect={() => {
                             setSelectedCounty(county);
                             setCountyDropdownOpen(false);
-                            setCountySearchQuery('');
                           }}
-                          className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-accent ${
-                            selectedCounty === county ? 'bg-accent' : ''
-                          }`}
                         >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedCounty === county ? "opacity-100" : "opacity-0"
+                            )}
+                          />
                           {county}
-                        </button>
+                        </CommandItem>
                       ))}
-                  </div>
-                </ScrollArea>
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
               </PopoverContent>
             </Popover>
 
