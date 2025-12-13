@@ -87,7 +87,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
 
   return (
     <>
-      <div className="flex gap-4 opacity-0 animate-fade-up px-6 md:px-6 lg:px-0">
+      <div className="flex gap-4 opacity-0 animate-fade-up">
         {/* Thumbnails - Left Side */}
         {images.length > 1 && (
           <div 
@@ -160,12 +160,12 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
           className="flex-1 relative min-w-0"
           style={{ height: `${totalColumnHeight}px` }}
         >
-          {/* Navigation Arrows - Outside main image */}
+          {/* Navigation Arrows - Inside container with proper spacing */}
           {images.length > 1 && (
             <Button
               variant="ghost"
               size="icon"
-              className="absolute left-0 md:-left-4 top-1/2 -translate-y-1/2 z-10 bg-background border border-border shadow-md hover:bg-muted h-8 w-8 md:h-10 md:w-10"
+              className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 z-10 bg-background/90 border border-border shadow-md hover:bg-muted h-8 w-8 md:h-10 md:w-10"
               onClick={goToPrevious}
             >
               <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
@@ -196,7 +196,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-0 md:-right-4 top-1/2 -translate-y-1/2 z-10 bg-background border border-border shadow-md hover:bg-muted h-8 w-8 md:h-10 md:w-10"
+              className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 z-10 bg-background/90 border border-border shadow-md hover:bg-muted h-8 w-8 md:h-10 md:w-10"
               onClick={goToNext}
             >
               <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
