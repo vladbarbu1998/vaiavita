@@ -85,10 +85,10 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
   const shippingAddress = order.shipping_address as any;
 
   // Prepare invoice data
-  const invoiceData = {
+  const invoiceData: any = {
     cif: cif,
     client: {
-      cif: "0000000000", // Person without CIF
+      cif: "", // Person without CIF (empty string instead of fake number)
       name: `${order.customer_first_name} ${order.customer_last_name}`,
       rc: "",
       code: "",
@@ -107,13 +107,10 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
     issueDate: new Date().toISOString().split('T')[0],
     dueDate: new Date().toISOString().split('T')[0],
     seriesName: seriesName,
+    orderNumber: order.order_number, // Reference to original order (BT-13)
     collect: {
       type: order.payment_method === 'cash_on_delivery' ? "Ramburs" : "Card bancar",
       value: order.total,
-    },
-    referenceDocument: {
-      type: "Comanda",
-      no: order.order_number,
     },
     products: order.order_items.map((item: any) => ({
       name: item.product_name,
