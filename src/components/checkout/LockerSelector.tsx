@@ -94,8 +94,8 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCity, setSelectedCity] = useState<string>('');
-  const [cityOpen, setCityOpen] = useState(false);
+  const [selectedCounty, setSelectedCounty] = useState<string>('');
+  const [countyOpen, setCountyOpen] = useState(false);
   const [selectedLocker, setSelectedLocker] = useState<Locker | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([45.9432, 24.9668]); // Romania center
   const [mapBounds, setMapBounds] = useState<[[number, number], [number, number]] | null>(null);
@@ -156,10 +156,10 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
       });
     }
 
-    // Filter by city
-    if (selectedCity) {
+    // Filter by county
+    if (selectedCounty) {
       filtered = filtered.filter(locker => 
-        locker.city.toLowerCase().includes(selectedCity.toLowerCase())
+        locker.county?.toLowerCase().includes(selectedCounty.toLowerCase())
       );
     }
 
@@ -174,8 +174,8 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
       );
     }
 
-    // Filter by map bounds if available and no city/search filter
-    if (mapBounds && !selectedCity && !searchQuery.trim()) {
+    // Filter by map bounds if available and no county/search filter
+    if (mapBounds && !selectedCounty && !searchQuery.trim()) {
       const [[south, west], [north, east]] = mapBounds;
       filtered = filtered.filter(locker =>
         locker.lat >= south && locker.lat <= north &&
@@ -185,19 +185,19 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
 
     // Limit to 500 for performance
     setFilteredLockers(filtered.slice(0, 500));
-  }, [allLockers, selectedCity, searchQuery, mapBounds, activeCouriers]);
+  }, [allLockers, selectedCounty, searchQuery, mapBounds, activeCouriers]);
 
-  // When city changes, center map on that city
+  // When county changes, center map on that county
   useEffect(() => {
-    if (selectedCity && allLockers.length > 0) {
-      const cityLocker = allLockers.find(l => 
-        l.city.toLowerCase().includes(selectedCity.toLowerCase())
+    if (selectedCounty && allLockers.length > 0) {
+      const countyLocker = allLockers.find(l => 
+        l.county?.toLowerCase().includes(selectedCounty.toLowerCase())
       );
-      if (cityLocker) {
-        setMapCenter([cityLocker.lat, cityLocker.lng]);
+      if (countyLocker) {
+        setMapCenter([countyLocker.lat, countyLocker.lng]);
       }
     }
-  }, [selectedCity, allLockers]);
+  }, [selectedCounty, allLockers]);
 
   const handleSelectLocker = useCallback((locker: Locker) => {
     setSelectedLocker(locker);
@@ -265,7 +265,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
   useEffect(() => {
     if (!open) {
       setSearchQuery('');
-      setSelectedCity('');
+      setSelectedCounty('');
       setSelectedLocker(null);
       setMapBounds(null);
       setMapCenter([45.9432, 24.9668]);
@@ -274,10 +274,10 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
     }
   }, [open]);
 
-  // Get unique cities from lockers for dropdown
-  const availableCities = React.useMemo(() => {
-    const cities = new Set(allLockers.map(l => l.city).filter(Boolean));
-    return Array.from(cities).sort();
+  // Get unique counties from lockers for dropdown
+  const availableCounties = React.useMemo(() => {
+    const counties = new Set(allLockers.map(l => l.county).filter(Boolean));
+    return Array.from(counties).sort();
   }, [allLockers]);
 
   // Get courier info
@@ -297,48 +297,48 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         
         {/* Search and filter bar - Mobile optimized */}
         <div className="p-3 md:p-4 border-b space-y-2 md:space-y-3">
-          {/* Row 1: City selector + Locate me */}
+          {/* Row 1: County selector + Locate me */}
           <div className="flex gap-2">
-            {/* City dropdown */}
-            <Popover open={cityOpen} onOpenChange={setCityOpen}>
+            {/* County dropdown */}
+            <Popover open={countyOpen} onOpenChange={setCountyOpen}>
               <PopoverTrigger asChild>
                 <Button 
                   variant="outline" 
                   role="combobox" 
-                  aria-expanded={cityOpen}
+                  aria-expanded={countyOpen}
                   className="flex-1 justify-between text-xs md:text-sm"
                 >
                   <span className="truncate">
-                    {selectedCity || (language === 'ro' ? 'Selectează oraș...' : 'Select city...')}
+                    {selectedCounty || (language === 'ro' ? 'Selectează județ...' : 'Select county...')}
                   </span>
                   <ChevronDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-0 z-[100]" align="start">
+              <PopoverContent className="w-[220px] p-0 z-[100]" align="start">
                 <Command>
-                  <CommandInput placeholder={language === 'ro' ? 'Caută oraș...' : 'Search city...'} />
-                  <CommandList>
-                    <CommandEmpty>{language === 'ro' ? 'Niciun oraș găsit' : 'No city found'}</CommandEmpty>
+                  <CommandInput placeholder={language === 'ro' ? 'Caută județ...' : 'Search county...'} />
+                  <CommandList className="max-h-[300px] overflow-y-auto">
+                    <CommandEmpty>{language === 'ro' ? 'Niciun județ găsit' : 'No county found'}</CommandEmpty>
                     <CommandGroup>
                       <CommandItem
                         value=""
                         onSelect={() => {
-                          setSelectedCity('');
-                          setCityOpen(false);
+                          setSelectedCounty('');
+                          setCountyOpen(false);
                         }}
                       >
-                        {language === 'ro' ? 'Toate orașele' : 'All cities'}
+                        {language === 'ro' ? 'Toate județele' : 'All counties'}
                       </CommandItem>
-                      {availableCities.map((city) => (
+                      {availableCounties.map((county) => (
                         <CommandItem
-                          key={city}
-                          value={city}
+                          key={county}
+                          value={county}
                           onSelect={(value) => {
-                            setSelectedCity(value);
-                            setCityOpen(false);
+                            setSelectedCounty(value);
+                            setCountyOpen(false);
                           }}
                         >
-                          {city}
+                          {county}
                         </CommandItem>
                       ))}
                     </CommandGroup>
