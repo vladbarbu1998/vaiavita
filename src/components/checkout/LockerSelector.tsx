@@ -50,6 +50,16 @@ export const COURIERS = [
   { id: 'sameday', name: 'Sameday', color: '#EC4899' },
 ] as const;
 
+// Static list of Romanian counties for instant dropdown
+const ROMANIAN_COUNTIES = [
+  'Alba', 'Arad', 'Arges', 'Bacau', 'Bihor', 'Bistrita-Nasaud', 'Botosani', 'Braila',
+  'Brasov', 'Bucuresti', 'Buzau', 'Calarasi', 'Caras-Severin', 'Cluj', 'Constanta',
+  'Covasna', 'Dambovita', 'Dolj', 'Galati', 'Giurgiu', 'Gorj', 'Harghita', 'Hunedoara',
+  'Ialomita', 'Iasi', 'Ilfov', 'Maramures', 'Mehedinti', 'Mures', 'Neamt', 'Olt',
+  'Prahova', 'Salaj', 'Satu Mare', 'Sibiu', 'Suceava', 'Teleorman', 'Timis', 'Tulcea',
+  'Valcea', 'Vaslui', 'Vrancea'
+];
+
 interface LockerSelectorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -312,11 +322,8 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
     }
   }, [open]);
 
-  // Get unique counties from lockers for dropdown
-  const availableCounties = React.useMemo(() => {
-    const counties = new Set(allLockers.map(l => l.county).filter(Boolean));
-    return Array.from(counties).sort();
-  }, [allLockers]);
+  // Use static list of counties for instant dropdown
+  const availableCounties = ROMANIAN_COUNTIES;
 
   // Get courier info
   const getCourierInfo = (courierName: string) => {
