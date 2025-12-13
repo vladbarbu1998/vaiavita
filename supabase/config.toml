@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.create-ecolet-parcel]
 verify_jwt = false
+
+[functions.get-ecolet-lockers]
+verify_jwt = false

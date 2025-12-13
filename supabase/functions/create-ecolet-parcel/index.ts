@@ -30,6 +30,9 @@ interface OrderData {
     county?: string;
     postalCode?: string;
   } | null;
+  lockerId?: string | null;
+  lockerName?: string | null;
+  lockerAddress?: string | null;
   total: number;
   paymentMethod: string;
   items: Array<{
@@ -134,10 +137,13 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
   // Determine COD amount (0 for card payment, total for cash on delivery)
   const codAmount = orderData.paymentMethod === 'cash_on_delivery' ? orderData.total : 0;
 
+  // Check if this is a locker delivery
+  const isLockerDelivery = orderData.deliveryMethod === 'locker' && orderData.lockerId;
+
   // Map country code to lowercase for Ecolet API
   const receiverCountry = orderData.shippingAddress?.countryCode?.toLowerCase() || 'ro';
 
-  const parcelData = {
+  let parcelData: any = {
     sender: {
       name: senderAddress.name || 'VAIAVITA S.R.L.',
       country: senderAddress.country || 'ro',
@@ -149,19 +155,6 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
       contact_person: senderAddress.contact_person || 'VAIAVITA',
       email: senderAddress.email || 'office@vaiavita.com',
       phone: senderAddress.phone || '0700000000',
-    },
-    receiver: {
-      name: `${orderData.customerFirstName} ${orderData.customerLastName}`,
-      country: receiverCountry,
-      county: orderData.shippingAddress?.county || '',
-      locality: orderData.shippingAddress?.city || '',
-      postal_code: orderData.shippingAddress?.postalCode || '',
-      street_name: orderData.shippingAddress?.address || 'N/A',
-      street_number: 'N/A',
-      block: orderData.shippingAddress?.addressLine2 || null,
-      contact_person: `${orderData.customerFirstName} ${orderData.customerLastName}`,
-      email: orderData.customerEmail,
-      phone: orderData.customerPhone,
     },
     parcel: {
       type: 'package',
@@ -180,6 +173,34 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
       },
     },
   };
+
+  if (isLockerDelivery) {
+    // Locker delivery - set the locker point ID
+    console.log('Creating locker delivery for locker ID:', orderData.lockerId);
+    parcelData.receiver = {
+      name: `${orderData.customerFirstName} ${orderData.customerLastName}`,
+      country: 'ro',
+      contact_person: `${orderData.customerFirstName} ${orderData.customerLastName}`,
+      email: orderData.customerEmail,
+      phone: orderData.customerPhone,
+      locker_point_id: orderData.lockerId, // This is the key for locker delivery
+    };
+  } else {
+    // Standard shipping/postal delivery
+    parcelData.receiver = {
+      name: `${orderData.customerFirstName} ${orderData.customerLastName}`,
+      country: receiverCountry,
+      county: orderData.shippingAddress?.county || '',
+      locality: orderData.shippingAddress?.city || '',
+      postal_code: orderData.shippingAddress?.postalCode || '',
+      street_name: orderData.shippingAddress?.address || 'N/A',
+      street_number: 'N/A',
+      block: orderData.shippingAddress?.addressLine2 || null,
+      contact_person: `${orderData.customerFirstName} ${orderData.customerLastName}`,
+      email: orderData.customerEmail,
+      phone: orderData.customerPhone,
+    };
+  }
 
   console.log('Parcel data:', JSON.stringify(parcelData, null, 2));
 
