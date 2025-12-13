@@ -17,6 +17,7 @@ import { Star, Minus, Plus, ShoppingCart, Loader2, CheckCircle, ImagePlus, X, Gi
 import { supabase } from '@/integrations/supabase/client';
 import { ProductSpecificationsDisplay, ProductSpecifications } from '@/components/product/ProductSpecifications';
 import { ImageGallery } from '@/components/product/ImageGallery';
+import { ProfessionalTestimonials } from '@/components/product/ProfessionalTestimonials';
 import dentTasticImage from '@/assets/dent-tastic-product.webp';
 import qivaroImage from '@/assets/qivaro.webp';
 
@@ -911,7 +912,10 @@ const ProductPage = () => {
             </div>
           )}
 
-          {/* Mobile: Accordion Section */}
+          {/* Professional Testimonials - Only for Product #1 (Dent-Tastic) */}
+          {product.product_number === 1 && <ProfessionalTestimonials />}
+
+
           <div ref={tabsRef} className="mt-12 md:hidden opacity-0 animate-fade-up animation-delay-400">
             <Accordion type="single" collapsible defaultValue="description" className="w-full space-y-3">
               {/* Description Accordion */}
