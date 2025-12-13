@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X, ZoomIn } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -23,11 +23,6 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
   const [activeImage, setActiveImage] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
   const [thumbnailStart, setThumbnailStart] = useState(0);
-  
-  // Touch swipe support
-  const touchStartX = useRef<number | null>(null);
-  const touchEndX = useRef<number | null>(null);
-  const minSwipeDistance = 50;
 
   const goToPrevious = () => {
     setActiveImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -35,32 +30,6 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
 
   const goToNext = () => {
     setActiveImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.targetTouches[0].clientX;
-    touchEndX.current = null;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStartX.current || !touchEndX.current) return;
-    
-    const distance = touchStartX.current - touchEndX.current;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe && images.length > 1) {
-      goToNext();
-    } else if (isRightSwipe && images.length > 1) {
-      goToPrevious();
-    }
-
-    touchStartX.current = null;
-    touchEndX.current = null;
   };
 
   const canScrollThumbnailsUp = thumbnailStart > 0;
@@ -162,7 +131,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute left-2 md:-left-5 top-1/2 -translate-y-1/2 z-10 bg-background border border-border shadow-md hover:bg-muted h-8 w-8 md:h-10 md:w-10"
+              className="absolute left-0 md:-left-4 top-1/2 -translate-y-1/2 z-10 bg-background border border-border shadow-md hover:bg-muted h-8 w-8 md:h-10 md:w-10"
               onClick={goToPrevious}
             >
               <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
@@ -172,15 +141,11 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
           <div 
             className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-muted/30 to-muted/10 cursor-zoom-in group w-full h-full mx-auto"
             onClick={() => setZoomOpen(true)}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
           >
             <img 
               src={images[activeImage]} 
               alt={productName} 
-              className="w-full h-full object-contain p-6 transition-transform duration-300 group-hover:scale-105 select-none" 
-              draggable={false}
+              className="w-full h-full object-contain p-6 transition-transform duration-300 group-hover:scale-105" 
             />
             
             {/* Zoom Indicator */}
@@ -193,7 +158,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-2 md:-right-5 top-1/2 -translate-y-1/2 z-10 bg-background border border-border shadow-md hover:bg-muted h-8 w-8 md:h-10 md:w-10"
+              className="absolute right-0 md:-right-4 top-1/2 -translate-y-1/2 z-10 bg-background border border-border shadow-md hover:bg-muted h-8 w-8 md:h-10 md:w-10"
               onClick={goToNext}
             >
               <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
