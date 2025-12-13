@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -49,50 +48,71 @@ interface LockerMapProps {
   onSelectLocker: (locker: Locker) => void;
 }
 
-// Component to recenter map
-function MapRecenter({ center }: { center: [number, number] }) {
-  const map = useMap();
-  useEffect(() => {
-    if (center[0] !== 0 && center[1] !== 0) {
-      map.setView(center, 14);
-    }
-  }, [center, map]);
-  return null;
-}
-
 function LockerMap({ lockers, selectedLocker, mapCenter, onSelectLocker }: LockerMapProps) {
-  return (
-    <MapContainer
-      center={mapCenter}
-      zoom={7}
-      className="h-full w-full"
-      scrollWheelZoom={true}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <MapRecenter center={mapCenter} />
-      {lockers.map((locker) => (
-        <Marker
-          key={locker.id}
-          position={[locker.lat, locker.lng]}
-          icon={selectedLocker?.id === locker.id ? selectedIcon : defaultIcon}
-          eventHandlers={{
-            click: () => onSelectLocker(locker),
-          }}
-        >
-          <Popup>
-            <div className="text-sm">
-              <p className="font-medium">{locker.name}</p>
-              <p className="text-muted-foreground">{locker.address}</p>
-              <p className="text-muted-foreground">{locker.city}</p>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
-  );
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<Map<string, L.Marker>>(new Map());
+
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+
+    mapRef.current = L.map(mapContainerRef.current).setView(mapCenter, 7);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(mapRef.current);
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update markers when lockers change
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    // Clear existing markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current.clear();
+
+    // Add new markers
+    lockers.forEach(locker => {
+      const marker = L.marker([locker.lat, locker.lng], {
+        icon: selectedLocker?.id === locker.id ? selectedIcon : defaultIcon
+      })
+        .addTo(mapRef.current!)
+        .bindPopup(`
+          <div class="text-sm">
+            <p class="font-medium">${locker.name}</p>
+            <p class="text-gray-600">${locker.address}</p>
+            <p class="text-gray-600">${locker.city}</p>
+          </div>
+        `)
+        .on('click', () => onSelectLocker(locker));
+
+      markersRef.current.set(locker.id, marker);
+    });
+  }, [lockers, onSelectLocker]);
+
+  // Update marker icons when selection changes
+  useEffect(() => {
+    markersRef.current.forEach((marker, id) => {
+      marker.setIcon(selectedLocker?.id === id ? selectedIcon : defaultIcon);
+    });
+  }, [selectedLocker]);
+
+  // Pan to center when it changes
+  useEffect(() => {
+    if (mapRef.current && mapCenter[0] !== 0 && mapCenter[1] !== 0) {
+      mapRef.current.setView(mapCenter, 14);
+    }
+  }, [mapCenter]);
+
+  return <div ref={mapContainerRef} className="h-full w-full" />;
 }
 
 export default LockerMap;
