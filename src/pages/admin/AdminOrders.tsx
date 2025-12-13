@@ -863,6 +863,9 @@ const AdminOrders = () => {
                   <SelectContent>
                     <SelectItem value="pending">În așteptare</SelectItem>
                     <SelectItem value="processing">În procesare</SelectItem>
+                    {selectedOrder.delivery_method === 'pickup' && (
+                      <SelectItem value="pregatita_ridicare">Pregătită pentru ridicare</SelectItem>
+                    )}
                     <SelectItem value="shipped">Expediată</SelectItem>
                     <SelectItem value="delivered">Finalizată</SelectItem>
                     <SelectItem value="cancelled">Anulată</SelectItem>
