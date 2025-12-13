@@ -69,7 +69,7 @@ interface LockerMapProps {
   mapZoom?: number;
   userLocation?: [number, number] | null;
   onSelectLocker: (locker: Locker) => void;
-  onBoundsChange?: (bounds: [[number, number], [number, number]]) => void;
+  onBoundsChange?: (bounds: [[number, number], [number, number]], zoom: number) => void;
 }
 
 function LockerMap({ lockers, selectedLocker, mapCenter, mapZoom, userLocation, onSelectLocker, onBoundsChange }: LockerMapProps) {
@@ -152,14 +152,15 @@ function LockerMap({ lockers, selectedLocker, mapCenter, mapZoom, userLocation, 
     
     mapRef.current.addLayer(markerClusterRef.current);
 
-    // Report bounds on move/zoom end
+    // Report bounds and zoom on move/zoom end
     const reportBounds = () => {
       if (mapRef.current && onBoundsChangeRef.current) {
         const bounds = mapRef.current.getBounds();
+        const zoom = mapRef.current.getZoom();
         onBoundsChangeRef.current([
           [bounds.getSouth(), bounds.getWest()],
           [bounds.getNorth(), bounds.getEast()]
-        ]);
+        ], zoom);
       }
     };
 
