@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -102,11 +101,14 @@ async function getLocalityId(token: string, localityName: string, county?: strin
     const data = await response.json();
     console.log('Locality search results for', localityName, ':', JSON.stringify(data, null, 2));
 
-    if (data.data && data.data.length > 0) {
+    // API returns { localities: [...] } not { data: [...] }
+    const localities = data.localities || data.data || [];
+    
+    if (localities && localities.length > 0) {
       // Try to find exact match with county if provided
       if (county) {
         const normalizedCounty = county.toLowerCase().replace(/ș/g, 's').replace(/ț/g, 't').replace(/ă/g, 'a').replace(/â/g, 'a').replace(/î/g, 'i');
-        const match = data.data.find((loc: any) => {
+        const match = localities.find((loc: any) => {
           const locCounty = (loc.county?.name || '').toLowerCase().replace(/ș/g, 's').replace(/ț/g, 't').replace(/ă/g, 'a').replace(/â/g, 'a').replace(/î/g, 'i');
           return locCounty.includes(normalizedCounty) || normalizedCounty.includes(locCounty);
         });
@@ -116,8 +118,8 @@ async function getLocalityId(token: string, localityName: string, county?: strin
         }
       }
       // Return first result
-      console.log('Using first locality result:', data.data[0].id, data.data[0].name);
-      return data.data[0].id;
+      console.log('Using first locality result:', localities[0].id, localities[0].name);
+      return localities[0].id;
     }
 
     return null;
@@ -204,6 +206,7 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
 
   // Determine COD amount (0 for card payment, total for cash on delivery)
   const codAmount = orderData.paymentMethod === 'cash_on_delivery' ? orderData.total : 0;
+  const hasCod = codAmount > 0;
 
   // Check if this is a locker delivery
   const isLockerDelivery = orderData.deliveryMethod === 'locker' && orderData.lockerId;
@@ -228,7 +231,7 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
       postal_code: senderAddress.postal_code || '500001',
       street_name: senderAddress.street_name || 'N/A',
       street_number: senderAddress.street_number || 'N/A',
-      block: cleanBlock(senderAddress.block),
+      block: cleanBlock(senderAddress.block) || '',
       entrance: senderAddress.entrance || '',
       floor: senderAddress.floor || '',
       flat: senderAddress.flat || '',
@@ -245,20 +248,13 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
         width: 15,
         height: 10,
       },
-      shape: 'box', // Required field: box, envelope, tube
       content: contentDescription || 'Produse cosmetice',
       observations: `Comanda ${orderData.orderNumber}`,
     },
     additional_services: {
       cod: {
-        status: codAmount > 0 ? 'active' : 'inactive',
-        amount: codAmount > 0 ? codAmount : undefined,
-      },
-    },
-    courier: {
-      service: 'standard', // Required: standard, express, economy
-      pickup: {
-        type: 'no_pickup', // Valid values: scheduled, no_pickup
+        status: hasCod, // Boolean true/false
+        amount: hasCod ? codAmount : undefined,
       },
     },
   };
@@ -285,7 +281,7 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
       postal_code: orderData.shippingAddress?.postalCode || '',
       street_name: orderData.shippingAddress?.address || 'N/A',
       street_number: 'N/A',
-      block: cleanBlock(orderData.shippingAddress?.addressLine2),
+      block: cleanBlock(orderData.shippingAddress?.addressLine2) || '',
       entrance: '',
       floor: '',
       flat: '',
@@ -315,16 +311,7 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
     // Continue anyway, we'll try to save the order
   } else {
     const reloadData = await reloadResponse.json();
-    console.log('Available services:', JSON.stringify(reloadData, null, 2));
-    
-    // Update courier service based on available options if needed
-    if (reloadData.couriers && reloadData.couriers.length > 0) {
-      const firstCourier = reloadData.couriers[0];
-      if (firstCourier.services && firstCourier.services.length > 0) {
-        parcelData.courier.service = firstCourier.services[0].slug || 'standard';
-        console.log('Using courier service:', parcelData.courier.service);
-      }
-    }
+    console.log('Reload form response:', JSON.stringify(reloadData, null, 2));
   }
 
   // Save the parcel in "orders to send" tab (for manual sending later)
