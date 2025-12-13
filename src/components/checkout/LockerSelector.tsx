@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useCallback, useEffect, lazy, Suspense, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -118,6 +118,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
   const [locatingUser, setLocatingUser] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [showZoomMessage, setShowZoomMessage] = useState(true);
+  const lockerRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   
   // Minimum zoom level to load and show lockers
   const MIN_ZOOM_FOR_LOCKERS = 10;
@@ -227,6 +228,14 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
     setSelectedLocker(locker);
     setMapCenter([locker.lat, locker.lng]);
     setMapZoom(16); // Zoom in when selecting a locker
+    
+    // Scroll to the locker in the list
+    setTimeout(() => {
+      const ref = lockerRefs.current.get(locker.id);
+      if (ref) {
+        ref.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   }, []);
 
   const handleMapBoundsChange = useCallback((bounds: [[number, number], [number, number]], zoom: number) => {
@@ -622,6 +631,10 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                   return (
                     <button
                       key={locker.id}
+                      ref={(el) => {
+                        if (el) lockerRefs.current.set(locker.id, el);
+                        else lockerRefs.current.delete(locker.id);
+                      }}
                       onClick={() => handleSelectLocker(locker)}
                       className={`w-full p-2.5 md:p-3 text-left hover:bg-accent/50 transition-colors ${
                         isSelected ? 'bg-primary/10 border-l-4 border-primary' : ''
