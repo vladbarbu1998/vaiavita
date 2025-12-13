@@ -111,6 +111,52 @@ async function getEcoletServices(token: string): Promise<EcoletService[]> {
   return data.services || [];
 }
 
+// Romanian county capitals mapping for fallback
+const COUNTY_CAPITALS: Record<string, string> = {
+  'alba': 'Alba Iulia',
+  'arad': 'Arad',
+  'arges': 'Pitesti',
+  'bacau': 'Bacau',
+  'bihor': 'Oradea',
+  'bistrita-nasaud': 'Bistrita',
+  'botosani': 'Botosani',
+  'braila': 'Braila',
+  'brasov': 'Brasov',
+  'bucuresti': 'Bucuresti',
+  'buzau': 'Buzau',
+  'calarasi': 'Calarasi',
+  'caras-severin': 'Resita',
+  'cluj': 'Cluj-Napoca',
+  'constanta': 'Constanta',
+  'covasna': 'Sfantu Gheorghe',
+  'dambovita': 'Targoviste',
+  'dolj': 'Craiova',
+  'galati': 'Galati',
+  'giurgiu': 'Giurgiu',
+  'gorj': 'Targu Jiu',
+  'harghita': 'Miercurea Ciuc',
+  'hunedoara': 'Deva',
+  'ialomita': 'Slobozia',
+  'iasi': 'Iasi',
+  'ilfov': 'Bucuresti',
+  'maramures': 'Baia Mare',
+  'mehedinti': 'Drobeta-Turnu Severin',
+  'mures': 'Targu Mures',
+  'neamt': 'Piatra Neamt',
+  'olt': 'Slatina',
+  'prahova': 'Ploiesti',
+  'salaj': 'Zalau',
+  'satu mare': 'Satu Mare',
+  'sibiu': 'Sibiu',
+  'suceava': 'Suceava',
+  'teleorman': 'Alexandria',
+  'timis': 'Timisoara',
+  'tulcea': 'Tulcea',
+  'valcea': 'Ramnicu Valcea',
+  'vaslui': 'Vaslui',
+  'vrancea': 'Focsani',
+};
+
 // Search for locality ID by name
 async function getLocalityId(token: string, localityName: string, county?: string): Promise<number | null> {
   if (!localityName || localityName.trim().length < 2) {
@@ -131,33 +177,60 @@ async function getLocalityId(token: string, localityName: string, county?: strin
       },
     });
 
-    if (!response.ok) {
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Locality search results:', JSON.stringify(data, null, 2));
+
+      const localities = data.localities || [];
+      
+      if (localities && localities.length > 0) {
+        // Try to find exact match with county if provided
+        if (county) {
+          const normalizedCounty = normalizeRomanianText(county);
+          const match = localities.find((loc: any) => {
+            const locCounty = normalizeRomanianText(loc.county?.name || '');
+            return locCounty.includes(normalizedCounty) || normalizedCounty.includes(locCounty);
+          });
+          if (match) {
+            console.log('Found locality match with county:', match.id, match.name);
+            return match.id;
+          }
+        }
+        // Return first result
+        console.log('Using first locality result:', localities[0].id, localities[0].name);
+        return localities[0].id;
+      }
+    } else {
       console.error('Locality search failed:', response.status);
-      return null;
     }
 
-    const data = await response.json();
-    console.log('Locality search results:', JSON.stringify(data, null, 2));
-
-    // API returns { localities: [...] }
-    const localities = data.localities || [];
-    
-    if (localities && localities.length > 0) {
-      // Try to find exact match with county if provided
-      if (county) {
-        const normalizedCounty = normalizeRomanianText(county);
-        const match = localities.find((loc: any) => {
-          const locCounty = normalizeRomanianText(loc.county?.name || '');
-          return locCounty.includes(normalizedCounty) || normalizedCounty.includes(locCounty);
+    // FALLBACK: If exact city not found, try county capital
+    if (county) {
+      const normalizedCounty = normalizeRomanianText(county.toLowerCase());
+      const capital = COUNTY_CAPITALS[normalizedCounty];
+      
+      if (capital && normalizeRomanianText(capital.toLowerCase()) !== normalizeRomanianText(localityName.toLowerCase())) {
+        console.log('Trying county capital as fallback:', capital);
+        
+        const capitalResponse = await fetch(`https://panel.ecolet.ro/api/v1/locations/RO/localities/${encodeURIComponent(capital)}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Accept-Language': 'ro',
+          },
         });
-        if (match) {
-          console.log('Found locality match with county:', match.id, match.name);
-          return match.id;
+
+        if (capitalResponse.ok) {
+          const capitalData = await capitalResponse.json();
+          const capitalLocalities = capitalData.localities || [];
+          
+          if (capitalLocalities.length > 0) {
+            console.log('Using county capital locality:', capitalLocalities[0].id, capitalLocalities[0].name);
+            return capitalLocalities[0].id;
+          }
         }
       }
-      // Return first result
-      console.log('Using first locality result:', localities[0].id, localities[0].name);
-      return localities[0].id;
     }
 
     console.log('No locality found for:', localityName);
