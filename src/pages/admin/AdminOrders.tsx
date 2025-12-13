@@ -573,7 +573,26 @@ const AdminOrders = () => {
                       </td>
                       <td className="p-4">
                         <p className="font-medium">{Number(order.total).toFixed(2)} lei</p>
-                        <p className="text-sm text-muted-foreground">{paymentLabels[order.payment_method]?.label || order.payment_method}</p>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-muted-foreground">{paymentLabels[order.payment_method]?.label || order.payment_method}</span>
+                          {order.payment_method === 'stripe' && (
+                            <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium ${
+                              order.payment_status === 'paid' 
+                                ? 'bg-green-500/10 text-green-600' 
+                                : order.payment_status === 'failed'
+                                ? 'bg-red-500/10 text-red-600'
+                                : 'bg-yellow-500/10 text-yellow-600'
+                            }`}>
+                              {order.payment_status === 'paid' ? (
+                                <><CheckCircle2 className="w-3 h-3" /> Plătit</>
+                              ) : order.payment_status === 'failed' ? (
+                                <><AlertCircle className="w-3 h-3" /> Eșuat</>
+                              ) : (
+                                <><Clock className="w-3 h-3" /> Așteptare</>
+                              )}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-2">
