@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.get-ecolet-lockers]
 verify_jwt = false
+
+[functions.create-stripe-checkout]
+verify_jwt = false
