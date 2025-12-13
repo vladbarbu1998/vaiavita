@@ -516,9 +516,9 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         </div>
 
         {/* Main content - split view on desktop, stacked on mobile */}
-        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
           {/* Map - shows first on mobile, right side on desktop */}
-          <div className="h-[40%] md:h-auto md:w-3/5 md:order-2 flex flex-col border-b md:border-b-0 md:border-l">
+          <div className="h-[35%] shrink-0 md:h-auto md:w-3/5 md:order-2 flex flex-col border-b md:border-b-0 md:border-l">
             {/* Map */}
             <div className="flex-1 relative bg-muted min-h-[200px]">
               <Suspense fallback={
@@ -595,7 +595,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
           </div>
 
           {/* List - shows second on mobile, left side on desktop */}
-          <div className="flex-1 md:w-2/5 md:order-1 overflow-y-auto pt-2 md:pt-0">
+          <div className="flex-1 md:w-2/5 md:order-1 overflow-y-auto min-h-0">
             {loading ? (
               <div className="flex items-center justify-center h-full py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
