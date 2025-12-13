@@ -487,12 +487,13 @@ const Checkout = () => {
       return;
     }
 
-    if (form.deliveryMethod === 'shipping' && (!form.address || !form.city)) {
+    // Validate address fields for shipping and postal delivery
+    if ((form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal') && (!form.address || !form.city)) {
       toast.error(language === 'ro' ? 'Completează adresa de livrare' : 'Fill in shipping address');
       return;
     }
 
-    if (isRomania && form.deliveryMethod === 'shipping' && !form.county) {
+    if (isRomania && (form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal') && !form.county) {
       toast.error(language === 'ro' ? 'Selectează județul' : 'Select county');
       return;
     }
