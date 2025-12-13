@@ -1,7 +1,15 @@
 import { useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
-import { ChevronLeft, ChevronRight, Quote, ExternalLink } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Quote, ExternalLink, BadgeCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import bakrRabieProof from '@/assets/bakr-rabie-linkedin-proof.png';
 
 interface Testimonial {
   content_ro: string;
@@ -11,6 +19,8 @@ interface Testimonial {
   title_en: string;
   credentials?: string;
   linkedinUrl?: string;
+  linkedinPostUrl?: string;
+  hasProof?: boolean;
 }
 
 const testimonials: Testimonial[] = [
@@ -29,8 +39,47 @@ const testimonials: Testimonial[] = [
     title_en: 'Professor of Orthodontics',
     credentials: 'Cert.Ortho, MSc, PhD — University of Hong Kong',
     linkedinUrl: 'https://www.linkedin.com/in/prof-bakr-rabie-830231200/',
+    linkedinPostUrl: 'https://www.linkedin.com/posts/prof-bakr-rabie-830231200_past%C4%83-de-din%C8%9Bi-natural%C4%83-dent-tastic-activity-7397429607756595200-90xA/',
+    hasProof: true,
   },
 ];
+
+function ProofDialog({ language }: { language: string }) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors mt-1.5 font-medium">
+          <BadgeCheck className="w-3.5 h-3.5" />
+          {language === 'ro' ? 'Vezi postarea' : 'View post'}
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <BadgeCheck className="w-5 h-5 text-primary" />
+            {language === 'ro' ? 'Postare LinkedIn verificată' : 'Verified LinkedIn Post'}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="mt-2">
+          <img 
+            src={bakrRabieProof} 
+            alt="Prof. Bakr Rabie LinkedIn post about Dent-Tastic" 
+            className="w-full rounded-lg border shadow-sm"
+          />
+          <a 
+            href="https://www.linkedin.com/posts/prof-bakr-rabie-830231200_past%C4%83-de-din%C8%9Bi-natural%C4%83-dent-tastic-activity-7397429607756595200-90xA/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg bg-[#0077B5] hover:bg-[#0077B5]/90 text-white font-medium transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            {language === 'ro' ? 'Deschide postarea pe LinkedIn' : 'Open post on LinkedIn'}
+          </a>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export function ProfessionalTestimonials() {
   const { language } = useLanguage();
@@ -100,6 +149,9 @@ export function ProfessionalTestimonials() {
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {testimonials[currentIndex].credentials}
                       </p>
+                    )}
+                    {testimonials[currentIndex].hasProof && (
+                      <ProofDialog language={language} />
                     )}
                   </div>
                   {testimonials[currentIndex].linkedinUrl && (
@@ -174,6 +226,9 @@ export function ProfessionalTestimonials() {
                     <p className="text-xs text-muted-foreground mt-1">
                       {testimonial.credentials}
                     </p>
+                  )}
+                  {testimonial.hasProof && (
+                    <ProofDialog language={language} />
                   )}
                 </div>
                 {testimonial.linkedinUrl && (
