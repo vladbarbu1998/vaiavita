@@ -493,7 +493,7 @@ const Checkout = () => {
       return;
     }
 
-    if (isRomania && (form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal') && !form.county) {
+    if (isRomania && (form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal' || form.deliveryMethod === 'locker') && !form.county) {
       toast.error(language === 'ro' ? 'Selectează județul' : 'Select county');
       return;
     }
