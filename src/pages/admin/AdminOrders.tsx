@@ -945,7 +945,7 @@ const AdminOrders = () => {
                               ) : order.payment_status === 'failed' ? (
                                 <><AlertCircle className="w-3 h-3" /> Eșuat</>
                               ) : (
-                                <><Clock className="w-3 h-3" /> Așteptare</>
+                                <><Clock className="w-3 h-3" /> Așteaptă plata</>
                               )}
                             </span>
                           )}
