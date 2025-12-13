@@ -690,6 +690,15 @@ const AdminOrders = () => {
                               Trimisă în Ecolet
                             </span>
                           )}
+                          {order.ecolet_sync_error && !order.ecolet_synced && (
+                            <span 
+                              className="text-xs text-red-600 flex items-center gap-1 cursor-help max-w-[200px]" 
+                              title={order.ecolet_sync_error}
+                            >
+                              <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">Eroare Ecolet: {order.ecolet_sync_error}</span>
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="p-4">
