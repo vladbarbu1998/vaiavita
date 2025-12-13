@@ -209,7 +209,7 @@
 
   .card-premium:hover {
     box-shadow: var(--card-shadow-hover);
-    transform: translateY(-4px) scale(1.01);
+    transform: translateY(-2px);
     @apply border-primary/20;
   }
 
