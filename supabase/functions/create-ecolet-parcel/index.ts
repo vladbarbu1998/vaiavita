@@ -351,7 +351,9 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
     courier: {
       service: courierService, // e.g., "fan_courier_standard"
       pickup: {
-        type: 'self', // self = sender drops off parcel (no pickup needed)
+        type: 'courier', // courier = pickup from sender address
+        date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // tomorrow
+        time: '10:00',
       },
     },
   };
