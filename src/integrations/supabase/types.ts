@@ -633,6 +633,7 @@ export type Database = {
         | "shipped"
         | "delivered"
         | "cancelled"
+        | "pregatita_ridicare"
       payment_method: "stripe" | "netopia" | "cash_on_delivery"
     }
     CompositeTypes: {
@@ -769,6 +770,7 @@ export const Constants = {
         "shipped",
         "delivered",
         "cancelled",
+        "pregatita_ridicare",
       ],
       payment_method: ["stripe", "netopia", "cash_on_delivery"],
     },
