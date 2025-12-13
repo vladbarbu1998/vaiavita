@@ -94,7 +94,8 @@ export async function preloadLockers() {
 export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLockerId }: LockerSelectorProps) {
   const { language } = useLanguage();
   const [allLockers, setAllLockers] = useState<Locker[]>([]);
-  const [filteredLockers, setFilteredLockers] = useState<Locker[]>([]);
+  const [mapLockers, setMapLockers] = useState<Locker[]>([]); // All lockers for map (filtered by courier only)
+  const [listLockers, setListLockers] = useState<Locker[]>([]); // Lockers for list (filtered by bounds/search)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -118,7 +119,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
     if (open && allLockers.length === 0) {
       if (cachedLockers) {
         setAllLockers(cachedLockers);
-        setFilteredLockers(cachedLockers);
+        setMapLockers(cachedLockers);
       } else {
         loadAllLockers();
       }
@@ -138,7 +139,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
 
       const fetchedLockers = data?.lockers || [];
       setAllLockers(fetchedLockers);
-      setFilteredLockers(fetchedLockers);
+      setMapLockers(fetchedLockers);
       
       // Cache for instant popup next time
       cachedLockers = fetchedLockers;
@@ -162,13 +163,28 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
     }
   };
 
-  // Filter lockers based on search query, city, couriers, and map bounds
+  // Filter lockers for MAP (only by courier type - shows all on map)
   useEffect(() => {
-    let filtered = allLockers;
+    let mapFiltered = allLockers;
+
+    // Filter by active couriers only
+    if (activeCouriers.length < COURIERS.length) {
+      mapFiltered = mapFiltered.filter(locker => {
+        const courierLower = (locker.courier || '').toLowerCase();
+        return activeCouriers.some(c => courierLower.includes(c));
+      });
+    }
+
+    setMapLockers(mapFiltered);
+  }, [allLockers, activeCouriers]);
+
+  // Filter lockers for LIST (filtered by bounds, search, county)
+  useEffect(() => {
+    let listFiltered = allLockers;
 
     // Filter by active couriers
     if (activeCouriers.length < COURIERS.length) {
-      filtered = filtered.filter(locker => {
+      listFiltered = listFiltered.filter(locker => {
         const courierLower = (locker.courier || '').toLowerCase();
         return activeCouriers.some(c => courierLower.includes(c));
       });
@@ -176,7 +192,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
 
     // Filter by county
     if (selectedCounty) {
-      filtered = filtered.filter(locker => 
+      listFiltered = listFiltered.filter(locker => 
         locker.county?.toLowerCase().includes(selectedCounty.toLowerCase())
       );
     }
@@ -184,7 +200,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(locker =>
+      listFiltered = listFiltered.filter(locker =>
         locker.name.toLowerCase().includes(query) ||
         locker.address.toLowerCase().includes(query) ||
         locker.city.toLowerCase().includes(query) ||
@@ -192,17 +208,17 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
       );
     }
 
-    // Filter by map bounds when zoomed in enough (for list display)
+    // Filter by map bounds when zoomed in enough
     if (mapBounds && currentZoom >= MIN_ZOOM_FOR_LIST && !selectedCounty && !searchQuery.trim()) {
       const [[south, west], [north, east]] = mapBounds;
-      filtered = filtered.filter(locker =>
+      listFiltered = listFiltered.filter(locker =>
         locker.lat >= south && locker.lat <= north &&
         locker.lng >= west && locker.lng <= east
       );
     }
 
-    // Limit list items for performance (map shows all, list is limited)
-    setFilteredLockers(filtered.slice(0, 100));
+    // Limit list items for performance
+    setListLockers(listFiltered.slice(0, 100));
   }, [allLockers, selectedCounty, searchQuery, mapBounds, activeCouriers, currentZoom]);
 
   // When county changes, center map on that county
@@ -497,7 +513,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
             {loading 
               ? (language === 'ro' ? 'Se încarcă...' : 'Loading...') 
               : currentZoom >= MIN_ZOOM_FOR_LIST || searchQuery.trim() || selectedCounty
-                ? `${filteredLockers.length} ${language === 'ro' ? 'puncte în zonă' : 'points in area'}`
+                ? `${listLockers.length} ${language === 'ro' ? 'puncte în zonă' : 'points in area'}`
                 : `${allLockers.length} ${language === 'ro' ? 'puncte disponibile' : 'points available'}`
             }
           </p>
@@ -515,7 +531,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                 </div>
               }>
                 <LockerMap 
-                  lockers={filteredLockers}
+                  lockers={mapLockers}
                   selectedLocker={selectedLocker}
                   mapCenter={mapCenter}
                   mapZoom={mapZoom}
@@ -583,7 +599,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                     : 'Or select a county / search by name'}
                 </p>
               </div>
-            ) : filteredLockers.length === 0 ? (
+            ) : listLockers.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
                 <Package className="h-10 w-10 mb-3 opacity-50" />
                 <p className="text-center text-sm">
@@ -637,7 +653,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                     );
                   })()
                 )}
-                {filteredLockers.filter(l => l.id !== selectedLocker?.id).map((locker) => {
+                {listLockers.filter(l => l.id !== selectedLocker?.id).map((locker) => {
                   const courierInfo = getCourierInfo(locker.courier);
                   return (
                     <button
