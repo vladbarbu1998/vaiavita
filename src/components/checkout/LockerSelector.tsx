@@ -30,6 +30,7 @@ export interface Locker {
   lat: number;
   lng: number;
   courier: string;
+  locality_id?: number | null;
   schedule?: {
     monday?: string;
     tuesday?: string;
@@ -71,6 +72,7 @@ interface LockerSelectorProps {
     postal_code: string;
     lat: number;
     lng: number;
+    locality_id?: number | null;
   }) => void;
   selectedLockerId?: string;
 }
@@ -255,6 +257,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         postal_code: selectedLocker.postal_code,
         lat: selectedLocker.lat,
         lng: selectedLocker.lng,
+        locality_id: selectedLocker.locality_id,
       });
       onOpenChange(false);
     }

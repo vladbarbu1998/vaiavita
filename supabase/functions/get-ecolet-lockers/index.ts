@@ -34,6 +34,7 @@ interface EcoletLocker {
   lat: number;
   lng: number;
   courier: string;
+  locality_id: number | null;
   schedule?: {
     monday?: string;
     tuesday?: string;
@@ -202,6 +203,7 @@ async function getMapPoints(
       lat: parseFloat(point.lat || 0),
       lng: parseFloat(point.lng || 0),
       courier: point.courier_slug || point.courier || 'ecolet',
+      locality_id: point.locality_id || point.locality?.id || null,
       schedule,
     };
   });

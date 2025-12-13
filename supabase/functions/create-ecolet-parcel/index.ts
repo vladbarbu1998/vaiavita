@@ -32,6 +32,7 @@ interface OrderData {
   lockerId?: string | null;
   lockerName?: string | null;
   lockerAddress?: string | null;
+  lockerLocalityId?: number | null;
   total: number;
   paymentMethod: string;
   items: Array<{
@@ -360,10 +361,11 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
 
   // Add receiver data
   if (isLockerDelivery) {
-    console.log('Setting up locker delivery for locker ID:', orderData.lockerId);
+    console.log('Setting up locker delivery for locker ID:', orderData.lockerId, 'locality_id:', orderData.lockerLocalityId);
     parcelData.receiver = {
       name: `${orderData.customerFirstName} ${orderData.customerLastName}`.substring(0, 60),
       country: 'ro',
+      locality_id: orderData.lockerLocalityId || null,
       contact_person: `${orderData.customerFirstName} ${orderData.customerLastName}`.substring(0, 60),
       email: orderData.customerEmail,
       phone: cleanPhoneNumber(orderData.customerPhone),

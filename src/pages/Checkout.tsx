@@ -142,7 +142,8 @@ const Checkout = () => {
     city: string; 
     postal_code: string; 
     lat: number; 
-    lng: number; 
+    lng: number;
+    locality_id?: number | null;
   } | null>(null);
   
   const [form, setForm] = useState<CheckoutForm>({
@@ -543,6 +544,7 @@ const Checkout = () => {
           locker_postal_code: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.postal_code : null,
           locker_lat: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.lat : null,
           locker_lng: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.lng : null,
+          locker_locality_id: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.locality_id : null,
           subtotal: totalPrice,
           shipping_cost: shippingCost,
           discount: discount,
@@ -602,6 +604,7 @@ const Checkout = () => {
             lockerId: selectedLocker?.id || null,
             lockerName: selectedLocker?.name || null,
             lockerAddress: selectedLocker?.address || null,
+            lockerLocalityId: selectedLocker?.locality_id || null,
             total: finalTotal,
             paymentMethod: form.paymentMethod,
             items: items.map(item => ({
