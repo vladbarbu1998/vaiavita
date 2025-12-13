@@ -157,11 +157,16 @@ const COUNTY_CAPITALS: Record<string, string> = {
   'vrancea': 'Focsani',
 };
 
-// Search for locality ID by name
-async function getLocalityId(token: string, localityName: string, county?: string): Promise<number | null> {
+// Search for locality ID and postal code by name
+interface LocalitySearchResult {
+  localityId: number | null;
+  postalCode: string | null;
+}
+
+async function getLocalityInfo(token: string, localityName: string, county?: string): Promise<LocalitySearchResult> {
   if (!localityName || localityName.trim().length < 2) {
     console.log('Locality name too short, skipping search');
-    return null;
+    return { localityId: null, postalCode: null };
   }
 
   try {
@@ -192,13 +197,14 @@ async function getLocalityId(token: string, localityName: string, county?: strin
             return locCounty.includes(normalizedCounty) || normalizedCounty.includes(locCounty);
           });
           if (match) {
-            console.log('Found locality match with county:', match.id, match.name);
-            return match.id;
+            console.log('Found locality match with county:', match.id, match.name, 'postal_code:', match.postal_code);
+            return { localityId: match.id, postalCode: match.postal_code || null };
           }
         }
         // Return first result
-        console.log('Using first locality result:', localities[0].id, localities[0].name);
-        return localities[0].id;
+        const first = localities[0];
+        console.log('Using first locality result:', first.id, first.name, 'postal_code:', first.postal_code);
+        return { localityId: first.id, postalCode: first.postal_code || null };
       }
     } else {
       console.error('Locality search failed:', response.status);
@@ -226,18 +232,19 @@ async function getLocalityId(token: string, localityName: string, county?: strin
           const capitalLocalities = capitalData.localities || [];
           
           if (capitalLocalities.length > 0) {
-            console.log('Using county capital locality:', capitalLocalities[0].id, capitalLocalities[0].name);
-            return capitalLocalities[0].id;
+            const loc = capitalLocalities[0];
+            console.log('Using county capital locality:', loc.id, loc.name, 'postal_code:', loc.postal_code);
+            return { localityId: loc.id, postalCode: loc.postal_code || null };
           }
         }
       }
     }
 
     console.log('No locality found for:', localityName);
-    return null;
+    return { localityId: null, postalCode: null };
   } catch (error) {
     console.error('Error searching locality:', error);
-    return null;
+    return { localityId: null, postalCode: null };
   }
 }
 
@@ -413,14 +420,23 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
   // Check if this is a locker delivery
   const isLockerDelivery = orderData.deliveryMethod === 'locker' && orderData.lockerId;
 
-  // Get receiver locality ID
+  // Get receiver locality ID and postal code
   let receiverLocalityId: number | null = null;
+  let receiverPostalCode: string | null = orderData.shippingAddress?.postalCode || null;
+  
   if (!isLockerDelivery && orderData.shippingAddress?.city) {
-    receiverLocalityId = await getLocalityId(
+    const localityInfo = await getLocalityInfo(
       token, 
       orderData.shippingAddress.city, 
       orderData.shippingAddress.county
     );
+    receiverLocalityId = localityInfo.localityId;
+    
+    // Use postal code from Ecolet if customer didn't provide one
+    if (!receiverPostalCode && localityInfo.postalCode) {
+      console.log('Using postal code from Ecolet locality:', localityInfo.postalCode);
+      receiverPostalCode = localityInfo.postalCode;
+    }
   }
 
   // Select courier service
@@ -507,7 +523,7 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
       county: orderData.shippingAddress?.county || '',
       locality: orderData.shippingAddress?.city || '',
       locality_id: receiverLocalityId,
-      postal_code: orderData.shippingAddress?.postalCode || '',
+      postal_code: receiverPostalCode || '',
       street_name: (orderData.shippingAddress?.address || 'N/A').substring(0, 50),
       street_number: '1',
       block: cleanBlock(orderData.shippingAddress?.addressLine2),
