@@ -103,9 +103,7 @@ export async function preloadLockers() {
 
 export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLockerId }: LockerSelectorProps) {
   const { language } = useLanguage();
-  const [allLockers, setAllLockers] = useState<Locker[]>([]);
-  const [mapLockers, setMapLockers] = useState<Locker[]>([]); // All lockers for map (filtered by courier only)
-  const [listLockers, setListLockers] = useState<Locker[]>([]); // Lockers for list (filtered by bounds/search)
+  const [visibleLockers, setVisibleLockers] = useState<Locker[]>([]); // Lockers currently visible on map and list
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -120,50 +118,90 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
   const [activeCouriers, setActiveCouriers] = useState<string[]>(COURIERS.map(c => c.id));
   const [locatingUser, setLocatingUser] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [showZoomMessage, setShowZoomMessage] = useState(true);
   
-  // Minimum zoom level to show the list (12 = city level)
-  const MIN_ZOOM_FOR_LIST = 11;
+  // Minimum zoom level to load and show lockers
+  const MIN_ZOOM_FOR_LOCKERS = 10;
 
-  // Load lockers when user zooms in enough (lazy load)
+  // Load lockers when user zooms in enough OR selects county/search
   useEffect(() => {
-    if (open && allLockers.length === 0 && (currentZoom >= MIN_ZOOM_FOR_LIST || selectedCounty || searchQuery.trim())) {
-      if (cachedLockers) {
-        setAllLockers(cachedLockers);
-        setMapLockers(cachedLockers);
-      } else {
-        loadAllLockers();
-      }
+    const shouldLoad = currentZoom >= MIN_ZOOM_FOR_LOCKERS || selectedCounty || searchQuery.trim();
+    
+    if (open && shouldLoad) {
+      setShowZoomMessage(false);
+      loadLockers();
+    } else if (open && !shouldLoad) {
+      setShowZoomMessage(true);
+      setVisibleLockers([]);
     }
-  }, [open, currentZoom, selectedCounty, searchQuery]);
+  }, [open, currentZoom, selectedCounty, searchQuery, mapBounds]);
 
-  const loadAllLockers = async () => {
+  const loadLockers = async () => {
+    if (loading) return;
+    
     setLoading(true);
     setError(null);
 
     try {
-      const { data, error: lockersError } = await supabase.functions.invoke('get-ecolet-lockers', {
-        body: { countryCode: 'RO' }
-      });
-
-      if (lockersError) throw lockersError;
-
-      const fetchedLockers = data?.lockers || [];
-      setAllLockers(fetchedLockers);
-      setMapLockers(fetchedLockers);
+      let lockersToFilter: Locker[] = [];
       
-      // Cache for instant popup next time
-      cachedLockers = fetchedLockers;
-      
-      // Log sample lockers from Brașov and București for verification
-      const brasovLocker = fetchedLockers.find((l: Locker) => l.city?.toLowerCase().includes('brașov') || l.city?.toLowerCase().includes('brasov'));
-      const bucuresti = fetchedLockers.find((l: Locker) => l.city?.toLowerCase().includes('bucurești') || l.city?.toLowerCase().includes('bucuresti'));
-      if (brasovLocker) console.log('Sample Brașov locker:', { name: brasovLocker.name, schedule: brasovLocker.schedule });
-      if (bucuresti) console.log('Sample București locker:', { name: bucuresti.name, schedule: bucuresti.schedule });
+      // Use cached lockers if available
+      if (cachedLockers) {
+        lockersToFilter = cachedLockers;
+      } else {
+        const { data, error: lockersError } = await supabase.functions.invoke('get-ecolet-lockers', {
+          body: { countryCode: 'RO' }
+        });
 
-      if (fetchedLockers.length === 0) {
+        if (lockersError) throw lockersError;
+
+        lockersToFilter = data?.lockers || [];
+        cachedLockers = lockersToFilter;
+      }
+
+      // Filter by active couriers
+      let filtered = lockersToFilter;
+      if (activeCouriers.length < COURIERS.length) {
+        filtered = filtered.filter(locker => {
+          const courierLower = (locker.courier || '').toLowerCase();
+          return activeCouriers.some(c => courierLower.includes(c));
+        });
+      }
+
+      // Filter by county
+      if (selectedCounty) {
+        filtered = filtered.filter(locker => 
+          locker.county?.toLowerCase().includes(selectedCounty.toLowerCase())
+        );
+      }
+
+      // Filter by search query
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        filtered = filtered.filter(locker =>
+          locker.name.toLowerCase().includes(query) ||
+          locker.address.toLowerCase().includes(query) ||
+          locker.city.toLowerCase().includes(query) ||
+          locker.postal_code.includes(query)
+        );
+      }
+
+      // Filter by map bounds when zoomed in (no county/search)
+      if (mapBounds && currentZoom >= MIN_ZOOM_FOR_LOCKERS && !selectedCounty && !searchQuery.trim()) {
+        const [[south, west], [north, east]] = mapBounds;
+        filtered = filtered.filter(locker =>
+          locker.lat >= south && locker.lat <= north &&
+          locker.lng >= west && locker.lng <= east
+        );
+      }
+
+      // Limit for performance
+      setVisibleLockers(filtered.slice(0, 200));
+
+      if (filtered.length === 0) {
         setError(language === 'ro' 
-          ? 'Nu am găsit niciun punct de livrare' 
-          : 'No delivery points found');
+          ? 'Nu am găsit niciun punct de livrare în această zonă' 
+          : 'No delivery points found in this area');
       }
     } catch (err) {
       console.error('Error loading lockers:', err);
@@ -173,75 +211,18 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
     }
   };
 
-  // Filter lockers for MAP (only by courier type - shows all on map)
-  useEffect(() => {
-    let mapFiltered = allLockers;
-
-    // Filter by active couriers only
-    if (activeCouriers.length < COURIERS.length) {
-      mapFiltered = mapFiltered.filter(locker => {
-        const courierLower = (locker.courier || '').toLowerCase();
-        return activeCouriers.some(c => courierLower.includes(c));
-      });
-    }
-
-    setMapLockers(mapFiltered);
-  }, [allLockers, activeCouriers]);
-
-  // Filter lockers for LIST (filtered by bounds, search, county)
-  useEffect(() => {
-    let listFiltered = allLockers;
-
-    // Filter by active couriers
-    if (activeCouriers.length < COURIERS.length) {
-      listFiltered = listFiltered.filter(locker => {
-        const courierLower = (locker.courier || '').toLowerCase();
-        return activeCouriers.some(c => courierLower.includes(c));
-      });
-    }
-
-    // Filter by county
-    if (selectedCounty) {
-      listFiltered = listFiltered.filter(locker => 
-        locker.county?.toLowerCase().includes(selectedCounty.toLowerCase())
-      );
-    }
-
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      listFiltered = listFiltered.filter(locker =>
-        locker.name.toLowerCase().includes(query) ||
-        locker.address.toLowerCase().includes(query) ||
-        locker.city.toLowerCase().includes(query) ||
-        locker.postal_code.includes(query)
-      );
-    }
-
-    // Filter by map bounds when zoomed in enough
-    if (mapBounds && currentZoom >= MIN_ZOOM_FOR_LIST && !selectedCounty && !searchQuery.trim()) {
-      const [[south, west], [north, east]] = mapBounds;
-      listFiltered = listFiltered.filter(locker =>
-        locker.lat >= south && locker.lat <= north &&
-        locker.lng >= west && locker.lng <= east
-      );
-    }
-
-    // Limit list items for performance
-    setListLockers(listFiltered.slice(0, 100));
-  }, [allLockers, selectedCounty, searchQuery, mapBounds, activeCouriers, currentZoom]);
-
   // When county changes, center map on that county
   useEffect(() => {
-    if (selectedCounty && allLockers.length > 0) {
-      const countyLocker = allLockers.find(l => 
+    if (selectedCounty && cachedLockers) {
+      const countyLocker = cachedLockers.find(l => 
         l.county?.toLowerCase().includes(selectedCounty.toLowerCase())
       );
       if (countyLocker) {
         setMapCenter([countyLocker.lat, countyLocker.lng]);
+        setMapZoom(11);
       }
     }
-  }, [selectedCounty, allLockers]);
+  }, [selectedCounty]);
 
   const handleSelectLocker = useCallback((locker: Locker) => {
     setSelectedLocker(locker);
@@ -519,9 +500,9 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
           <p className="text-xs text-muted-foreground">
             {loading 
               ? (language === 'ro' ? 'Se încarcă...' : 'Loading...') 
-              : currentZoom >= MIN_ZOOM_FOR_LIST || searchQuery.trim() || selectedCounty
-                ? `${listLockers.length} ${language === 'ro' ? 'puncte în zonă' : 'points in area'}`
-                : `${allLockers.length} ${language === 'ro' ? 'puncte disponibile' : 'points available'}`
+              : showZoomMessage
+                ? (language === 'ro' ? 'Mărește harta pentru a vedea punctele' : 'Zoom in to see delivery points')
+                : `${visibleLockers.length} ${language === 'ro' ? 'puncte în zonă' : 'points in area'}`
             }
           </p>
         </div>
@@ -537,8 +518,8 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               }>
-                <LockerMap 
-                  lockers={mapLockers}
+              <LockerMap 
+                  lockers={visibleLockers}
                   selectedLocker={selectedLocker}
                   mapCenter={mapCenter}
                   mapZoom={mapZoom}
@@ -547,6 +528,25 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                   onBoundsChange={handleMapBoundsChange}
                 />
               </Suspense>
+              
+              {/* Zoom message overlay */}
+              {showZoomMessage && !loading && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[500]">
+                  <div className="bg-background/90 backdrop-blur-sm rounded-xl px-6 py-4 shadow-lg border text-center max-w-[280px]">
+                    <MapPin className="h-8 w-8 mx-auto mb-2 text-primary" />
+                    <p className="font-medium text-sm">
+                      {language === 'ro' 
+                        ? 'Mărește harta pentru a vedea punctele' 
+                        : 'Zoom in to see delivery points'}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'ro' 
+                        ? 'Sau selectează un județ / caută după nume' 
+                        : 'Or select a county / search by name'}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Selected locker details - only on desktop */}
@@ -592,7 +592,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
               <div className="flex items-center justify-center h-full py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : currentZoom < MIN_ZOOM_FOR_LIST && !selectedLocker && !searchQuery.trim() && !selectedCounty ? (
+            ) : showZoomMessage && !selectedLocker && !searchQuery.trim() && !selectedCounty ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
                 <MapPin className="h-10 w-10 mb-3 opacity-50" />
                 <p className="text-center text-sm font-medium">
@@ -606,7 +606,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                     : 'Or select a county / search by name'}
                 </p>
               </div>
-            ) : listLockers.length === 0 ? (
+            ) : visibleLockers.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
                 <Package className="h-10 w-10 mb-3 opacity-50" />
                 <p className="text-center text-sm">
@@ -617,7 +617,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
               </div>
             ) : (
               <div className="divide-y">
-                {listLockers.map((locker) => {
+                {visibleLockers.map((locker) => {
                   const courierInfo = getCourierInfo(locker.courier);
                   const isSelected = selectedLocker?.id === locker.id;
                   return (
