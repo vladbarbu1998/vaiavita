@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, TouchEvent } from 'react';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X, ZoomIn } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,11 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
   const [activeImage, setActiveImage] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
   const [thumbnailStart, setThumbnailStart] = useState(0);
+  
+  // Touch swipe support
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+  const minSwipeDistance = 50;
 
   const goToPrevious = () => {
     setActiveImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -30,6 +35,35 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
 
   const goToNext = () => {
     setActiveImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = null;
+  };
+
+  const handleTouchMove = (e: TouchEvent<HTMLDivElement>) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const isSwipe = Math.abs(distance) > minSwipeDistance;
+    
+    if (isSwipe) {
+      if (distance > 0) {
+        // Swipe left - go to next
+        goToNext();
+      } else {
+        // Swipe right - go to previous
+        goToPrevious();
+      }
+    }
+    
+    touchStartX.current = null;
+    touchEndX.current = null;
   };
 
   const canScrollThumbnailsUp = thumbnailStart > 0;
@@ -53,7 +87,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
 
   return (
     <>
-      <div className="flex gap-4 opacity-0 animate-fade-up overflow-hidden">
+      <div className="flex gap-4 opacity-0 animate-fade-up px-6 md:px-0">
         {/* Thumbnails - Left Side */}
         {images.length > 1 && (
           <div 
@@ -139,13 +173,17 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
           )}
           
           <div 
-            className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-muted/30 to-muted/10 cursor-zoom-in group w-full h-full mx-auto"
+            className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-muted/30 to-muted/10 cursor-zoom-in group w-full h-full mx-auto touch-pan-y"
             onClick={() => setZoomOpen(true)}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             <img 
               src={images[activeImage]} 
               alt={productName} 
-              className="w-full h-full object-contain p-6 transition-transform duration-300 group-hover:scale-105" 
+              className="w-full h-full object-contain p-6 transition-transform duration-300 group-hover:scale-105 pointer-events-none select-none" 
+              draggable={false}
             />
             
             {/* Zoom Indicator */}
