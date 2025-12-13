@@ -70,10 +70,16 @@ async function getOrdersToSend(token: string, orderNumber: string): Promise<any>
     },
   });
 
+  // Handle 404 gracefully
+  if (response.status === 404) {
+    logStep('No orders to send found (404)', { orderNumber });
+    return { data: [], total: 0 };
+  }
+
   if (!response.ok) {
     const errorText = await response.text();
     logStep('Ecolet fetch error', { status: response.status, error: errorText });
-    throw new Error(`Failed to fetch Ecolet orders: ${response.status}`);
+    return { data: [], total: 0 };
   }
 
   const data = await response.json();
@@ -95,10 +101,17 @@ async function getShippedOrders(token: string, orderNumber: string): Promise<any
     },
   });
 
+  // Handle 404 gracefully - means no shipped orders found
+  if (response.status === 404) {
+    logStep('No shipped orders found (404)', { orderNumber });
+    return { data: [], total: 0 };
+  }
+
   if (!response.ok) {
     const errorText = await response.text();
     logStep('Ecolet shipped orders error', { status: response.status, error: errorText });
-    throw new Error(`Failed to fetch Ecolet shipped orders: ${response.status}`);
+    // Return empty instead of throwing to allow fallback to orders-to-send
+    return { data: [], total: 0 };
   }
 
   const data = await response.json();
