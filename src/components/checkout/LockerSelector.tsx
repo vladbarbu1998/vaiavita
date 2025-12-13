@@ -102,6 +102,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
   const [countyOpen, setCountyOpen] = useState(false);
   const [selectedLocker, setSelectedLocker] = useState<Locker | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([45.9432, 24.9668]); // Romania center
+  const [mapZoom, setMapZoom] = useState<number>(7);
   const [mapBounds, setMapBounds] = useState<[[number, number], [number, number]] | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeCouriers, setActiveCouriers] = useState<string[]>(COURIERS.map(c => c.id));
@@ -215,6 +216,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
   const handleSelectLocker = useCallback((locker: Locker) => {
     setSelectedLocker(locker);
     setMapCenter([locker.lat, locker.lng]);
+    setMapZoom(16); // Zoom in when selecting a locker
   }, []);
 
   const handleMapBoundsChange = useCallback((bounds: [[number, number], [number, number]]) => {
@@ -249,6 +251,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         const { latitude, longitude } = position.coords;
         setUserLocation([latitude, longitude]);
         setMapCenter([latitude, longitude]);
+        setMapZoom(14); // Zoom to user location
         setLocatingUser(false);
       },
       (err) => {
@@ -282,6 +285,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
       setSelectedLocker(null);
       setMapBounds(null);
       setMapCenter([45.9432, 24.9668]);
+      setMapZoom(7);
       setFilterOpen(false);
       setUserLocation(null);
     }
@@ -507,6 +511,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                   lockers={filteredLockers}
                   selectedLocker={selectedLocker}
                   mapCenter={mapCenter}
+                  mapZoom={mapZoom}
                   userLocation={userLocation}
                   onSelectLocker={handleSelectLocker}
                   onBoundsChange={handleMapBoundsChange}

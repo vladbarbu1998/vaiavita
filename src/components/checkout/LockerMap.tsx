@@ -66,12 +66,13 @@ interface LockerMapProps {
   lockers: Locker[];
   selectedLocker: Locker | null;
   mapCenter: [number, number];
+  mapZoom?: number;
   userLocation?: [number, number] | null;
   onSelectLocker: (locker: Locker) => void;
   onBoundsChange?: (bounds: [[number, number], [number, number]]) => void;
 }
 
-function LockerMap({ lockers, selectedLocker, mapCenter, userLocation, onSelectLocker, onBoundsChange }: LockerMapProps) {
+function LockerMap({ lockers, selectedLocker, mapCenter, mapZoom, userLocation, onSelectLocker, onBoundsChange }: LockerMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
@@ -228,22 +229,22 @@ function LockerMap({ lockers, selectedLocker, mapCenter, userLocation, onSelectL
     });
   }, [selectedLocker, lockers]);
 
-  // Pan to center when it changes - only when explicitly requested (not from selection)
+  // Pan/zoom to center when it changes
   const lastCenterRef = useRef<[number, number]>([45.9432, 24.9668]);
+  const lastZoomRef = useRef<number>(7);
   useEffect(() => {
-    if (mapRef.current && mapCenter[0] !== 45.9432) {
-      // Only pan if the new center is significantly different (user location or city change)
-      const distance = Math.sqrt(
-        Math.pow(mapCenter[0] - lastCenterRef.current[0], 2) + 
-        Math.pow(mapCenter[1] - lastCenterRef.current[1], 2)
-      );
-      // Only pan for large distance changes (city change/user location), not individual locker selection
-      if (distance > 0.1) {
-        mapRef.current.setView(mapCenter, 14, { animate: true });
+    if (mapRef.current) {
+      const targetZoom = mapZoom ?? mapRef.current.getZoom();
+      const zoomChanged = mapZoom !== undefined && mapZoom !== lastZoomRef.current;
+      const centerChanged = mapCenter[0] !== lastCenterRef.current[0] || mapCenter[1] !== lastCenterRef.current[1];
+      
+      if (centerChanged || zoomChanged) {
+        mapRef.current.setView(mapCenter, targetZoom, { animate: true });
         lastCenterRef.current = mapCenter;
+        lastZoomRef.current = targetZoom;
       }
     }
-  }, [mapCenter]);
+  }, [mapCenter, mapZoom]);
 
   // Handle user location marker
   useEffect(() => {
