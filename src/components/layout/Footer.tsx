@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
-import { Mail, MapPin } from 'lucide-react';
+import { Mail, MapPin, Phone } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.png';
 import logoDarkChristmas from '@/assets/logo-dark-christmas.png';
 import logoLight from '@/assets/logo-light.png';
@@ -75,6 +75,12 @@ export function Footer() {
           <div className="space-y-5">
             <h4 className="font-display text-lg font-semibold tracking-wide">{language === 'ro' ? 'Contact' : 'Contact'}</h4>
             <div className="space-y-4">
+              <div className="flex items-start gap-3 text-sm text-muted-foreground">
+                <Phone className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <a href="tel:0732111117" className="hover:text-primary transition-colors">
+                  0732 111 117
+                </a>
+              </div>
               <div className="flex items-start gap-3 text-sm text-muted-foreground">
                 <Mail className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                 <a href="mailto:office@vaiavita.com" className="hover:text-primary transition-colors">
