@@ -4,330 +4,283 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Confirmarea Comenzii - VAIAVITA</title>
-  <!--[if mso]>
-  <noscript>
-    <xml>
-      <o:OfficeDocumentSettings>
-        <o:PixelsPerInch>96</o:PixelsPerInch>
-      </o:OfficeDocumentSettings>
-    </xml>
-  </noscript>
-  <![endif]-->
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: #f8faf9;
-      color: #1a1a1a;
-      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f0f5f4;
+      line-height: 1.5;
     }
     
-    .email-wrapper {
-      max-width: 600px;
+    .email-container {
+      max-width: 480px;
       margin: 0 auto;
-      background-color: #ffffff;
+      background: #ffffff;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(2, 89, 81, 0.08);
     }
     
     .header {
-      background: linear-gradient(135deg, #025951 0%, #037a6e 50%, #025951 100%);
-      padding: 40px 30px;
+      background: linear-gradient(145deg, #025951 0%, #038578 100%);
+      padding: 32px 24px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -10%;
+      width: 150px;
+      height: 150px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 50%;
     }
     
     .logo {
-      max-width: 180px;
+      width: 140px;
       height: auto;
       margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
     }
     
-    .header h1 {
-      color: #ffffff;
-      font-size: 28px;
-      font-weight: 700;
-      margin: 0;
-      letter-spacing: -0.5px;
-    }
-    
-    .header p {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 16px;
-      margin-top: 8px;
-    }
-    
-    .success-badge {
-      display: inline-block;
-      background-color: rgba(255, 255, 255, 0.2);
-      border: 2px solid rgba(255, 255, 255, 0.4);
-      border-radius: 50px;
-      padding: 12px 24px;
-      margin-top: 20px;
-    }
-    
-    .success-badge span {
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    
-    .checkmark-circle {
-      width: 60px;
-      height: 60px;
-      background-color: rgba(255, 255, 255, 0.2);
+    .success-icon {
+      width: 56px;
+      height: 56px;
+      background: rgba(255,255,255,0.15);
       border-radius: 50%;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 16px;
+      backdrop-filter: blur(10px);
+      position: relative;
+      z-index: 1;
     }
     
-    .checkmark-circle svg {
-      width: 32px;
-      height: 32px;
-      color: #ffffff;
+    .success-icon svg {
+      width: 28px;
+      height: 28px;
+      color: #fff;
+    }
+    
+    .header h1 {
+      color: #fff;
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 6px 0;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .header p {
+      color: rgba(255,255,255,0.85);
+      font-size: 14px;
+      margin: 0;
+      position: relative;
+      z-index: 1;
     }
     
     .content {
-      padding: 40px 30px;
+      padding: 28px 24px;
     }
     
     .greeting {
-      font-size: 18px;
-      color: #1a1a1a;
-      margin-bottom: 16px;
+      font-size: 15px;
+      color: #333;
+      margin-bottom: 20px;
     }
     
     .greeting strong {
       color: #025951;
     }
     
-    .message {
-      font-size: 15px;
-      color: #4a4a4a;
-      margin-bottom: 30px;
-    }
-    
-    .order-card {
-      background: linear-gradient(135deg, #f0f9f7 0%, #e8f5f3 100%);
+    .order-box {
+      background: linear-gradient(145deg, #f7fbfa 0%, #eef6f4 100%);
       border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 30px;
-      border: 1px solid #d0e8e4;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid #e0ece9;
     }
     
     .order-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 1px dashed #b8d8d2;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed #c8ddd9;
     }
     
-    .order-number {
-      font-size: 14px;
+    .order-num {
+      font-size: 12px;
       color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     
-    .order-number strong {
+    .order-num strong {
       display: block;
-      font-size: 18px;
+      font-size: 16px;
       color: #025951;
-      margin-top: 4px;
+      margin-top: 2px;
+      letter-spacing: 0;
     }
     
     .order-date {
-      font-size: 13px;
-      color: #666;
-      text-align: right;
+      font-size: 12px;
+      color: #888;
     }
     
-    .products-list {
-      margin-bottom: 20px;
-    }
-    
-    .product-item {
+    .product-row {
       display: flex;
       align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(2, 89, 81, 0.1);
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(2,89,81,0.08);
     }
     
-    .product-item:last-child {
+    .product-row:last-of-type {
       border-bottom: none;
     }
     
-    .product-image {
-      width: 60px;
-      height: 60px;
+    .product-img {
+      width: 48px;
+      height: 48px;
       border-radius: 10px;
       object-fit: cover;
-      margin-right: 16px;
-      background-color: #fff;
-      border: 1px solid #e0e0e0;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      margin-right: 12px;
     }
     
-    .product-details {
+    .product-info {
       flex: 1;
     }
     
     .product-name {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       color: #1a1a1a;
-      margin-bottom: 4px;
     }
     
-    .product-quantity {
-      font-size: 13px;
-      color: #666;
+    .product-qty {
+      font-size: 12px;
+      color: #888;
     }
     
     .product-price {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       color: #025951;
     }
     
-    .order-summary {
-      background-color: #fff;
-      border-radius: 12px;
-      padding: 16px;
-      margin-top: 16px;
+    .totals {
+      background: #fff;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 14px;
     }
     
-    .summary-row {
+    .total-row {
       display: flex;
       justify-content: space-between;
-      padding: 8px 0;
-      font-size: 14px;
-    }
-    
-    .summary-row.subtotal {
+      font-size: 13px;
+      padding: 4px 0;
       color: #666;
     }
     
-    .summary-row.shipping {
-      color: #666;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #e8e8e8;
+    .total-row.final {
+      font-size: 16px;
+      font-weight: 700;
+      color: #025951;
+      padding-top: 10px;
+      margin-top: 8px;
+      border-top: 1px solid #eee;
     }
     
-    .summary-row.discount {
+    .total-row.discount span:last-child {
       color: #16a34a;
     }
     
-    .summary-row.total {
-      font-size: 18px;
-      font-weight: 700;
-      color: #025951;
-      padding-top: 12px;
-    }
-    
-    .info-section {
-      margin-bottom: 30px;
-    }
-    
-    .info-section h3 {
-      font-size: 14px;
-      font-weight: 600;
-      color: #025951;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .info-section h3 svg {
-      width: 18px;
-      height: 18px;
-    }
-    
-    .info-card {
-      background-color: #f8faf9;
-      border-radius: 12px;
-      padding: 16px;
-      border: 1px solid #e8e8e8;
-    }
-    
-    .info-card p {
-      font-size: 14px;
-      color: #4a4a4a;
-      margin-bottom: 4px;
-    }
-    
-    .info-card p:last-child {
-      margin-bottom: 0;
-    }
-    
-    .info-card strong {
-      color: #1a1a1a;
-    }
-    
-    .cta-section {
-      text-align: center;
-      padding: 30px;
-      background: linear-gradient(135deg, #f0f9f7 0%, #e8f5f3 100%);
-      border-radius: 16px;
-      margin-bottom: 30px;
-    }
-    
-    .cta-section h3 {
-      font-size: 18px;
-      color: #1a1a1a;
-      margin-bottom: 8px;
-    }
-    
-    .cta-section p {
-      font-size: 14px;
-      color: #666;
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
       margin-bottom: 20px;
     }
     
-    .btn {
-      display: inline-block;
-      padding: 14px 32px;
-      background: linear-gradient(135deg, #025951 0%, #037a6e 100%);
-      color: #ffffff !important;
-      text-decoration: none;
-      border-radius: 50px;
-      font-size: 14px;
-      font-weight: 600;
-      transition: all 0.3s ease;
+    .info-box {
+      background: #f8faf9;
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid #eee;
     }
     
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(2, 89, 81, 0.3);
+    .info-box h4 {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #025951;
+      margin: 0 0 8px 0;
+      font-weight: 600;
+    }
+    
+    .info-box p {
+      font-size: 12px;
+      color: #444;
+      margin: 0;
+      line-height: 1.4;
+    }
+    
+    .cta-btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(145deg, #025951 0%, #038578 100%);
+      color: #fff !important;
+      text-decoration: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      box-sizing: border-box;
     }
     
     .footer {
-      background-color: #1a1a1a;
-      padding: 40px 30px;
+      background: #1a1f1e;
+      padding: 24px;
       text-align: center;
     }
     
     .footer-logo {
-      max-width: 140px;
+      width: 100px;
       height: auto;
-      margin-bottom: 20px;
-      filter: brightness(0) invert(1);
+      opacity: 0.9;
+      margin-bottom: 12px;
     }
     
     .footer p {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 8px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      margin: 4px 0;
     }
     
     .footer a {
@@ -336,202 +289,101 @@
     }
     
     .footer-links {
-      margin: 20px 0;
+      margin: 12px 0;
     }
     
     .footer-links a {
-      display: inline-block;
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255,255,255,0.6);
+      font-size: 11px;
+      margin: 0 8px;
       text-decoration: none;
-      font-size: 13px;
-      margin: 0 12px;
-    }
-    
-    .footer-links a:hover {
-      color: #4fd1c5;
-    }
-    
-    .social-links {
-      margin-top: 20px;
-    }
-    
-    .social-links a {
-      display: inline-block;
-      width: 40px;
-      height: 40px;
-      background-color: rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      margin: 0 6px;
-      line-height: 40px;
-    }
-    
-    .divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      margin: 20px 0;
-    }
-    
-    .copyright {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.5);
-      margin-top: 20px;
-    }
-    
-    /* Responsive */
-    @media only screen and (max-width: 600px) {
-      .header {
-        padding: 30px 20px;
-      }
-      
-      .header h1 {
-        font-size: 24px;
-      }
-      
-      .content {
-        padding: 30px 20px;
-      }
-      
-      .order-card {
-        padding: 16px;
-      }
-      
-      .product-image {
-        width: 50px;
-        height: 50px;
-      }
-      
-      .footer {
-        padding: 30px 20px;
-      }
     }
   </style>
 </head>
 <body>
-  <div class="email-wrapper">
+  <div class="email-container">
     <!-- Header -->
     <div class="header">
-      <div class="checkmark-circle">
+      <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" class="logo">
+      <div class="success-icon">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       </div>
-      <h1>Comanda ta a fost plasată!</h1>
+      <h1>Comandă confirmată! ✨</h1>
       <p>Mulțumim că ai ales VAIAVITA</p>
-      <div class="success-badge">
-        <span>✓ Confirmare primită</span>
-      </div>
     </div>
     
     <!-- Content -->
     <div class="content">
-      <p class="greeting">Salut, <strong>{{customer_name}}</strong>! 👋</p>
-      <p class="message">
-        Îți mulțumim pentru comandă! Am primit cererea ta și o vom procesa cât mai curând posibil. 
-        Mai jos găsești toate detaliile comenzii tale.
-      </p>
+      <p class="greeting">Salut <strong>{{customer_name}}</strong>, am primit comanda ta și o procesăm în curând.</p>
       
-      <!-- Order Card -->
-      <div class="order-card">
+      <!-- Order Box -->
+      <div class="order-box">
         <div class="order-header">
-          <div class="order-number">
-            Număr comandă
+          <div class="order-num">
+            Comandă
             <strong>#{{order_number}}</strong>
           </div>
-          <div class="order-date">
-            {{order_date}}
-          </div>
+          <div class="order-date">{{order_date}}</div>
         </div>
         
-        <div class="products-list">
-          <!-- Product Item - repeat for each product -->
-          <div class="product-item">
-            <img src="{{product_image}}" alt="{{product_name}}" class="product-image">
-            <div class="product-details">
-              <div class="product-name">{{product_name}}</div>
-              <div class="product-quantity">Cantitate: {{quantity}}</div>
-            </div>
-            <div class="product-price">{{product_price}} RON</div>
+        <!-- Products -->
+        <div class="product-row">
+          <img src="{{product_image}}" alt="" class="product-img">
+          <div class="product-info">
+            <div class="product-name">{{product_name}}</div>
+            <div class="product-qty">×{{quantity}}</div>
           </div>
-          <!-- End Product Item -->
+          <div class="product-price">{{product_price}} lei</div>
         </div>
         
-        <div class="order-summary">
-          <div class="summary-row subtotal">
+        <!-- Totals -->
+        <div class="totals">
+          <div class="total-row">
             <span>Subtotal</span>
-            <span>{{subtotal}} RON</span>
+            <span>{{subtotal}} lei</span>
           </div>
-          <div class="summary-row shipping">
+          <div class="total-row">
             <span>Livrare</span>
             <span>{{shipping_cost}}</span>
           </div>
-          <!-- Show only if discount exists -->
-          <div class="summary-row discount">
-            <span>Discount ({{coupon_code}})</span>
-            <span>-{{discount}} RON</span>
+          <div class="total-row discount">
+            <span>Discount</span>
+            <span>-{{discount}} lei</span>
           </div>
-          <!-- End discount -->
-          <div class="summary-row total">
+          <div class="total-row final">
             <span>Total</span>
-            <span>{{total}} RON</span>
+            <span>{{total}} lei</span>
           </div>
         </div>
       </div>
       
-      <!-- Delivery Info -->
-      <div class="info-section">
-        <h3>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-          </svg>
-          Detalii livrare
-        </h3>
-        <div class="info-card">
-          <p><strong>Metodă:</strong> {{delivery_method}}</p>
-          <p><strong>Adresă:</strong> {{delivery_address}}</p>
-          <p><strong>Telefon:</strong> {{customer_phone}}</p>
+      <!-- Info Grid -->
+      <div class="info-grid">
+        <div class="info-box">
+          <h4>📦 Livrare</h4>
+          <p>{{delivery_method}}<br>{{delivery_address}}</p>
+        </div>
+        <div class="info-box">
+          <h4>💳 Plată</h4>
+          <p>{{payment_method}}<br><span style="color:#16a34a">{{payment_status}}</span></p>
         </div>
       </div>
       
-      <!-- Payment Info -->
-      <div class="info-section">
-        <h3>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-          </svg>
-          Metodă de plată
-        </h3>
-        <div class="info-card">
-          <p><strong>{{payment_method}}</strong></p>
-          <p style="color: #16a34a; font-weight: 500;">{{payment_status}}</p>
-        </div>
-      </div>
-      
-      <!-- CTA Section -->
-      <div class="cta-section">
-        <h3>Ai întrebări despre comandă?</h3>
-        <p>Echipa noastră este aici să te ajute!</p>
-        <a href="mailto:office@vaiavita.com" class="btn">Contactează-ne</a>
-      </div>
+      <a href="mailto:office@vaiavita.com" class="cta-btn">Ai întrebări? Scrie-ne →</a>
     </div>
     
     <!-- Footer -->
     <div class="footer">
       <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" class="footer-logo">
-      <p>VAIAVITA S.R.L. | CUI 49945945</p>
-      <p>Reg. Com. J8/1310/2024</p>
-      
       <div class="footer-links">
-        <a href="https://vaiavita.ro">Website</a>
+        <a href="https://vaiavita.ro">Site</a>
         <a href="https://vaiavita.ro/produse">Produse</a>
         <a href="https://vaiavita.ro/contact">Contact</a>
       </div>
-      
-      <div class="divider"></div>
-      
-      <p class="copyright">
-        © 2024 VAIAVITA. Toate drepturile rezervate.<br>
-        Ai primit acest email pentru că ai plasat o comandă pe <a href="https://vaiavita.ro">vaiavita.ro</a>
-      </p>
+      <p>VAIAVITA S.R.L. | CUI 49945945</p>
+      <p>© 2024 VAIAVITA. Toate drepturile rezervate.</p>
     </div>
   </div>
 </body>
