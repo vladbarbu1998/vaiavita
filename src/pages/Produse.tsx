@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
-import { ArrowRight, Loader2, ShoppingCart } from 'lucide-react';
+import { ArrowRight, Loader2, ShoppingCart, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import dentTasticImage from '@/assets/dent-tastic-product.webp';
@@ -16,12 +16,16 @@ interface DatabaseProduct {
   slug: string;
   name_ro: string;
   name_en: string;
-  card_description_ro: string | null;
-  card_description_en: string | null;
   price: number;
   status: string;
   images: string[] | null;
   stock: number;
+}
+
+interface ProductRating {
+  productId: string;
+  averageRating: number;
+  reviewCount: number;
 }
 
 // Fallback images for products without uploaded images
@@ -30,25 +34,12 @@ const fallbackImages: Record<string, string> = {
   'qivaro-supplements': qivaroImage,
 };
 
-const truncateCardDescription = (text: string | null, maxLength: number = 72): string => {
-  if (!text) return '';
-  if (text.length <= maxLength) return text;
-  
-  // Find the last space before maxLength
-  const truncated = text.substring(0, maxLength);
-  const lastSpaceIndex = truncated.lastIndexOf(' ');
-  
-  if (lastSpaceIndex > 0) {
-    return truncated.substring(0, lastSpaceIndex) + '...';
-  }
-  return truncated + '...';
-};
-
 const Produse = () => {
   const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
   const { addItem } = useCart();
   const [products, setProducts] = useState<DatabaseProduct[]>([]);
+  const [productRatings, setProductRatings] = useState<Map<string, ProductRating>>(new Map());
   const [loading, setLoading] = useState(true);
 
   const handleQuickAdd = (e: React.MouseEvent, product: DatabaseProduct) => {
@@ -77,12 +68,46 @@ const Produse = () => {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('id, slug, name_ro, name_en, card_description_ro, card_description_en, price, status, images, stock')
+          .select('id, slug, name_ro, name_en, price, status, images, stock')
           .eq('status', 'active')
           .order('created_at', { ascending: true });
 
         if (error) throw error;
         setProducts(data || []);
+
+        // Fetch ratings for all products
+        if (data && data.length > 0) {
+          const productIds = data.map(p => p.id);
+          const { data: reviewsData } = await supabase
+            .from('reviews')
+            .select('product_id, rating')
+            .in('product_id', productIds)
+            .eq('is_approved', true);
+
+          if (reviewsData) {
+            const ratingsMap = new Map<string, ProductRating>();
+            
+            // Group reviews by product and calculate averages
+            const reviewsByProduct = reviewsData.reduce((acc, review) => {
+              if (!acc[review.product_id]) {
+                acc[review.product_id] = [];
+              }
+              acc[review.product_id].push(review.rating);
+              return acc;
+            }, {} as Record<string, number[]>);
+
+            Object.entries(reviewsByProduct).forEach(([productId, ratings]) => {
+              const avg = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
+              ratingsMap.set(productId, {
+                productId,
+                averageRating: avg,
+                reviewCount: ratings.length,
+              });
+            });
+
+            setProductRatings(ratingsMap);
+          }
+        }
       } catch (error) {
         console.error('Error fetching products:', error);
       } finally {
@@ -114,6 +139,44 @@ const Produse = () => {
 
   const isProductClickable = (product: DatabaseProduct) => {
     return product.status === 'active';
+  };
+
+  const renderRating = (productId: string) => {
+    const rating = productRatings.get(productId);
+    
+    if (!rating || rating.reviewCount === 0) {
+      return (
+        <div className="flex items-center gap-1 text-muted-foreground">
+          <Star className="w-3.5 h-3.5 md:w-4 md:h-4" />
+          <span className="text-xs">
+            {language === 'ro' ? 'Fără recenzii' : 'No reviews'}
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-0.5">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star 
+              key={star} 
+              className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
+                star <= Math.round(rating.averageRating) 
+                  ? 'fill-yellow-400 text-yellow-400' 
+                  : 'text-muted-foreground/30'
+              }`} 
+            />
+          ))}
+        </div>
+        <span className="text-xs md:text-sm font-medium text-foreground">
+          {rating.averageRating.toFixed(1)}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          ({rating.reviewCount})
+        </span>
+      </div>
+    );
   };
 
   return (
@@ -193,12 +256,10 @@ const Produse = () => {
                         {language === 'ro' ? product.name_ro : product.name_en}
                       </h3>
                       
-                      {/* Description - fixed height for 2 lines */}
-                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed min-h-[2.5rem] md:min-h-[2.75rem] mt-3">
-                        {truncateCardDescription(language === 'ro' 
-                          ? product.card_description_ro 
-                          : product.card_description_en)}
-                      </p>
+                      {/* Rating - instead of description */}
+                      <div className="min-h-[1.5rem] mt-3">
+                        {renderRating(product.id)}
+                      </div>
                       
                       {/* Price and CTA - fixed position */}
                       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 pt-3 mt-4 border-t border-border/50">

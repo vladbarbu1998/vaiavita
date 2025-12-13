@@ -58,10 +58,14 @@ interface RelatedProduct {
   slug: string;
   name_ro: string;
   name_en: string;
-  card_description_ro: string | null;
-  card_description_en: string | null;
   price: number;
   images: string[] | null;
+}
+
+interface RelatedProductRating {
+  productId: string;
+  averageRating: number;
+  reviewCount: number;
 }
 
 interface ReviewStats {
@@ -107,6 +111,7 @@ const ProductPage = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([]);
+  const [relatedProductRatings, setRelatedProductRatings] = useState<Map<string, RelatedProductRating>>(new Map());
   const [promoGiftProduct, setPromoGiftProduct] = useState<{ slug: string; name_ro: string; name_en: string } | null>(null);
   const [promoTriggerProduct, setPromoTriggerProduct] = useState<{ slug: string; name_ro: string; name_en: string } | null>(null);
   const [activeTab, setActiveTab] = useState('description');
@@ -181,12 +186,42 @@ const ProductPage = () => {
         if (data.related_products && (data.related_products as string[]).length > 0) {
           const { data: relatedData } = await supabase
             .from('products')
-            .select('id, slug, name_ro, name_en, card_description_ro, card_description_en, price, images')
+            .select('id, slug, name_ro, name_en, price, images')
             .in('id', data.related_products as string[])
             .eq('status', 'active');
           
           if (relatedData) {
             setRelatedProducts(relatedData);
+            
+            // Fetch ratings for related products
+            const relatedIds = relatedData.map(p => p.id);
+            const { data: relatedReviewsData } = await supabase
+              .from('reviews')
+              .select('product_id, rating')
+              .in('product_id', relatedIds)
+              .eq('is_approved', true);
+
+            if (relatedReviewsData) {
+              const ratingsMap = new Map<string, RelatedProductRating>();
+              const reviewsByProduct = relatedReviewsData.reduce((acc, review) => {
+                if (!acc[review.product_id]) {
+                  acc[review.product_id] = [];
+                }
+                acc[review.product_id].push(review.rating);
+                return acc;
+              }, {} as Record<string, number[]>);
+
+              Object.entries(reviewsByProduct).forEach(([productId, ratings]) => {
+                const avg = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
+                ratingsMap.set(productId, {
+                  productId,
+                  averageRating: avg,
+                  reviewCount: ratings.length,
+                });
+              });
+
+              setRelatedProductRatings(ratingsMap);
+            }
           }
         }
 
@@ -798,12 +833,31 @@ const ProductPage = () => {
                             <h5 className="font-medium text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors">
                               {language === 'ro' ? relProd.name_ro : relProd.name_en}
                             </h5>
-                            {/* Card description */}
-                            <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
-                              {language === 'ro' 
-                                ? (relProd.card_description_ro || '') 
-                                : (relProd.card_description_en || '')}
-                            </p>
+                            {/* Rating */}
+                            <div className="mt-2">
+                              {(() => {
+                                const rating = relatedProductRatings.get(relProd.id);
+                                if (!rating || rating.reviewCount === 0) {
+                                  return (
+                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                      <Star className="w-3.5 h-3.5" />
+                                      <span className="text-xs">{language === 'ro' ? 'Fără recenzii' : 'No reviews'}</span>
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-0.5">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star key={star} className={`w-3.5 h-3.5 ${star <= Math.round(rating.averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`} />
+                                      ))}
+                                    </div>
+                                    <span className="text-xs font-medium">{rating.averageRating.toFixed(1)}</span>
+                                    <span className="text-xs text-muted-foreground">({rating.reviewCount})</span>
+                                  </div>
+                                );
+                              })()}
+                            </div>
                             {/* Price and CTA */}
                             <div className="flex items-center justify-between gap-2 pt-3 mt-3 border-t border-border/50">
                               <p className="text-primary font-semibold text-base">
@@ -889,12 +943,31 @@ const ProductPage = () => {
                       <h5 className="font-medium text-sm leading-snug line-clamp-2 h-10 group-hover:text-primary transition-colors">
                         {language === 'ro' ? relProd.name_ro : relProd.name_en}
                       </h5>
-                      {/* Card description - fixed height */}
-                      <p className="text-xs text-muted-foreground line-clamp-2 h-8 mt-1.5">
-                        {language === 'ro' 
-                          ? (relProd.card_description_ro || '') 
-                          : (relProd.card_description_en || '')}
-                      </p>
+                      {/* Rating - fixed height */}
+                      <div className="h-6 mt-1.5">
+                        {(() => {
+                          const rating = relatedProductRatings.get(relProd.id);
+                          if (!rating || rating.reviewCount === 0) {
+                            return (
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <Star className="w-3 h-3" />
+                                <span className="text-xs">{language === 'ro' ? 'Fără recenzii' : 'No reviews'}</span>
+                              </div>
+                            );
+                          }
+                          return (
+                            <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-0.5">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star key={star} className={`w-3 h-3 ${star <= Math.round(rating.averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`} />
+                                ))}
+                              </div>
+                              <span className="text-xs font-medium">{rating.averageRating.toFixed(1)}</span>
+                              <span className="text-xs text-muted-foreground">({rating.reviewCount})</span>
+                            </div>
+                          );
+                        })()}
+                      </div>
                       {/* Price and CTA */}
                       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-1 pt-2 mt-2 border-t border-border/50">
                         <p className="text-primary font-semibold text-sm">
