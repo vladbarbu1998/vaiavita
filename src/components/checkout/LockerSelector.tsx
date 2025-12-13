@@ -114,9 +114,9 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
   // Minimum zoom level to show the list (12 = city level)
   const MIN_ZOOM_FOR_LIST = 11;
 
-  // Load all lockers when dialog opens - use cache if available
+  // Load lockers when user zooms in enough (lazy load)
   useEffect(() => {
-    if (open && allLockers.length === 0) {
+    if (open && allLockers.length === 0 && (currentZoom >= MIN_ZOOM_FOR_LIST || selectedCounty || searchQuery.trim())) {
       if (cachedLockers) {
         setAllLockers(cachedLockers);
         setMapLockers(cachedLockers);
@@ -124,7 +124,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         loadAllLockers();
       }
     }
-  }, [open]);
+  }, [open, currentZoom, selectedCounty, searchQuery]);
 
   const loadAllLockers = async () => {
     setLoading(true);
@@ -610,57 +610,15 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
               </div>
             ) : (
               <div className="divide-y">
-                {/* Show selected locker first if exists */}
-                {selectedLocker && (
-                  (() => {
-                    const courierInfo = getCourierInfo(selectedLocker.courier);
-                    return (
-                      <button
-                        key={`selected-${selectedLocker.id}`}
-                        onClick={() => handleSelectLocker(selectedLocker)}
-                        className="w-full p-2.5 md:p-3 text-left bg-primary/10 border-l-4 border-primary"
-                      >
-                        <div className="flex items-start gap-2">
-                          <div 
-                            className="w-2 h-2 rounded-full mt-1.5 shrink-0" 
-                            style={{ backgroundColor: courierInfo.color }}
-                          />
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-xs md:text-sm truncate">{selectedLocker.name}</p>
-                              <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                            </div>
-                            <p className="text-[11px] md:text-xs text-muted-foreground truncate">
-                              {selectedLocker.address}{selectedLocker.postal_code ? `, ${selectedLocker.postal_code}` : ''}
-                            </p>
-                            {formatSchedule(selectedLocker.schedule) && (
-                              <p className="text-[10px] text-muted-foreground/80 truncate">
-                                {language === 'ro' ? 'Program:' : 'Hours:'} {formatSchedule(selectedLocker.schedule)}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-2 mt-1">
-                              <span 
-                                className="text-[9px] md:text-[10px] px-1.5 py-0.5 rounded font-medium text-white"
-                                style={{ backgroundColor: courierInfo.color }}
-                              >
-                                {courierInfo.name}
-                              </span>
-                              <span className="text-[9px] md:text-[10px] text-muted-foreground">{selectedLocker.city}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })()
-                )}
-                {listLockers.filter(l => l.id !== selectedLocker?.id).map((locker) => {
+                {listLockers.map((locker) => {
                   const courierInfo = getCourierInfo(locker.courier);
+                  const isSelected = selectedLocker?.id === locker.id;
                   return (
                     <button
                       key={locker.id}
                       onClick={() => handleSelectLocker(locker)}
                       className={`w-full p-2.5 md:p-3 text-left hover:bg-accent/50 transition-colors ${
-                        selectedLocker?.id === locker.id ? 'bg-primary/10 border-l-4 border-primary' : ''
+                        isSelected ? 'bg-primary/10 border-l-4 border-primary' : ''
                       }`}
                     >
                       <div className="flex items-start gap-2">
@@ -671,7 +629,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-xs md:text-sm truncate">{locker.name}</p>
-                            {selectedLocker?.id === locker.id && (
+                            {isSelected && (
                               <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
                             )}
                           </div>
