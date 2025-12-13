@@ -115,8 +115,10 @@ const ProductPage = () => {
   const [promoGiftProduct, setPromoGiftProduct] = useState<{ slug: string; name_ro: string; name_en: string } | null>(null);
   const [promoTriggerProduct, setPromoTriggerProduct] = useState<{ slug: string; name_ro: string; name_en: string } | null>(null);
   const [activeTab, setActiveTab] = useState('description');
+  const [mobileAccordionValue, setMobileAccordionValue] = useState<string>('description');
   const [mobileRelatedIndex, setMobileRelatedIndex] = useState(0);
   const tabsRef = useRef<HTMLDivElement>(null);
+  const mobileAccordionRef = useRef<HTMLDivElement>(null);
   const relatedTouchStartX = useRef<number>(0);
   const relatedTouchEndX = useRef<number>(0);
   
@@ -302,10 +304,20 @@ const ProductPage = () => {
   }, [slug, navigate]);
 
   const scrollToReviews = () => {
-    setActiveTab('reviews');
-    setTimeout(() => {
-      tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    // Check if mobile (accordion) or desktop (tabs)
+    const isMobile = window.innerWidth < 768;
+    
+    if (isMobile) {
+      setMobileAccordionValue('reviews');
+      setTimeout(() => {
+        mobileAccordionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    } else {
+      setActiveTab('reviews');
+      setTimeout(() => {
+        tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
   };
 
   const handleAddToCart = () => {
@@ -1012,8 +1024,8 @@ const ProductPage = () => {
           {product.product_number === 1 && <ProfessionalTestimonials />}
 
 
-          <div ref={tabsRef} className="mt-12 md:hidden opacity-0 animate-fade-up animation-delay-400">
-            <Accordion type="single" collapsible defaultValue="description" className="w-full space-y-3">
+          <div ref={mobileAccordionRef} className="mt-12 md:hidden opacity-0 animate-fade-up animation-delay-400">
+            <Accordion type="single" collapsible value={mobileAccordionValue} onValueChange={(val) => setMobileAccordionValue(val || '')} className="w-full space-y-3">
               {/* Description Accordion */}
               <AccordionItem value="description" className="card-premium border-none">
                 <AccordionTrigger className="px-4 py-3 font-display text-base hover:no-underline">
