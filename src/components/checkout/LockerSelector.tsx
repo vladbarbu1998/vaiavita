@@ -3,16 +3,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, MapPin, Loader2, Package, CheckCircle2, ChevronDown, Crosshair, Filter, X, Clock } from 'lucide-react';
+import { Search, MapPin, Loader2, Package, CheckCircle2, Crosshair, Filter, X, Clock } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Popover,
   PopoverContent,
@@ -107,7 +106,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCounty, setSelectedCounty] = useState<string>('');
-  const [countyOpen, setCountyOpen] = useState(false);
+  
   const [selectedLocker, setSelectedLocker] = useState<Locker | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([45.9432, 24.9668]); // Romania center
   const [mapZoom, setMapZoom] = useState<number>(7);
@@ -360,53 +359,25 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         <div className="p-3 md:p-4 border-b space-y-2 md:space-y-3">
           {/* Row 1: County selector + Locate me */}
           <div className="flex gap-2">
-            {/* County dropdown */}
-            <Popover open={countyOpen} onOpenChange={setCountyOpen}>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  role="combobox" 
-                  aria-expanded={countyOpen}
-                  className="flex-1 justify-between text-xs md:text-sm"
-                >
-                  <span className="truncate">
-                    {selectedCounty || (language === 'ro' ? 'Selectează județ...' : 'Select county...')}
-                  </span>
-                  <ChevronDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[220px] p-0 z-[100]" align="start">
-                <Command>
-                  <CommandInput placeholder={language === 'ro' ? 'Caută județ...' : 'Search county...'} />
-                  <CommandList className="max-h-[300px] overflow-y-auto">
-                    <CommandEmpty>{language === 'ro' ? 'Niciun județ găsit' : 'No county found'}</CommandEmpty>
-                    <CommandGroup>
-                      <CommandItem
-                        value=""
-                        onSelect={() => {
-                          setSelectedCounty('');
-                          setCountyOpen(false);
-                        }}
-                      >
-                        {language === 'ro' ? 'Toate județele' : 'All counties'}
-                      </CommandItem>
-                      {availableCounties.map((county) => (
-                        <CommandItem
-                          key={county}
-                          value={county}
-                          onSelect={(value) => {
-                            setSelectedCounty(value);
-                            setCountyOpen(false);
-                          }}
-                        >
-                          {county}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            {/* County dropdown - using native Select for better scroll */}
+            <Select 
+              value={selectedCounty} 
+              onValueChange={(value) => setSelectedCounty(value === 'all' ? '' : value)}
+            >
+              <SelectTrigger className="flex-1 text-xs md:text-sm">
+                <SelectValue placeholder={language === 'ro' ? 'Selectează județ...' : 'Select county...'} />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px] z-[200]">
+                <SelectItem value="all">
+                  {language === 'ro' ? 'Toate județele' : 'All counties'}
+                </SelectItem>
+                {availableCounties.map((county) => (
+                  <SelectItem key={county} value={county}>
+                    {county}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             {/* Locate me button */}
             <Button 
