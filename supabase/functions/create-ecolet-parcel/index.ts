@@ -350,6 +350,9 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
     },
     courier: {
       service: courierService, // e.g., "fan_courier_standard"
+      pickup: {
+        type: 'address', // pickup from sender address (valid values: address, locker, post_office)
+      },
     },
   };
 
