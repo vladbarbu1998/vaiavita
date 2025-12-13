@@ -5,135 +5,204 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Confirmare Comandă - VAIAVITA</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #fafafa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+<body style="margin: 0; padding: 0; background: linear-gradient(180deg, #f0f7f6 0%, #e8f4f2 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
   
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fafafa;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
     <tr>
-      <td align="center" style="padding: 40px 20px;">
+      <td align="center" style="padding: 32px 16px;">
         
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width: 420px; width: 100%;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width: 480px; width: 100%;">
           
-          <!-- Logo -->
-          <tr>
-            <td align="center" style="padding-bottom: 40px;">
-              <img src="https://vaiavita.ro/logo.png" alt="VAIAVITA" width="140" style="display: block;">
-            </td>
-          </tr>
-          
-          <!-- Success Icon -->
-          <tr>
-            <td align="center">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td style="width: 64px; height: 64px; background-color: #025951; border-radius: 50%; text-align: center; vertical-align: middle;">
-                    <span style="color: #ffffff; font-size: 32px; line-height: 64px;">✓</span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          
-          <!-- Title -->
-          <tr>
-            <td align="center" style="padding: 24px 0 8px 0;">
-              <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #111111; letter-spacing: -0.5px;">Mulțumim!</h1>
-            </td>
-          </tr>
-          
+          <!-- Header with Logo -->
           <tr>
             <td align="center" style="padding-bottom: 32px;">
-              <p style="margin: 0; font-size: 15px; color: #666666;">Comanda ta <strong style="color: #025951;">#{{order_number}}</strong> a fost confirmată.</p>
+              <img src="https://vaiavita.ro/logo.png" alt="VAIAVITA" width="150" style="display: block;">
             </td>
           </tr>
           
-          <!-- Order Card -->
+          <!-- Main Card -->
           <tr>
             <td>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(145deg, #ffffff 0%, #f9fdfb 100%); border-radius: 24px; box-shadow: 0 4px 24px rgba(2, 89, 81, 0.1); overflow: hidden;">
+                
+                <!-- Green Header Bar -->
                 <tr>
-                  <td style="padding: 24px;">
-                    
-                    <!-- Product -->
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-bottom: 1px solid #f0f0f0; padding-bottom: 20px; margin-bottom: 20px;">
+                  <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); padding: 32px; text-align: center;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                       <tr>
-                        <td width="60">
-                          <img src="{{product_image}}" alt="" width="52" height="52" style="border-radius: 12px; background: #f5f5f5;">
+                        <td style="width: 56px; height: 56px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center; vertical-align: middle;">
+                          <span style="color: #ffffff; font-size: 28px; line-height: 56px;">✓</span>
                         </td>
-                        <td style="padding-left: 14px; vertical-align: middle;">
-                          <span style="font-size: 14px; font-weight: 600; color: #111;">{{product_name}}</span><br>
-                          <span style="font-size: 13px; color: #999;">×{{quantity}}</span>
-                        </td>
-                        <td align="right" style="vertical-align: middle;">
-                          <span style="font-size: 15px; font-weight: 600; color: #111;">{{product_price}} lei</span>
+                      </tr>
+                    </table>
+                    <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 16px 0 4px 0;">Comandă confirmată!</h1>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0;">Mulțumim că ai ales VAIAVITA</p>
+                  </td>
+                </tr>
+                
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 28px;">
+                    
+                    <!-- Greeting -->
+                    <p style="font-size: 15px; color: #333; margin: 0 0 24px 0; line-height: 1.5;">
+                      Salut <strong style="color: #025951;">{{customer_name}}</strong>,<br>
+                      Am primit comanda ta și o procesăm cu grijă.
+                    </p>
+                    
+                    <!-- Order Number Box -->
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #f0f9f7 0%, #e5f5f2 100%); border-radius: 14px; margin-bottom: 24px;">
+                      <tr>
+                        <td style="padding: 18px 20px;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td>
+                                <span style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Număr comandă</span><br>
+                                <strong style="font-size: 20px; color: #025951;">#{{order_number}}</strong>
+                              </td>
+                              <td align="right">
+                                <span style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">Data</span><br>
+                                <span style="font-size: 14px; color: #333;">{{order_date}}</span>
+                              </td>
+                            </tr>
+                          </table>
                         </td>
                       </tr>
                     </table>
                     
-                    <!-- Summary -->
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <!-- Products Section -->
+                    <p style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px 0;">Produse comandate</p>
+                    
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8faf9; border-radius: 14px; margin-bottom: 20px;">
                       <tr>
-                        <td style="font-size: 14px; color: #888; padding: 4px 0;">Livrare</td>
-                        <td align="right" style="font-size: 14px; color: #333; padding: 4px 0;">{{shipping_cost}}</td>
+                        <td style="padding: 16px;">
+                          
+                          <!-- Product Row - repeat for each -->
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td width="56" style="vertical-align: top;">
+                                <img src="{{product_image}}" alt="" width="48" height="48" style="border-radius: 10px; background: #fff; border: 1px solid #eee;">
+                              </td>
+                              <td style="padding-left: 14px; vertical-align: middle;">
+                                <span style="font-size: 14px; font-weight: 600; color: #222; display: block; line-height: 1.3;">{{product_name}}</span>
+                                <span style="font-size: 12px; color: #888;">Cantitate: {{quantity}}</span>
+                              </td>
+                              <td align="right" style="vertical-align: middle;">
+                                <span style="font-size: 15px; font-weight: 700; color: #025951;">{{product_price}} lei</span>
+                              </td>
+                            </tr>
+                          </table>
+                          <!-- End Product Row -->
+                          
+                        </td>
+                      </tr>
+                    </table>
+                    
+                    <!-- Order Summary -->
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top: 1px dashed #ddd; padding-top: 16px; margin-bottom: 24px;">
+                      <tr>
+                        <td style="font-size: 14px; color: #666; padding: 6px 0;">Subtotal</td>
+                        <td align="right" style="font-size: 14px; color: #333; padding: 6px 0;">{{subtotal}} lei</td>
                       </tr>
                       <tr>
-                        <td colspan="2" style="padding: 16px 0;">
+                        <td style="font-size: 14px; color: #666; padding: 6px 0;">Livrare ({{delivery_method_short}})</td>
+                        <td align="right" style="font-size: 14px; color: #333; padding: 6px 0;">{{shipping_cost}}</td>
+                      </tr>
+                      <!-- Discount row if applicable -->
+                      <tr>
+                        <td style="font-size: 14px; color: #16a34a; padding: 6px 0;">Discount ({{coupon_code}})</td>
+                        <td align="right" style="font-size: 14px; color: #16a34a; padding: 6px 0;">-{{discount}} lei</td>
+                      </tr>
+                      <!-- End discount -->
+                      <tr>
+                        <td colspan="2" style="padding: 8px 0;">
                           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                            <tr><td style="border-top: 1px solid #f0f0f0;"></td></tr>
+                            <tr><td style="border-top: 2px solid #025951;"></td></tr>
                           </table>
                         </td>
                       </tr>
                       <tr>
-                        <td style="font-size: 16px; font-weight: 700; color: #111;">Total</td>
-                        <td align="right" style="font-size: 18px; font-weight: 700; color: #025951;">{{total}} lei</td>
+                        <td style="font-size: 18px; font-weight: 700; color: #111; padding: 6px 0;">Total de plată</td>
+                        <td align="right" style="font-size: 20px; font-weight: 700; color: #025951; padding: 6px 0;">{{total}} lei</td>
+                      </tr>
+                    </table>
+                    
+                    <!-- Info Grid -->
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td width="48%" style="vertical-align: top;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8faf9; border-radius: 12px; border: 1px solid #e8f0ee;">
+                            <tr>
+                              <td style="padding: 16px;">
+                                <span style="font-size: 18px; display: block; margin-bottom: 6px;">📦</span>
+                                <span style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px;">Livrare</span>
+                                <p style="font-size: 13px; color: #333; margin: 6px 0 0 0; line-height: 1.4;">{{delivery_method}}</p>
+                                <p style="font-size: 12px; color: #666; margin: 4px 0 0 0; line-height: 1.4;">{{delivery_address}}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td width="4%"></td>
+                        <td width="48%" style="vertical-align: top;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8faf9; border-radius: 12px; border: 1px solid #e8f0ee;">
+                            <tr>
+                              <td style="padding: 16px;">
+                                <span style="font-size: 18px; display: block; margin-bottom: 6px;">💳</span>
+                                <span style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px;">Plată</span>
+                                <p style="font-size: 13px; color: #333; margin: 6px 0 0 0;">{{payment_method}}</p>
+                                <p style="font-size: 12px; color: #16a34a; font-weight: 600; margin: 4px 0 0 0;">{{payment_status}}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                    
+                    <!-- Contact Info -->
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8faf9; border-radius: 12px; border: 1px solid #e8f0ee; margin-top: 12px;">
+                      <tr>
+                        <td style="padding: 16px;">
+                          <span style="font-size: 18px; display: inline; margin-right: 8px;">👤</span>
+                          <span style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px;">Date contact</span>
+                          <p style="font-size: 13px; color: #333; margin: 8px 0 0 0; line-height: 1.5;">
+                            {{customer_name}}<br>
+                            {{customer_email}}<br>
+                            {{customer_phone}}
+                          </p>
+                        </td>
                       </tr>
                     </table>
                     
                   </td>
                 </tr>
-              </table>
-            </td>
-          </tr>
-          
-          <!-- Delivery Info -->
-          <tr>
-            <td style="padding-top: 16px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+                
+                <!-- CTA -->
                 <tr>
-                  <td style="padding: 20px 24px;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td width="50%">
-                          <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px;">Livrare</span>
-                          <p style="margin: 6px 0 0 0; font-size: 13px; color: #333; line-height: 1.4;">{{delivery_method}}</p>
-                        </td>
-                        <td width="50%">
-                          <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px;">Plată</span>
-                          <p style="margin: 6px 0 0 0; font-size: 13px; color: #025951; font-weight: 500;">{{payment_status}}</p>
-                        </td>
-                      </tr>
-                    </table>
+                  <td align="center" style="padding: 0 28px 28px 28px;">
+                    <a href="mailto:office@vaiavita.com" style="display: inline-block; width: 100%; padding: 16px 0; background: linear-gradient(135deg, #025951 0%, #038578 100%); color: #ffffff; text-decoration: none; border-radius: 12px; font-size: 15px; font-weight: 600; text-align: center; box-sizing: border-box;">
+                      Ai întrebări? Scrie-ne
+                    </a>
                   </td>
                 </tr>
+                
               </table>
-            </td>
-          </tr>
-          
-          <!-- CTA -->
-          <tr>
-            <td align="center" style="padding: 32px 0;">
-              <a href="mailto:office@vaiavita.com" style="display: inline-block; padding: 14px 32px; background-color: #025951; color: #ffffff; text-decoration: none; border-radius: 100px; font-size: 14px; font-weight: 600;">
-                Contactează-ne
-              </a>
             </td>
           </tr>
           
           <!-- Footer -->
           <tr>
-            <td align="center">
-              <p style="margin: 0; font-size: 12px; color: #999;">
-                <a href="https://vaiavita.ro" style="color: #666; text-decoration: none;">vaiavita.ro</a>
-              </p>
-              <p style="margin: 8px 0 0 0; font-size: 11px; color: #bbb;">© 2024 VAIAVITA S.R.L.</p>
+            <td align="center" style="padding: 28px 0;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 16px;">
+                <tr>
+                  <td><a href="https://vaiavita.ro" style="color: #025951; font-size: 12px; text-decoration: none; padding: 0 10px;">Website</a></td>
+                  <td style="color: #ccc;">•</td>
+                  <td><a href="https://vaiavita.ro/produse" style="color: #025951; font-size: 12px; text-decoration: none; padding: 0 10px;">Produse</a></td>
+                  <td style="color: #ccc;">•</td>
+                  <td><a href="https://vaiavita.ro/contact" style="color: #025951; font-size: 12px; text-decoration: none; padding: 0 10px;">Contact</a></td>
+                </tr>
+              </table>
+              <p style="font-size: 11px; color: #888; margin: 0;">VAIAVITA S.R.L. | CUI 49945945 | J8/1310/2024</p>
+              <p style="font-size: 11px; color: #aaa; margin: 6px 0 0 0;">© 2024 VAIAVITA. Toate drepturile rezervate.</p>
             </td>
           </tr>
           
