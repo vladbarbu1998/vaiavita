@@ -348,14 +348,25 @@ const AdminOrders = () => {
     return statusEmailMap[status] || null;
   };
 
+  const getOrderEmailLanguage = (order: Order): 'ro' | 'en' => {
+    const shippingAddress = order.shipping_address as any;
+    const countryCode = shippingAddress?.countryCode || 'RO';
+    // Send emails in English for all countries except Romania
+    return countryCode === 'RO' ? 'ro' : 'en';
+  };
+
   const sendOrderEmail = async (orderId: string, emailType: string, options?: { awbNumber?: string; courierName?: string; cancellationReason?: string }) => {
     setSendingEmail(orderId);
     try {
+      // Find the order to determine language
+      const order = orders.find(o => o.id === orderId);
+      const language = order ? getOrderEmailLanguage(order) : 'ro';
+
       const { data, error } = await supabase.functions.invoke('send-order-email', {
         body: {
           orderId,
           emailType,
-          language: 'ro',
+          language,
           ...options,
         },
       });
