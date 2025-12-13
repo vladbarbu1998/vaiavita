@@ -40,6 +40,12 @@ interface OrderData {
   }>;
 }
 
+interface EcoletService {
+  slug: string;
+  name: string;
+  courier_slug: string;
+}
+
 // Get OAuth token using password authentication
 async function getEcoletToken(): Promise<string> {
   const clientId = Deno.env.get('ECOLET_CLIENT_ID');
@@ -80,10 +86,41 @@ async function getEcoletToken(): Promise<string> {
   return tokenData.access_token;
 }
 
+// Get available services from Ecolet
+async function getEcoletServices(token: string): Promise<EcoletService[]> {
+  console.log('Fetching available Ecolet services...');
+  
+  const response = await fetch('https://panel.ecolet.ro/api/v1/services', {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'Accept-Language': 'ro',
+    },
+  });
+
+  if (!response.ok) {
+    console.error('Failed to fetch services:', response.status);
+    return [];
+  }
+
+  const data = await response.json();
+  console.log('Available services:', JSON.stringify(data, null, 2));
+  
+  return data.services || [];
+}
+
 // Search for locality ID by name
 async function getLocalityId(token: string, localityName: string, county?: string): Promise<number | null> {
+  if (!localityName || localityName.trim().length < 2) {
+    console.log('Locality name too short, skipping search');
+    return null;
+  }
+
   try {
-    const searchQuery = encodeURIComponent(localityName);
+    const searchQuery = encodeURIComponent(localityName.trim());
+    console.log('Searching for locality:', localityName, 'county:', county);
+    
     const response = await fetch(`https://panel.ecolet.ro/api/v1/locations/RO/localities/${searchQuery}`, {
       method: 'GET',
       headers: {
@@ -99,17 +136,17 @@ async function getLocalityId(token: string, localityName: string, county?: strin
     }
 
     const data = await response.json();
-    console.log('Locality search results for', localityName, ':', JSON.stringify(data, null, 2));
+    console.log('Locality search results:', JSON.stringify(data, null, 2));
 
-    // API returns { localities: [...] } not { data: [...] }
-    const localities = data.localities || data.data || [];
+    // API returns { localities: [...] }
+    const localities = data.localities || [];
     
     if (localities && localities.length > 0) {
       // Try to find exact match with county if provided
       if (county) {
-        const normalizedCounty = county.toLowerCase().replace(/ș/g, 's').replace(/ț/g, 't').replace(/ă/g, 'a').replace(/â/g, 'a').replace(/î/g, 'i');
+        const normalizedCounty = normalizeRomanianText(county);
         const match = localities.find((loc: any) => {
-          const locCounty = (loc.county?.name || '').toLowerCase().replace(/ș/g, 's').replace(/ț/g, 't').replace(/ă/g, 'a').replace(/â/g, 'a').replace(/î/g, 'i');
+          const locCounty = normalizeRomanianText(loc.county?.name || '');
           return locCounty.includes(normalizedCounty) || normalizedCounty.includes(locCounty);
         });
         if (match) {
@@ -122,6 +159,7 @@ async function getLocalityId(token: string, localityName: string, county?: strin
       return localities[0].id;
     }
 
+    console.log('No locality found for:', localityName);
     return null;
   } catch (error) {
     console.error('Error searching locality:', error);
@@ -129,7 +167,19 @@ async function getLocalityId(token: string, localityName: string, county?: strin
   }
 }
 
-// Get sender address from address book or settings
+// Normalize Romanian text for comparison
+function normalizeRomanianText(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/ș/g, 's')
+    .replace(/ț/g, 't')
+    .replace(/ă/g, 'a')
+    .replace(/â/g, 'a')
+    .replace(/î/g, 'i')
+    .trim();
+}
+
+// Get sender address from address book
 async function getSenderAddress(token: string): Promise<any> {
   console.log('Fetching sender address from Ecolet...');
   
@@ -150,11 +200,13 @@ async function getSenderAddress(token: string): Promise<any> {
   }
 
   const data = await response.json();
-  console.log('Address book data:', JSON.stringify(data, null, 2));
+  console.log('Address book entries:', data.data?.length || 0);
   
-  // Return the first address or a default one
+  // Return the first address
   if (data.data && data.data.length > 0) {
-    return data.data[0];
+    const sender = data.data[0];
+    console.log('Using sender:', sender.name, 'locality_id:', sender.locality_id);
+    return sender;
   }
   
   // Default sender info for VAIAVITA
@@ -163,7 +215,7 @@ async function getSenderAddress(token: string): Promise<any> {
     country: 'ro',
     county: 'Brasov',
     locality: 'Brasov',
-    locality_id: 1578, // Brasov locality ID
+    locality_id: 1578,
     postal_code: '500001',
     street_name: 'N/A',
     street_number: 'N/A',
@@ -175,63 +227,101 @@ async function getSenderAddress(token: string): Promise<any> {
 
 // Clean phone number to only contain digits (5-15 digits required)
 function cleanPhoneNumber(phone: string): string {
-  // Remove all non-digit characters
   const digits = phone.replace(/\D/g, '');
-  // Ensure it's between 5 and 15 digits
-  if (digits.length < 5) {
-    return '0700000000'; // Default fallback
-  }
-  if (digits.length > 15) {
-    return digits.substring(0, 15);
-  }
+  if (digits.length < 5) return '0700000000';
+  if (digits.length > 15) return digits.substring(0, 15);
   return digits;
 }
 
 // Clean block field (max 10 characters)
 function cleanBlock(block: string | null | undefined): string {
-  if (!block) return '';
-  // Truncate to 10 characters max
+  if (!block || block === '-') return '';
   return block.substring(0, 10);
 }
 
+// Select appropriate service based on delivery method
+function selectService(services: EcoletService[], deliveryMethod: string): string | null {
+  if (!services || services.length === 0) {
+    console.log('No services available');
+    return null;
+  }
+
+  console.log('Selecting service for delivery method:', deliveryMethod);
+  console.log('Available services:', services.map(s => s.slug).join(', '));
+
+  // Priority order for courier services (for standard shipping)
+  const courierPriority = ['fan_courier_standard', 'dpd_standard', 'gls_standard', 'cargus_standard'];
+  
+  // For locker delivery, prefer locker-specific services
+  const lockerPriority = ['fan_courier_locker', 'sameday_locker', 'dpd_locker'];
+
+  let priorityList = deliveryMethod === 'locker' ? lockerPriority : courierPriority;
+
+  // Try to find a service from priority list
+  for (const slug of priorityList) {
+    const service = services.find(s => s.slug === slug);
+    if (service) {
+      console.log('Selected service:', service.slug);
+      return service.slug;
+    }
+  }
+
+  // Fallback to first available service
+  const firstService = services[0];
+  console.log('Fallback to first service:', firstService.slug);
+  return firstService.slug;
+}
+
 // Create parcel order in Ecolet
-async function createEcoletParcel(token: string, orderData: OrderData, senderAddress: any): Promise<any> {
-  console.log('Creating Ecolet parcel for order:', orderData.orderNumber);
+async function createEcoletParcel(token: string, orderData: OrderData, senderAddress: any, services: EcoletService[]): Promise<any> {
+  console.log('=== Creating Ecolet Parcel ===');
+  console.log('Order:', orderData.orderNumber);
+  console.log('Delivery Method:', orderData.deliveryMethod);
+  console.log('Payment Method:', orderData.paymentMethod);
 
   // Build content description from order items
   const contentDescription = orderData.items
     .map(item => `${item.quantity}x ${item.productName}`)
     .join(', ')
-    .substring(0, 100); // Limit to 100 chars
+    .substring(0, 100);
 
-  // Determine COD amount (0 for card payment, total for cash on delivery)
-  const codAmount = orderData.paymentMethod === 'cash_on_delivery' ? orderData.total : 0;
-  const hasCod = codAmount > 0;
+  // Determine COD - must be boolean for status
+  const hasCod = orderData.paymentMethod === 'cash_on_delivery';
+  const codAmount = hasCod ? Math.round(orderData.total * 100) / 100 : 0;
+
+  console.log('COD:', hasCod, 'Amount:', codAmount);
 
   // Check if this is a locker delivery
   const isLockerDelivery = orderData.deliveryMethod === 'locker' && orderData.lockerId;
 
-  // Map country code to lowercase for Ecolet API
-  const receiverCountry = orderData.shippingAddress?.countryCode?.toLowerCase() || 'ro';
+  // Get receiver locality ID
+  let receiverLocalityId: number | null = null;
+  if (!isLockerDelivery && orderData.shippingAddress?.city) {
+    receiverLocalityId = await getLocalityId(
+      token, 
+      orderData.shippingAddress.city, 
+      orderData.shippingAddress.county
+    );
+  }
 
-  // Get locality IDs
-  const senderLocalityId = senderAddress.locality_id || await getLocalityId(token, senderAddress.locality || 'Brasov', senderAddress.county);
-  const receiverLocalityId = await getLocalityId(token, orderData.shippingAddress?.city || '', orderData.shippingAddress?.county);
+  // Select courier service
+  const courierService = selectService(services, orderData.deliveryMethod);
+  if (!courierService) {
+    throw new Error('No courier service available');
+  }
 
-  console.log('Sender locality ID:', senderLocalityId);
-  console.log('Receiver locality ID:', receiverLocalityId);
-
-  let parcelData: any = {
+  // Build parcel data according to Ecolet API schema
+  const parcelData: any = {
     sender: {
       name: senderAddress.name || 'VAIAVITA S.R.L.',
       country: senderAddress.country || 'ro',
       county: senderAddress.county || 'Brasov',
       locality: senderAddress.locality || 'Brasov',
-      locality_id: senderLocalityId,
+      locality_id: senderAddress.locality_id,
       postal_code: senderAddress.postal_code || '500001',
       street_name: senderAddress.street_name || 'N/A',
-      street_number: senderAddress.street_number || 'N/A',
-      block: cleanBlock(senderAddress.block) || '',
+      street_number: senderAddress.street_number || '1',
+      block: cleanBlock(senderAddress.block),
       entrance: senderAddress.entrance || '',
       floor: senderAddress.floor || '',
       flat: senderAddress.flat || '',
@@ -240,60 +330,68 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
       phone: cleanPhoneNumber(senderAddress.phone || '0742661831'),
     },
     parcel: {
-      type: 'package',
+      type: 'package', // enum: package, envelope, pallet
       amount: 1,
-      weight: 1, // Default weight in kg
+      weight: 1,
       dimensions: {
-        length: 20, // Default dimensions in cm
+        length: 20,
         width: 15,
         height: 10,
       },
+      shape: 'standard', // enum: standard, nonstandard
       content: contentDescription || 'Produse cosmetice',
       observations: `Comanda ${orderData.orderNumber}`,
     },
     additional_services: {
       cod: {
-        status: hasCod, // Boolean true/false
-        amount: hasCod ? codAmount : undefined,
+        status: hasCod, // MUST be boolean true/false
+        ...(hasCod && { amount: codAmount }),
       },
+    },
+    courier: {
+      service: courierService, // e.g., "fan_courier_standard"
     },
   };
 
+  // Add receiver data
   if (isLockerDelivery) {
-    // Locker delivery - set the locker point ID
-    console.log('Creating locker delivery for locker ID:', orderData.lockerId);
+    console.log('Setting up locker delivery for locker ID:', orderData.lockerId);
     parcelData.receiver = {
-      name: `${orderData.customerFirstName} ${orderData.customerLastName}`,
+      name: `${orderData.customerFirstName} ${orderData.customerLastName}`.substring(0, 60),
       country: 'ro',
-      contact_person: `${orderData.customerFirstName} ${orderData.customerLastName}`,
+      contact_person: `${orderData.customerFirstName} ${orderData.customerLastName}`.substring(0, 60),
       email: orderData.customerEmail,
       phone: cleanPhoneNumber(orderData.customerPhone),
-      map_point_id: parseInt(orderData.lockerId || '0', 10), // This is the key for locker delivery
+      has_map_point: true,
+      map_point_id: parseInt(orderData.lockerId || '0', 10),
     };
   } else {
     // Standard shipping/postal delivery
+    const receiverCountry = orderData.shippingAddress?.countryCode?.toLowerCase() || 'ro';
+    
     parcelData.receiver = {
-      name: `${orderData.customerFirstName} ${orderData.customerLastName}`,
+      name: `${orderData.customerFirstName} ${orderData.customerLastName}`.substring(0, 60),
       country: receiverCountry,
       county: orderData.shippingAddress?.county || '',
       locality: orderData.shippingAddress?.city || '',
       locality_id: receiverLocalityId,
       postal_code: orderData.shippingAddress?.postalCode || '',
-      street_name: orderData.shippingAddress?.address || 'N/A',
-      street_number: 'N/A',
-      block: cleanBlock(orderData.shippingAddress?.addressLine2) || '',
+      street_name: (orderData.shippingAddress?.address || 'N/A').substring(0, 50),
+      street_number: '1',
+      block: cleanBlock(orderData.shippingAddress?.addressLine2),
       entrance: '',
       floor: '',
       flat: '',
-      contact_person: `${orderData.customerFirstName} ${orderData.customerLastName}`,
+      contact_person: `${orderData.customerFirstName} ${orderData.customerLastName}`.substring(0, 60),
       email: orderData.customerEmail,
       phone: cleanPhoneNumber(orderData.customerPhone),
     };
   }
 
-  console.log('Parcel data:', JSON.stringify(parcelData, null, 2));
+  console.log('Final parcel data:', JSON.stringify(parcelData, null, 2));
 
-  // First, validate the parcel and get available services
+  // First, validate the parcel with reload-form
+  console.log('Validating parcel with reload-form...');
   const reloadResponse = await fetch('https://panel.ecolet.ro/api/v1/add-parcel/reload-form', {
     method: 'POST',
     headers: {
@@ -305,16 +403,30 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
     body: JSON.stringify(parcelData),
   });
 
+  const reloadText = await reloadResponse.text();
+  console.log('Reload-form response status:', reloadResponse.status);
+  
   if (!reloadResponse.ok) {
-    const errorText = await reloadResponse.text();
-    console.error('Ecolet reload-form error:', reloadResponse.status, errorText);
-    // Continue anyway, we'll try to save the order
+    console.error('Reload-form validation error:', reloadText);
+    // Try to parse and log specific errors
+    try {
+      const errorData = JSON.parse(reloadText);
+      console.error('Validation errors:', JSON.stringify(errorData.errors, null, 2));
+    } catch (e) {
+      // Not JSON, just log as is
+    }
   } else {
-    const reloadData = await reloadResponse.json();
-    console.log('Reload form response:', JSON.stringify(reloadData, null, 2));
+    console.log('Reload-form validation passed');
+    try {
+      const reloadData = JSON.parse(reloadText);
+      console.log('Available statuses:', Object.keys(reloadData.form?.statuses || {}));
+    } catch (e) {
+      // Not JSON
+    }
   }
 
-  // Save the parcel in "orders to send" tab (for manual sending later)
+  // Save the parcel in "orders to send" tab
+  console.log('Saving parcel to orders-to-send...');
   const saveResponse = await fetch('https://panel.ecolet.ro/api/v1/add-parcel/save-order-to-send', {
     method: 'POST',
     headers: {
@@ -326,14 +438,23 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
     body: JSON.stringify(parcelData),
   });
 
+  const saveText = await saveResponse.text();
+  console.log('Save-order-to-send response status:', saveResponse.status);
+
   if (!saveResponse.ok) {
-    const errorText = await saveResponse.text();
-    console.error('Ecolet save-order error:', saveResponse.status, errorText);
-    throw new Error(`Failed to create Ecolet parcel: ${saveResponse.status} - ${errorText}`);
+    console.error('Save-order error:', saveText);
+    throw new Error(`Failed to create Ecolet parcel: ${saveResponse.status} - ${saveText}`);
   }
 
-  const saveData = await saveResponse.json();
-  console.log('Ecolet parcel created:', JSON.stringify(saveData, null, 2));
+  let saveData;
+  try {
+    saveData = JSON.parse(saveText);
+  } catch (e) {
+    saveData = { raw: saveText };
+  }
+  
+  console.log('=== Ecolet Parcel Created Successfully ===');
+  console.log('Response:', JSON.stringify(saveData, null, 2));
   
   return saveData;
 }
@@ -345,21 +466,30 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, orderNumber, customerFirstName, customerLastName, customerEmail, 
-            customerPhone, deliveryMethod, shippingAddress, total, paymentMethod, items } = await req.json();
+    const requestData = await req.json();
+    const { 
+      orderId, orderNumber, customerFirstName, customerLastName, customerEmail, 
+      customerPhone, deliveryMethod, shippingAddress, lockerId, lockerName,
+      lockerAddress, total, paymentMethod, items 
+    } = requestData;
 
-    console.log('=== Ecolet Integration Started ===');
+    console.log('========================================');
+    console.log('=== ECOLET INTEGRATION STARTED ===');
+    console.log('========================================');
     console.log('Order ID:', orderId);
     console.log('Order Number:', orderNumber);
     console.log('Delivery Method:', deliveryMethod);
+    console.log('Payment Method:', paymentMethod);
+    console.log('Total:', total);
+    console.log('Shipping Address:', JSON.stringify(shippingAddress, null, 2));
 
-    // Only process shipping and postal orders (not pickup or locker for now)
-    if (deliveryMethod !== 'shipping' && deliveryMethod !== 'postal') {
-      console.log('Skipping Ecolet integration - delivery method is not shipping/postal');
+    // Only process shipping and postal orders (not pickup)
+    if (deliveryMethod === 'pickup') {
+      console.log('Skipping Ecolet - pickup order');
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: 'Order does not require Ecolet integration',
+          message: 'Pickup orders do not require Ecolet integration',
           skipped: true 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -368,6 +498,9 @@ serve(async (req) => {
 
     // Get Ecolet access token
     const token = await getEcoletToken();
+    
+    // Get available services
+    const services = await getEcoletServices(token);
     
     // Get sender address
     const senderAddress = await getSenderAddress(token);
@@ -382,36 +515,42 @@ serve(async (req) => {
       customerPhone,
       deliveryMethod,
       shippingAddress,
+      lockerId,
+      lockerName,
+      lockerAddress,
       total,
       paymentMethod,
       items,
     };
     
-    const ecoletResult = await createEcoletParcel(token, orderData, senderAddress);
+    const ecoletResult = await createEcoletParcel(token, orderData, senderAddress, services);
 
-    console.log('=== Ecolet Integration Completed ===');
+    console.log('========================================');
+    console.log('=== ECOLET INTEGRATION COMPLETED ===');
+    console.log('========================================');
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'Parcel created in Ecolet',
-        ecoletOrderId: ecoletResult.order_to_send_id 
+        ecoletOrderId: ecoletResult.order_to_send_id || ecoletResult.id
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Ecolet integration error:', error);
+    console.error('========================================');
+    console.error('=== ECOLET INTEGRATION ERROR ===');
+    console.error('========================================');
+    console.error('Error:', error);
     
-    // Return success anyway to not block the checkout
-    // The order is already created, Ecolet sync can be retried later
     return new Response(
       JSON.stringify({ 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error',
-        message: 'Ecolet sync failed but order was created successfully'
+        message: 'Ecolet sync failed'
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });
