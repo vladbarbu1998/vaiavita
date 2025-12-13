@@ -946,26 +946,6 @@ const AdminProducts = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Descriere card <span className="text-muted-foreground font-normal">(afișată pe carduri)</span></Label>
-                  <span className={`text-xs ${(form.card_description_ro?.length || 0) > 72 ? 'text-amber-500' : 'text-muted-foreground'}`}>
-                    {form.card_description_ro?.length || 0}/72 caractere
-                  </span>
-                </div>
-                <Textarea
-                  value={form.card_description_ro}
-                  onChange={(e) => setForm({ ...form, card_description_ro: e.target.value })}
-                  rows={2}
-                  placeholder="Descriere scurtă pentru carduri (max 72 caractere recomandat)..."
-                  maxLength={150}
-                />
-                {(form.card_description_ro?.length || 0) > 72 && (
-                  <p className="text-xs text-destructive">
-                    ⚠️ Textul depășește 72 de caractere
-                  </p>
-                )}
-              </div>
 
               <div className="space-y-2">
                 <Label>Descriere scurtă <span className="text-muted-foreground font-normal">(afișată pe pagina produsului sub titlu)</span></Label>
@@ -1008,26 +988,6 @@ const AdminProducts = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Card description (EN)</Label>
-                  <span className={`text-xs ${(form.card_description_en?.length || 0) > 72 ? 'text-amber-500' : 'text-muted-foreground'}`}>
-                    {form.card_description_en?.length || 0}/72 caractere
-                  </span>
-                </div>
-                <Textarea
-                  value={form.card_description_en}
-                  onChange={(e) => setForm({ ...form, card_description_en: e.target.value })}
-                  rows={2}
-                  placeholder="Lasă gol pentru traducere automată (max 72 caractere recomandat)..."
-                  maxLength={150}
-                />
-                {(form.card_description_en?.length || 0) > 72 && (
-                  <p className="text-xs text-amber-500">
-                    ⚠️ Text will be truncated on cards after 72 characters
-                  </p>
-                )}
-              </div>
 
               <div className="space-y-2">
                 <Label>Short description (EN)</Label>
