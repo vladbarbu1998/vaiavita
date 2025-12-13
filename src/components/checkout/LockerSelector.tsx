@@ -168,7 +168,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         });
       }
 
-      // Filter by county
+      // Filter by county (only as initial filter, will be refined by map bounds)
       if (selectedCounty) {
         filtered = filtered.filter(locker => 
           locker.county?.toLowerCase().includes(selectedCounty.toLowerCase())
@@ -186,8 +186,8 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         );
       }
 
-      // Filter by map bounds when zoomed in (no county/search)
-      if (mapBounds && currentZoom >= MIN_ZOOM_FOR_LOCKERS && !selectedCounty && !searchQuery.trim()) {
+      // Filter by map bounds when zoomed in (always apply, even with county selected)
+      if (mapBounds && currentZoom >= MIN_ZOOM_FOR_LOCKERS) {
         const [[south, west], [north, east]] = mapBounds;
         filtered = filtered.filter(locker =>
           locker.lat >= south && locker.lat <= north &&
