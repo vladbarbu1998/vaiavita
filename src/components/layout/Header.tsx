@@ -15,6 +15,7 @@ import { useCurrency, currencies } from '@/context/CurrencyContext';
 import logoDark from '@/assets/logo-dark.png';
 import logoLight from '@/assets/logo-light.png';
 import logoLightNew from '@/assets/logo-light-new.png';
+import logoLightChristmas from '@/assets/logo-light-christmas.png';
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,7 +38,7 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center transition-transform hover:scale-105">
             <img 
-              src={theme === 'dark' ? logoLight : logoLightNew} 
+              src={theme === 'dark' ? logoLight : logoLightChristmas} 
               alt="VAIAVITA" 
               className="h-11 w-auto"
             />
