@@ -288,16 +288,17 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl h-[85vh] flex flex-col p-0 gap-0">
-        <DialogHeader className="p-4 pb-2 border-b">
-          <DialogTitle>
+      <DialogContent className="max-w-5xl h-[90vh] md:h-[85vh] flex flex-col p-0 gap-0 w-[95vw] md:w-auto">
+        <DialogHeader className="p-3 md:p-4 pb-2 border-b">
+          <DialogTitle className="text-base md:text-lg">
             {language === 'ro' ? 'Selectează punctul de livrare' : 'Select delivery point'}
           </DialogTitle>
         </DialogHeader>
         
-        {/* Search and filter bar */}
-        <div className="p-4 border-b space-y-3">
-          <div className="flex gap-2 flex-wrap">
+        {/* Search and filter bar - Mobile optimized */}
+        <div className="p-3 md:p-4 border-b space-y-2 md:space-y-3">
+          {/* Row 1: City selector + Locate me */}
+          <div className="flex gap-2">
             {/* City dropdown */}
             <Popover open={cityOpen} onOpenChange={setCityOpen}>
               <PopoverTrigger asChild>
@@ -305,10 +306,12 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                   variant="outline" 
                   role="combobox" 
                   aria-expanded={cityOpen}
-                  className="w-[180px] justify-between"
+                  className="flex-1 justify-between text-xs md:text-sm"
                 >
-                  {selectedCity || (language === 'ro' ? 'Selectează oraș...' : 'Select city...')}
-                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  <span className="truncate">
+                    {selectedCity || (language === 'ro' ? 'Selectează oraș...' : 'Select city...')}
+                  </span>
+                  <ChevronDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[200px] p-0 z-[100]" align="start">
@@ -344,16 +347,34 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
               </PopoverContent>
             </Popover>
 
+            {/* Locate me button */}
+            <Button 
+              variant="outline" 
+              onClick={handleLocateMe}
+              disabled={locatingUser}
+              className="gap-1 md:gap-2 shrink-0 text-xs md:text-sm"
+            >
+              {locatingUser ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Crosshair className="h-4 w-4" />
+              )}
+              <span>{language === 'ro' ? 'Localizează-mă' : 'Locate me'}</span>
+            </Button>
+          </div>
+
+          {/* Row 2: Search + Filter */}
+          <div className="flex gap-2">
             {/* Search input */}
-            <div className="relative flex-1 min-w-[200px]">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={language === 'ro' 
-                  ? 'Caută după nume, adresă, cod poștal...' 
-                  : 'Search by name, address, postal code...'}
+                  ? 'Caută după nume, adresă...' 
+                  : 'Search by name, address...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 text-sm"
               />
             </div>
 
@@ -363,15 +384,15 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                 <Button 
                   variant="outline" 
                   size="icon"
-                  className={activeCouriers.length < COURIERS.length ? 'border-primary text-primary' : ''}
+                  className={`shrink-0 ${activeCouriers.length < COURIERS.length ? 'border-primary text-primary' : ''}`}
                 >
                   <Filter className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[280px] z-[100]" align="end">
-                <div className="space-y-4">
+              <PopoverContent className="w-[260px] md:w-[280px] z-[100]" align="end">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-medium">
+                    <h4 className="font-medium text-sm">
                       {language === 'ro' ? 'Filtrează punctele' : 'Filter points'}
                     </h4>
                     <Button 
@@ -389,27 +410,27 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                       <button
                         key={courier.id}
                         onClick={() => toggleCourier(courier.id)}
-                        className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-colors cursor-pointer ${
+                        className={`w-full flex items-center justify-between p-2.5 rounded-lg border-2 transition-colors cursor-pointer ${
                           activeCouriers.includes(courier.id) 
                             ? 'border-primary bg-primary/5' 
                             : 'border-border opacity-50'
                         }`}
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           <div 
                             className="w-3 h-3 rounded-full" 
                             style={{ backgroundColor: courier.color }}
                           />
-                          <span className="font-medium">{courier.name}</span>
+                          <span className="font-medium text-sm">{courier.name}</span>
                         </div>
                         <div 
-                          className={`w-10 h-6 rounded-full transition-colors relative ${
+                          className={`w-9 h-5 rounded-full transition-colors relative ${
                             activeCouriers.includes(courier.id) ? 'bg-primary' : 'bg-muted'
                           }`}
                         >
                           <div 
-                            className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                              activeCouriers.includes(courier.id) ? 'translate-x-5' : 'translate-x-1'
+                            className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                              activeCouriers.includes(courier.id) ? 'translate-x-4' : 'translate-x-0.5'
                             }`}
                           />
                         </div>
@@ -419,26 +440,9 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                 </div>
               </PopoverContent>
             </Popover>
-
-            {/* Locate me button - text version */}
-            <Button 
-              variant="outline" 
-              onClick={handleLocateMe}
-              disabled={locatingUser}
-              className="gap-2"
-            >
-              {locatingUser ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Crosshair className="h-4 w-4" />
-              )}
-              <span className="hidden sm:inline">
-                {language === 'ro' ? 'Localizează-mă' : 'Locate me'}
-              </span>
-            </Button>
           </div>
           
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-xs text-destructive">{error}</p>}
           
           <p className="text-xs text-muted-foreground">
             {loading 
@@ -448,115 +452,12 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
           </p>
         </div>
 
-        {/* Main content - split view */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Left - List */}
-          <div className="w-2/5 border-r overflow-y-auto">
-            {loading ? (
-              <div className="flex items-center justify-center h-full">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : filteredLockers.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
-                <Package className="h-12 w-12 mb-4 opacity-50" />
-                <p className="text-center">
-                  {language === 'ro' 
-                    ? 'Nu am găsit puncte de livrare. Încearcă altă căutare sau mută harta.' 
-                    : 'No delivery points found. Try another search or move the map.'}
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y">
-                {/* Show selected locker first if exists */}
-                {selectedLocker && (
-                  (() => {
-                    const courierInfo = getCourierInfo(selectedLocker.courier);
-                    return (
-                      <button
-                        key={`selected-${selectedLocker.id}`}
-                        onClick={() => handleSelectLocker(selectedLocker)}
-                        className="w-full p-3 text-left bg-primary/10 border-l-4 border-primary"
-                      >
-                        <div className="flex items-start gap-2">
-                          <div 
-                            className="w-2 h-2 rounded-full mt-2 shrink-0" 
-                            style={{ backgroundColor: courierInfo.color }}
-                          />
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-sm truncate">{selectedLocker.name}</p>
-                              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                            </div>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {selectedLocker.address}{selectedLocker.postal_code ? `, ${selectedLocker.postal_code}` : ''}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span 
-                                className="text-[10px] px-1.5 py-0.5 rounded font-medium text-white"
-                                style={{ backgroundColor: courierInfo.color }}
-                              >
-                                {courierInfo.name}
-                              </span>
-                              <span className="text-[10px] text-muted-foreground">{selectedLocker.city}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })()
-                )}
-                {filteredLockers.filter(l => l.id !== selectedLocker?.id).map((locker) => {
-                  const courierInfo = getCourierInfo(locker.courier);
-                  return (
-                    <button
-                      key={locker.id}
-                      onClick={() => handleSelectLocker(locker)}
-                      className={`w-full p-3 text-left hover:bg-accent/50 transition-colors ${
-                        selectedLocker?.id === locker.id ? 'bg-primary/10 border-l-4 border-primary' : ''
-                      }`}
-                    >
-                      <div className="flex items-start gap-2">
-                        <div 
-                          className="w-2 h-2 rounded-full mt-2 shrink-0" 
-                          style={{ backgroundColor: courierInfo.color }}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium text-sm truncate">{locker.name}</p>
-                            {selectedLocker?.id === locker.id && (
-                              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {locker.address}{locker.postal_code ? `, ${locker.postal_code}` : ''}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span 
-                              className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
-                              style={{ 
-                                backgroundColor: `${courierInfo.color}20`,
-                                color: courierInfo.color 
-                              }}
-                            >
-                              {courierInfo.name}
-                            </span>
-                            <span className="text-xs text-muted-foreground opacity-70">
-                              {locker.city}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Right - Map and selected locker details */}
-          <div className="w-3/5 flex flex-col">
+        {/* Main content - split view on desktop, stacked on mobile */}
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+          {/* Map - shows first on mobile, right side on desktop */}
+          <div className="h-[40%] md:h-auto md:w-3/5 md:order-2 flex flex-col border-b md:border-b-0 md:border-l">
             {/* Map */}
-            <div className="flex-1 relative bg-muted">
+            <div className="flex-1 relative bg-muted min-h-[200px]">
               <Suspense fallback={
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -573,16 +474,16 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
               </Suspense>
             </div>
 
-            {/* Selected locker details */}
+            {/* Selected locker details - only on desktop */}
             {selectedLocker && (
-              <div className="border-t p-4 bg-background space-y-3">
-                <div className="flex items-start justify-between gap-4">
+              <div className="hidden md:block border-t p-3 bg-background space-y-2">
+                <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h4 className="font-semibold">{selectedLocker.name}</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <h4 className="font-semibold text-sm">{selectedLocker.name}</h4>
+                    <p className="text-xs text-muted-foreground">
                       {selectedLocker.address}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {selectedLocker.postal_code} {selectedLocker.city}
                     </p>
                   </div>
@@ -597,36 +498,163 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                   </div>
                 </div>
 
-                {/* Schedule */}
-                <div className="flex items-start gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-muted-foreground mt-0.5" />
+                {/* Schedule - show note that schedules vary */}
+                <div className="flex items-start gap-2 text-xs">
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
                   <div className="text-muted-foreground">
-                    <p>{language === 'ro' ? 'Luni-Vineri' : 'Mon-Fri'}: {selectedLocker.schedule?.weekdays || '08:00 - 21:00'}</p>
-                    <p>{language === 'ro' ? 'Sâmbătă' : 'Sat'}: {selectedLocker.schedule?.saturday || '09:00 - 18:00'}</p>
-                    <p>{language === 'ro' ? 'Duminică' : 'Sun'}: {selectedLocker.schedule?.sunday || '10:00 - 16:00'}</p>
+                    <p className="italic">{language === 'ro' ? 'Program standard (poate varia):' : 'Standard hours (may vary):'}</p>
+                    <p>{language === 'ro' ? 'Luni-Vineri' : 'Mon-Fri'}: 08:00 - 21:00</p>
+                    <p>{language === 'ro' ? 'Sâmbătă' : 'Sat'}: 09:00 - 18:00</p>
+                    <p>{language === 'ro' ? 'Duminică' : 'Sun'}: 10:00 - 16:00</p>
                   </div>
                 </div>
               </div>
             )}
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t flex justify-between items-center bg-background">
-          <div className="text-sm text-muted-foreground">
-            {selectedLocker && (
-              <span>
-                <strong>{language === 'ro' ? 'Selectat:' : 'Selected:'}</strong> {selectedLocker.name}
-              </span>
+          {/* List - shows second on mobile, left side on desktop */}
+          <div className="flex-1 md:w-2/5 md:order-1 overflow-y-auto">
+            {loading ? (
+              <div className="flex items-center justify-center h-full py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : filteredLockers.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
+                <Package className="h-10 w-10 mb-3 opacity-50" />
+                <p className="text-center text-sm">
+                  {language === 'ro' 
+                    ? 'Nu am găsit puncte de livrare. Încearcă altă căutare sau mută harta.' 
+                    : 'No delivery points found. Try another search or move the map.'}
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y">
+                {/* Show selected locker first if exists */}
+                {selectedLocker && (
+                  (() => {
+                    const courierInfo = getCourierInfo(selectedLocker.courier);
+                    return (
+                      <button
+                        key={`selected-${selectedLocker.id}`}
+                        onClick={() => handleSelectLocker(selectedLocker)}
+                        className="w-full p-2.5 md:p-3 text-left bg-primary/10 border-l-4 border-primary"
+                      >
+                        <div className="flex items-start gap-2">
+                          <div 
+                            className="w-2 h-2 rounded-full mt-1.5 shrink-0" 
+                            style={{ backgroundColor: courierInfo.color }}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-xs md:text-sm truncate">{selectedLocker.name}</p>
+                              <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                            </div>
+                            <p className="text-[11px] md:text-xs text-muted-foreground truncate">
+                              {selectedLocker.address}{selectedLocker.postal_code ? `, ${selectedLocker.postal_code}` : ''}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span 
+                                className="text-[9px] md:text-[10px] px-1.5 py-0.5 rounded font-medium text-white"
+                                style={{ backgroundColor: courierInfo.color }}
+                              >
+                                {courierInfo.name}
+                              </span>
+                              <span className="text-[9px] md:text-[10px] text-muted-foreground">{selectedLocker.city}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })()
+                )}
+                {filteredLockers.filter(l => l.id !== selectedLocker?.id).map((locker) => {
+                  const courierInfo = getCourierInfo(locker.courier);
+                  return (
+                    <button
+                      key={locker.id}
+                      onClick={() => handleSelectLocker(locker)}
+                      className={`w-full p-2.5 md:p-3 text-left hover:bg-accent/50 transition-colors ${
+                        selectedLocker?.id === locker.id ? 'bg-primary/10 border-l-4 border-primary' : ''
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div 
+                          className="w-2 h-2 rounded-full mt-1.5 shrink-0" 
+                          style={{ backgroundColor: courierInfo.color }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-xs md:text-sm truncate">{locker.name}</p>
+                            {selectedLocker?.id === locker.id && (
+                              <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-[11px] md:text-xs text-muted-foreground truncate">
+                            {locker.address}{locker.postal_code ? `, ${locker.postal_code}` : ''}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span 
+                              className="text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                              style={{ 
+                                backgroundColor: `${courierInfo.color}20`,
+                                color: courierInfo.color 
+                              }}
+                            >
+                              {courierInfo.name}
+                            </span>
+                            <span className="text-[10px] md:text-xs text-muted-foreground opacity-70">
+                              {locker.city}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              {language === 'ro' ? 'Anulează' : 'Cancel'}
-            </Button>
-            <Button onClick={handleConfirm} disabled={!selectedLocker}>
-              {language === 'ro' ? 'Confirmă selecția' : 'Confirm selection'}
-            </Button>
+        </div>
+
+        {/* Footer - Mobile shows selected locker details inline */}
+        <div className="p-3 md:p-4 border-t bg-background">
+          {/* Mobile: Show selected locker details */}
+          {selectedLocker && (
+            <div className="md:hidden mb-3 p-2 rounded-lg bg-primary/5 border border-primary/20">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-sm truncate">{selectedLocker.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{selectedLocker.address}, {selectedLocker.city}</p>
+                </div>
+                <div 
+                  className="px-2 py-0.5 rounded text-[10px] font-medium shrink-0"
+                  style={{ 
+                    backgroundColor: `${getCourierInfo(selectedLocker.courier).color}20`,
+                    color: getCourierInfo(selectedLocker.courier).color 
+                  }}
+                >
+                  {getCourierInfo(selectedLocker.courier).name}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex justify-between items-center gap-2">
+            <div className="hidden md:block text-sm text-muted-foreground truncate">
+              {selectedLocker && (
+                <span>
+                  <strong>{language === 'ro' ? 'Selectat:' : 'Selected:'}</strong> {selectedLocker.name}
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2 w-full md:w-auto">
+              <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 md:flex-none text-sm">
+                {language === 'ro' ? 'Anulează' : 'Cancel'}
+              </Button>
+              <Button onClick={handleConfirm} disabled={!selectedLocker} className="flex-1 md:flex-none text-sm">
+                {language === 'ro' ? 'Confirmă' : 'Confirm'}
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
