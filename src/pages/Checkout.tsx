@@ -1028,27 +1028,6 @@ const Checkout = () => {
                       </div>
                     </label>
 
-                    {/* Card at locker - only for locker delivery */}
-                    {form.deliveryMethod === 'locker' && (
-                      <label 
-                        className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
-                          form.paymentMethod === 'card_at_locker' 
-                            ? 'border-primary bg-primary/5' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <RadioGroupItem value="card_at_locker" id="card_at_locker" />
-                        <Package className="w-5 h-5 text-primary" />
-                        <div className="flex-1">
-                          <p className="font-medium">
-                            {language === 'ro' ? 'Card la locker' : 'Card at locker'}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {language === 'ro' ? 'Plătești cu cardul la ridicare' : 'Pay with card at pickup'}
-                          </p>
-                        </div>
-                      </label>
-                    )}
                   </RadioGroup>
                 </div>
 
