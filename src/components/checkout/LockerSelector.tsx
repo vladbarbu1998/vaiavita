@@ -64,6 +64,29 @@ interface LockerSelectorProps {
 // Lazy load the map component
 const LockerMap = lazy(() => import('./LockerMap'));
 
+// Preload cache for lockers
+let cachedLockers: Locker[] | null = null;
+let isPreloading = false;
+
+export async function preloadLockers() {
+  if (cachedLockers || isPreloading) return cachedLockers;
+  
+  isPreloading = true;
+  try {
+    const { data, error } = await supabase.functions.invoke('get-ecolet-lockers', {
+      body: { countryCode: 'RO' }
+    });
+    if (!error && data?.lockers) {
+      cachedLockers = data.lockers;
+    }
+  } catch (err) {
+    console.error('Preload lockers error:', err);
+  } finally {
+    isPreloading = false;
+  }
+  return cachedLockers;
+}
+
 export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLockerId }: LockerSelectorProps) {
   const { language } = useLanguage();
   const [allLockers, setAllLockers] = useState<Locker[]>([]);
@@ -81,10 +104,15 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
   const [locatingUser, setLocatingUser] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
-  // Load all lockers when dialog opens
+  // Load all lockers when dialog opens - use cache if available
   useEffect(() => {
     if (open && allLockers.length === 0) {
-      loadAllLockers();
+      if (cachedLockers) {
+        setAllLockers(cachedLockers);
+        setFilteredLockers(cachedLockers);
+      } else {
+        loadAllLockers();
+      }
     }
   }, [open]);
 
@@ -573,9 +601,9 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                 <div className="flex items-start gap-2 text-sm">
                   <Clock className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div className="text-muted-foreground">
-                    <p>{language === 'ro' ? 'Luni-Vineri' : 'Mon-Fri'}: 08:00 - 21:00</p>
-                    <p>{language === 'ro' ? 'Sâmbătă' : 'Sat'}: 09:00 - 18:00</p>
-                    <p>{language === 'ro' ? 'Duminică' : 'Sun'}: 10:00 - 16:00</p>
+                    <p>{language === 'ro' ? 'Luni-Vineri' : 'Mon-Fri'}: {selectedLocker.schedule?.weekdays || '08:00 - 21:00'}</p>
+                    <p>{language === 'ro' ? 'Sâmbătă' : 'Sat'}: {selectedLocker.schedule?.saturday || '09:00 - 18:00'}</p>
+                    <p>{language === 'ro' ? 'Duminică' : 'Sun'}: {selectedLocker.schedule?.sunday || '10:00 - 16:00'}</p>
                   </div>
                 </div>
               </div>

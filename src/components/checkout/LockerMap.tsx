@@ -228,10 +228,20 @@ function LockerMap({ lockers, selectedLocker, mapCenter, userLocation, onSelectL
     });
   }, [selectedLocker, lockers]);
 
-  // Pan to center when it changes significantly
+  // Pan to center when it changes - only when explicitly requested (not from selection)
+  const lastCenterRef = useRef<[number, number]>([45.9432, 24.9668]);
   useEffect(() => {
     if (mapRef.current && mapCenter[0] !== 45.9432) {
-      mapRef.current.setView(mapCenter, 14, { animate: true });
+      // Only pan if the new center is significantly different (user location or city change)
+      const distance = Math.sqrt(
+        Math.pow(mapCenter[0] - lastCenterRef.current[0], 2) + 
+        Math.pow(mapCenter[1] - lastCenterRef.current[1], 2)
+      );
+      // Only pan for large distance changes (city change/user location), not individual locker selection
+      if (distance > 0.1) {
+        mapRef.current.setView(mapCenter, 14, { animate: true });
+        lastCenterRef.current = mapCenter;
+      }
     }
   }, [mapCenter]);
 

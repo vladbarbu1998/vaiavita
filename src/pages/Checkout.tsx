@@ -40,7 +40,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from '@/lib/utils';
-import { LockerSelector } from '@/components/checkout/LockerSelector';
+import { LockerSelector, preloadLockers } from '@/components/checkout/LockerSelector';
 
 // Romanian counties
 const ROMANIAN_COUNTIES = [
@@ -450,6 +450,11 @@ const Checkout = () => {
       // If changing delivery method, reset payment method if needed
       if (field === 'deliveryMethod') {
         let newPaymentMethod = prev.paymentMethod;
+        
+        // Preload lockers when switching to locker delivery
+        if (value === 'locker') {
+          preloadLockers();
+        }
         
         // If switching to locker or pickup and payment is cash_on_delivery, reset to stripe
         if ((value === 'locker' || value === 'pickup') && prev.paymentMethod === 'cash_on_delivery') {

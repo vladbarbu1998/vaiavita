@@ -34,6 +34,11 @@ interface EcoletLocker {
   lat: number;
   lng: number;
   courier: string;
+  schedule?: {
+    weekdays?: string;
+    saturday?: string;
+    sunday?: string;
+  };
 }
 
 // Get OAuth token using password authentication
@@ -154,17 +159,31 @@ async function getMapPoints(
   console.log(`Found ${Array.isArray(mapPointsData) ? mapPointsData.length : 0} map points`);
 
   // Map to our format - no limit, get all points
-  const lockers: EcoletLocker[] = (Array.isArray(mapPointsData) ? mapPointsData : []).map((point: any) => ({
-    id: String(point.id || ''),
-    name: point.name || '',
-    address: point.address || '',
-    city: point.locality?.name || point.city || '',
-    county: point.locality?.county?.name || point.county || '',
-    postal_code: point.locality?.postal_code || point.postal_code || '',
-    lat: parseFloat(point.lat || 0),
-    lng: parseFloat(point.lng || 0),
-    courier: point.courier_slug || point.courier || 'ecolet',
-  }));
+  const lockers: EcoletLocker[] = (Array.isArray(mapPointsData) ? mapPointsData : []).map((point: any) => {
+    // Parse schedule from API if available
+    let schedule: EcoletLocker['schedule'] = undefined;
+    if (point.schedule || point.working_hours || point.openingHours) {
+      const scheduleData = point.schedule || point.working_hours || point.openingHours;
+      schedule = {
+        weekdays: scheduleData.weekdays || scheduleData.monday || scheduleData.mon_fri || '08:00 - 21:00',
+        saturday: scheduleData.saturday || scheduleData.sat || '09:00 - 18:00',
+        sunday: scheduleData.sunday || scheduleData.sun || '10:00 - 16:00',
+      };
+    }
+    
+    return {
+      id: String(point.id || ''),
+      name: point.name || '',
+      address: point.address || '',
+      city: point.locality?.name || point.city || '',
+      county: point.locality?.county?.name || point.county || '',
+      postal_code: point.locality?.postal_code || point.postal_code || '',
+      lat: parseFloat(point.lat || 0),
+      lng: parseFloat(point.lng || 0),
+      courier: point.courier_slug || point.courier || 'ecolet',
+      schedule,
+    };
+  });
 
   console.log(`Returning ${lockers.length} lockers`);
   return lockers;
