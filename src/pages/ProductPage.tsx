@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, TouchEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { MainLayout } from '@/components/layout';
 import { BreadcrumbItem } from '@/components/layout/Breadcrumbs';
@@ -117,6 +117,8 @@ const ProductPage = () => {
   const [activeTab, setActiveTab] = useState('description');
   const [mobileRelatedIndex, setMobileRelatedIndex] = useState(0);
   const tabsRef = useRef<HTMLDivElement>(null);
+  const relatedTouchStartX = useRef<number>(0);
+  const relatedTouchEndX = useRef<number>(0);
   
   // Review form state
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -133,6 +135,25 @@ const ProductPage = () => {
     title: '',
     content: '',
   });
+
+  const handleRelatedTouchStart = (e: TouchEvent) => {
+    relatedTouchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleRelatedTouchMove = (e: TouchEvent) => {
+    relatedTouchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleRelatedTouchEnd = () => {
+    const diff = relatedTouchStartX.current - relatedTouchEndX.current;
+    const threshold = 50;
+    
+    if (diff > threshold && mobileRelatedIndex < relatedProducts.length - 1) {
+      setMobileRelatedIndex(prev => prev + 1);
+    } else if (diff < -threshold && mobileRelatedIndex > 0) {
+      setMobileRelatedIndex(prev => prev - 1);
+    }
+  };
 
   const handleQuickAddRelated = (relProd: RelatedProduct) => {
     addItem({
@@ -780,57 +801,50 @@ const ProductPage = () => {
               <h4 className="font-display text-sm md:text-base tracking-wide mb-4 text-muted-foreground text-center md:text-left">
                 {language === 'ro' ? 'Clienții au cumpărat și' : 'Customers also bought'}
               </h4>
-              {/* Mobile: Centered card with navigation arrows */}
+              {/* Mobile: Full-width card with navigation inside (matching testimonials layout) */}
               <div className="md:hidden">
-                <div className="flex items-center justify-center gap-2">
-                  {/* Left Arrow */}
-                  {relatedProducts.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={`shrink-0 h-10 w-10 ${mobileRelatedIndex <= 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
-                      onClick={() => setMobileRelatedIndex(prev => Math.max(0, prev - 1))}
-                      disabled={mobileRelatedIndex <= 0}
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </Button>
-                  )}
-                  
-                  {/* Single Centered Card */}
-                  <div className="w-full max-w-[280px]">
-                    {relatedProducts[mobileRelatedIndex] && (() => {
-                      const relProd = relatedProducts[mobileRelatedIndex];
-                      return (
-                        <div className="group card-premium overflow-hidden hover:shadow-sm transition-all duration-300">
-                          {/* Image with Quick Add button */}
-                          <div className="relative">
-                            <a href={`/produse/${relProd.slug}`} className="block">
-                              <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-4 rounded-t-2xl">
-                                {relProd.images?.[0] ? (
-                                  <img
-                                    src={relProd.images[0]}
-                                    alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
-                                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <ShoppingCart className="w-6 h-6 text-muted-foreground" />
-                                  </div>
-                                )}
-                              </div>
-                            </a>
-                            {/* Quick Add Button */}
-                            <button
-                              onClick={() => handleQuickAddRelated(relProd)}
-                              className="absolute bottom-0 right-3 translate-y-1/2 w-9 h-9 rounded-full bg-primary text-primary-foreground shadow-md flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
-                              title={language === 'ro' ? 'Adaugă în coș' : 'Add to cart'}
-                            >
-                              <ShoppingCart className="w-4 h-4" />
-                            </button>
-                          </div>
-                          <a href={`/produse/${relProd.slug}`} className="block p-4 pt-6">
+                <div 
+                  className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border border-primary/20 shadow-lg"
+                  onTouchStart={handleRelatedTouchStart}
+                  onTouchMove={handleRelatedTouchMove}
+                  onTouchEnd={handleRelatedTouchEnd}
+                >
+                  {relatedProducts[mobileRelatedIndex] && (() => {
+                    const relProd = relatedProducts[mobileRelatedIndex];
+                    return (
+                      <div className="group">
+                        {/* Image with Quick Add button */}
+                        <div className="relative">
+                          <a href={`/produse/${relProd.slug}`} className="block">
+                            <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10 p-6">
+                              {relProd.images?.[0] ? (
+                                <img
+                                  src={relProd.images[0]}
+                                  alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
+                                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <ShoppingCart className="w-10 h-10 text-muted-foreground" />
+                                </div>
+                              )}
+                            </div>
+                          </a>
+                          {/* Quick Add Button */}
+                          <button
+                            onClick={() => handleQuickAddRelated(relProd)}
+                            className="absolute bottom-0 right-4 translate-y-1/2 w-11 h-11 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
+                            title={language === 'ro' ? 'Adaugă în coș' : 'Add to cart'}
+                          >
+                            <ShoppingCart className="w-5 h-5" />
+                          </button>
+                        </div>
+                        
+                        {/* Content */}
+                        <div className="p-5 pt-7">
+                          <a href={`/produse/${relProd.slug}`} className="block">
                             {/* Title */}
-                            <h5 className="font-medium text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                            <h5 className="font-semibold text-lg leading-snug line-clamp-2 group-hover:text-primary transition-colors">
                               {language === 'ro' ? relProd.name_ro : relProd.name_en}
                             </h5>
                             {/* Rating */}
@@ -840,8 +854,8 @@ const ProductPage = () => {
                                 if (!rating || rating.reviewCount === 0) {
                                   return (
                                     <div className="flex items-center gap-1 text-muted-foreground">
-                                      <Star className="w-3.5 h-3.5" />
-                                      <span className="text-xs">{language === 'ro' ? 'Fără recenzii' : 'No reviews'}</span>
+                                      <Star className="w-4 h-4" />
+                                      <span className="text-sm">{language === 'ro' ? 'Fără recenzii' : 'No reviews'}</span>
                                     </div>
                                   );
                                 }
@@ -849,61 +863,70 @@ const ProductPage = () => {
                                   <div className="flex items-center gap-1">
                                     <div className="flex items-center gap-0.5">
                                       {[1, 2, 3, 4, 5].map((star) => (
-                                        <Star key={star} className={`w-3.5 h-3.5 ${star <= Math.round(rating.averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`} />
+                                        <Star key={star} className={`w-4 h-4 ${star <= Math.round(rating.averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`} />
                                       ))}
                                     </div>
-                                    <span className="text-xs font-medium">{rating.averageRating.toFixed(1)}</span>
-                                    <span className="text-xs text-muted-foreground">({rating.reviewCount})</span>
+                                    <span className="text-sm font-medium">{rating.averageRating.toFixed(1)}</span>
+                                    <span className="text-sm text-muted-foreground">({rating.reviewCount})</span>
                                   </div>
                                 );
                               })()}
                             </div>
                             {/* Price and CTA */}
-                            <div className="flex items-center justify-between gap-2 pt-3 mt-3 border-t border-border/50">
-                              <p className="text-primary font-semibold text-base">
+                            <div className="flex items-center justify-between gap-2 pt-4 mt-4 border-t border-primary/20">
+                              <p className="text-primary font-bold text-xl">
                                 {formatPrice(relProd.price)}
                               </p>
-                              <span className="text-primary font-medium text-sm flex items-center gap-1">
-                                {language === 'ro' ? 'Vezi' : 'View'}
-                                <ArrowRight className="w-4 h-4" />
+                              <span className="text-primary font-medium text-base flex items-center gap-1">
+                                {language === 'ro' ? 'Vezi detalii' : 'View details'}
+                                <ArrowRight className="w-5 h-5" />
                               </span>
                             </div>
                           </a>
                         </div>
-                      );
-                    })()}
-                  </div>
-                  
-                  {/* Right Arrow */}
-                  {relatedProducts.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={`shrink-0 h-10 w-10 ${mobileRelatedIndex >= relatedProducts.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}`}
-                      onClick={() => setMobileRelatedIndex(prev => Math.min(relatedProducts.length - 1, prev + 1))}
-                      disabled={mobileRelatedIndex >= relatedProducts.length - 1}
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </Button>
-                  )}
+
+                        {/* Navigation inside card */}
+                        {relatedProducts.length > 1 && (
+                          <div className="flex items-center justify-between px-5 pb-5 pt-2 border-t border-primary/10">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={`h-9 px-3 ${mobileRelatedIndex <= 0 ? 'opacity-30' : ''}`}
+                              onClick={() => setMobileRelatedIndex(prev => Math.max(0, prev - 1))}
+                              disabled={mobileRelatedIndex <= 0}
+                            >
+                              <ChevronLeft className="w-4 h-4 mr-1" />
+                              {language === 'ro' ? 'Anterior' : 'Previous'}
+                            </Button>
+                            <div className="flex gap-1.5">
+                              {relatedProducts.map((_, index) => (
+                                <button
+                                  key={index}
+                                  onClick={() => setMobileRelatedIndex(index)}
+                                  className={`w-2 h-2 rounded-full transition-all ${
+                                    index === mobileRelatedIndex 
+                                      ? 'bg-primary w-4' 
+                                      : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={`h-9 px-3 ${mobileRelatedIndex >= relatedProducts.length - 1 ? 'opacity-30' : ''}`}
+                              onClick={() => setMobileRelatedIndex(prev => Math.min(relatedProducts.length - 1, prev + 1))}
+                              disabled={mobileRelatedIndex >= relatedProducts.length - 1}
+                            >
+                              {language === 'ro' ? 'Următor' : 'Next'}
+                              <ChevronRight className="w-4 h-4 ml-1" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
-                
-                {/* Dots indicator */}
-                {relatedProducts.length > 1 && (
-                  <div className="flex justify-center gap-1.5 mt-4">
-                    {relatedProducts.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setMobileRelatedIndex(index)}
-                        className={`w-2 h-2 rounded-full transition-all ${
-                          index === mobileRelatedIndex 
-                            ? 'bg-primary w-4' 
-                            : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
               </div>
               {/* Desktop: Grid layout */}
               <div className="hidden md:grid md:grid-cols-4 lg:grid-cols-5 gap-4">
