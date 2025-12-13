@@ -513,7 +513,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
           </div>
 
           {/* List - shows second on mobile, left side on desktop */}
-          <div className="flex-1 md:w-2/5 md:order-1 overflow-y-auto">
+          <div className="flex-1 md:w-2/5 md:order-1 overflow-y-auto pt-2 md:pt-0">
             {loading ? (
               <div className="flex items-center justify-center h-full py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
