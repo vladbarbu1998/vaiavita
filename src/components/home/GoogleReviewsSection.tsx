@@ -79,7 +79,7 @@ export function GoogleReviewsSection() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center opacity-0 animate-fade-up animation-delay-300">
           <Button variant="outline" size="lg" asChild>
             <a
-              href="https://g.page/r/YOUR_GOOGLE_PLACE_ID/review"
+              href="https://g.page/r/CT2JPb1rKm82EAE/review"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2"
@@ -90,7 +90,7 @@ export function GoogleReviewsSection() {
           </Button>
           <Button variant="hero" size="lg" asChild>
             <a
-              href="https://g.page/r/YOUR_GOOGLE_PLACE_ID/review"
+              href="https://g.page/r/CT2JPb1rKm82EAE/review"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2"

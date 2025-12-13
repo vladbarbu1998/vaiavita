@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import { CartProvider } from "@/context/CartContext";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { ChatWidget } from "@/components/chat/ChatWidget";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import Despre from "./pages/Despre";
 import Produse from "./pages/Produse";
@@ -32,6 +33,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <ScrollToTop />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/despre" element={<Despre />} />
