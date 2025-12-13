@@ -462,6 +462,12 @@ const AdminOrders = () => {
   };
 
   const sendToEcolet = async (order: Order) => {
+    // Block sync for Stripe orders that haven't been paid
+    if (order.payment_method === 'stripe' && order.payment_status !== 'paid') {
+      toast.error('Nu poți sincroniza în Ecolet o comandă cu plată card nefinalizată. Așteaptă confirmarea plății.');
+      return;
+    }
+    
     setSendingToEcolet(order.id);
     
     try {

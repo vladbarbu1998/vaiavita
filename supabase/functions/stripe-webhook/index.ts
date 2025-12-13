@@ -238,11 +238,13 @@ serve(async (req) => {
 
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        logStep("Checkout session completed", { 
+        logStep("Checkout session completed - IGNORED for Ecolet sync", { 
           sessionId: session.id,
           paymentStatus: session.payment_status,
           orderId: session.metadata?.orderId
         });
+        // NOTE: We intentionally do NOT sync to Ecolet here.
+        // Ecolet sync happens only on payment_intent.succeeded to ensure payment is confirmed.
         break;
       }
 
