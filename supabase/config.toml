@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.oblio-invoice]
 verify_jwt = false
+
+[functions.payment-reminder-cron]
+verify_jwt = false

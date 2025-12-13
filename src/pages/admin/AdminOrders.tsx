@@ -148,6 +148,7 @@ const AdminOrders = () => {
   const [sendingToEcolet, setSendingToEcolet] = useState<string | null>(null);
   const [generatingInvoice, setGeneratingInvoice] = useState<string | null>(null);
   const [cancellingInvoice, setCancellingInvoice] = useState<string | null>(null);
+  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -233,7 +234,46 @@ const AdminOrders = () => {
     setDialogOpen(true);
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled') => {
+  const getEmailTypeForStatus = (status: string): string | null => {
+    const statusEmailMap: Record<string, string> = {
+      pending: 'confirmation',
+      processing: 'processing',
+      pregatita_ridicare: 'ready_pickup',
+      shipped: 'shipped',
+      delivered: 'delivered',
+      cancelled: 'cancelled',
+    };
+    return statusEmailMap[status] || null;
+  };
+
+  const sendOrderEmail = async (orderId: string, emailType: string, options?: { awbNumber?: string; courierName?: string; cancellationReason?: string }) => {
+    setSendingEmail(orderId);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-order-email', {
+        body: {
+          orderId,
+          emailType,
+          language: 'ro',
+          ...options,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success('Email trimis cu succes!');
+      } else {
+        throw new Error(data?.error || 'Eroare la trimitere email');
+      }
+    } catch (err: any) {
+      console.error('Email send error:', err);
+      toast.error(`Eroare: ${err.message}`);
+    } finally {
+      setSendingEmail(null);
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, newStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'pregatita_ridicare') => {
     const { error } = await supabase
       .from('orders')
       .update({ status: newStatus })
@@ -246,6 +286,12 @@ const AdminOrders = () => {
       fetchData();
       if (selectedOrder?.id === orderId) {
         setSelectedOrder({ ...selectedOrder, status: newStatus });
+      }
+
+      // Send email notification for status change
+      const emailType = getEmailTypeForStatus(newStatus);
+      if (emailType) {
+        await sendOrderEmail(orderId, emailType);
       }
     }
   };
@@ -774,6 +820,25 @@ const AdminOrders = () => {
                                   {order.ecolet_synced ? 'Retrimite în Ecolet' : 'Trimite în Ecolet'}
                                 </DropdownMenuItem>
                               )}
+                              
+                              {/* Email Actions */}
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  const emailType = getEmailTypeForStatus(order.status);
+                                  if (emailType) {
+                                    sendOrderEmail(order.id, emailType);
+                                  }
+                                }}
+                                disabled={sendingEmail === order.id || !getEmailTypeForStatus(order.status)}
+                                className="gap-2"
+                              >
+                                {sendingEmail === order.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Mail className="w-4 h-4" />
+                                )}
+                                Trimite email notificare
+                              </DropdownMenuItem>
                               
                               <DropdownMenuSeparator />
                               

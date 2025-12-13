@@ -288,7 +288,7 @@ function generateReadyPickupEmail(order: any): string {
       </div>
 
       <p style="color: #4b5563; text-align: center; margin-bottom: 25px;">
-        Te rugăm să aduci un document de identitate și numărul comenzii la ridicare.
+        Te vom contacta telefonic pentru a stabili detaliile exacte ale ridicării.
       </p>
 
       <div style="text-align: center; padding: 20px; background: #f9fafb; border-radius: 12px;">
