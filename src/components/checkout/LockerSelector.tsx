@@ -332,7 +332,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl h-[90vh] md:h-[85vh] flex flex-col p-0 gap-0 w-[95vw] md:w-auto">
+      <DialogContent className="w-[95vw] md:w-[900px] lg:w-[1000px] h-[90vh] md:h-[85vh] max-w-none flex flex-col p-0 gap-0 overflow-hidden">
         <DialogHeader className="p-3 md:p-4 pb-2 border-b">
           <DialogTitle className="text-base md:text-lg">
             {language === 'ro' ? 'Selectează punctul de livrare' : 'Select delivery point'}
