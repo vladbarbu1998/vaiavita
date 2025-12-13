@@ -1,4 +1,4 @@
-import { useState, useRef, TouchEvent } from 'react';
+import { useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { ChevronLeft, ChevronRight, Quote, ExternalLink, BadgeCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -84,8 +84,6 @@ function ProofDialog({ language }: { language: string }) {
 export function ProfessionalTestimonials() {
   const { language } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const touchStartX = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
 
   const nextTestimonial = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
@@ -95,24 +93,6 @@ export function ProfessionalTestimonials() {
     setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
 
-  const handleTouchStart = (e: TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current;
-    const threshold = 50;
-    
-    if (diff > threshold) {
-      nextTestimonial();
-    } else if (diff < -threshold) {
-      prevTestimonial();
-    }
-  };
 
   return (
     <div className="mt-12 opacity-0 animate-fade-up animation-delay-400">
@@ -135,9 +115,6 @@ export function ProfessionalTestimonials() {
       <div className="md:hidden">
         <div 
           className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border border-primary/20 p-6 shadow-lg"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
         >
           {/* Decorative quote */}
           <div className="absolute -top-2 -left-2 w-16 h-16 bg-primary/10 rounded-full blur-xl" />
