@@ -86,6 +86,8 @@ interface Order {
   oblio_series_name: string | null;
   oblio_invoice_link: string | null;
   oblio_invoice_date: string | null;
+  awb_number: string | null;
+  courier_name: string | null;
   created_at: string;
 }
 
@@ -303,9 +305,14 @@ const AdminOrders = () => {
   const confirmShippedStatus = async () => {
     if (!pendingStatusOrder) return;
     
+    // Save AWB and courier to database along with status
     const { error } = await supabase
       .from('orders')
-      .update({ status: 'shipped' })
+      .update({ 
+        status: 'shipped',
+        awb_number: awbNumber || null,
+        courier_name: courierName || null
+      })
       .eq('id', pendingStatusOrder.id);
 
     if (error) {
@@ -314,7 +321,12 @@ const AdminOrders = () => {
       toast.success('Status actualizat');
       fetchData();
       if (selectedOrder?.id === pendingStatusOrder.id) {
-        setSelectedOrder({ ...selectedOrder, status: 'shipped' });
+        setSelectedOrder({ 
+          ...selectedOrder, 
+          status: 'shipped',
+          awb_number: awbNumber || null,
+          courier_name: courierName || null
+        });
       }
       
       // Send email with AWB and courier
@@ -781,6 +793,7 @@ const AdminOrders = () => {
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Client</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Total</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Livrare</th>
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground">AWB</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Data</th>
                 <th className="text-right p-4 text-sm font-medium text-muted-foreground">Acțiuni</th>
@@ -789,13 +802,13 @@ const AdminOrders = () => {
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center">
+                  <td colSpan={8} className="p-8 text-center">
                     <Loader2 className="w-6 h-6 animate-spin mx-auto" />
                   </td>
                 </tr>
               ) : filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
                     Nu există comenzi
                   </td>
                 </tr>
@@ -864,6 +877,18 @@ const AdminOrders = () => {
                           <DeliveryIcon className="w-4 h-4 text-muted-foreground" />
                           <span className="text-sm">{deliveryLabels[order.delivery_method]?.label || order.delivery_method}</span>
                         </div>
+                      </td>
+                      <td className="p-4">
+                        {order.awb_number ? (
+                          <div className="space-y-0.5">
+                            <p className="font-mono text-sm font-medium">{order.awb_number}</p>
+                            {order.courier_name && (
+                              <p className="text-xs text-muted-foreground">{order.courier_name}</p>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
                       </td>
                       <td className="p-4">
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusConfig[order.status]?.color}`}>
