@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { COURIERS } from './LockerSelector';
 
 // Fix for default marker icons in Leaflet with webpack/vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -10,23 +11,40 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// Custom selected marker icon
-const selectedIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
+// Create colored marker icons for each courier
+const createCourierIcon = (color: string, isSelected: boolean = false) => {
+  const size = isSelected ? 32 : 24;
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}">
+      <path fill="${color}" stroke="${isSelected ? '#000' : '#fff'}" stroke-width="1.5" 
+        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+      <circle cx="12" cy="9" r="3" fill="white"/>
+    </svg>
+  `;
+  return L.divIcon({
+    html: svg,
+    className: 'courier-marker',
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size],
+    popupAnchor: [0, -size],
+  });
+};
 
-const defaultIcon = new L.Icon({
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+// User location icon
+const userLocationIcon = L.divIcon({
+  html: `
+    <div style="
+      width: 20px; 
+      height: 20px; 
+      background: #3B82F6; 
+      border: 3px solid white; 
+      border-radius: 50%; 
+      box-shadow: 0 2px 8px rgba(59,130,246,0.5);
+    "></div>
+  `,
+  className: 'user-location-marker',
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
 });
 
 interface Locker {
@@ -45,15 +63,17 @@ interface LockerMapProps {
   lockers: Locker[];
   selectedLocker: Locker | null;
   mapCenter: [number, number];
+  userLocation?: [number, number] | null;
   onSelectLocker: (locker: Locker) => void;
   onBoundsChange?: (bounds: [[number, number], [number, number]]) => void;
 }
 
-function LockerMap({ lockers, selectedLocker, mapCenter, onSelectLocker, onBoundsChange }: LockerMapProps) {
+function LockerMap({ lockers, selectedLocker, mapCenter, userLocation, onSelectLocker, onBoundsChange }: LockerMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
   const markerClusterRef = useRef<L.LayerGroup | null>(null);
+  const userMarkerRef = useRef<L.Marker | null>(null);
   const onSelectLockerRef = useRef(onSelectLocker);
   const onBoundsChangeRef = useRef(onBoundsChange);
 
@@ -62,6 +82,13 @@ function LockerMap({ lockers, selectedLocker, mapCenter, onSelectLocker, onBound
     onSelectLockerRef.current = onSelectLocker;
     onBoundsChangeRef.current = onBoundsChange;
   }, [onSelectLocker, onBoundsChange]);
+
+  // Get courier color
+  const getCourierColor = (courierName: string): string => {
+    const courierLower = (courierName || '').toLowerCase();
+    const courier = COURIERS.find(c => courierLower.includes(c.id));
+    return courier?.color || '#6B7280';
+  };
 
   // Initialize map
   useEffect(() => {
@@ -110,14 +137,27 @@ function LockerMap({ lockers, selectedLocker, mapCenter, onSelectLocker, onBound
 
     // Add new markers
     lockers.forEach(locker => {
-      const marker = L.marker([locker.lat, locker.lng], {
-        icon: selectedLocker?.id === locker.id ? selectedIcon : defaultIcon
-      })
+      const color = getCourierColor(locker.courier);
+      const isSelected = selectedLocker?.id === locker.id;
+      const icon = createCourierIcon(color, isSelected);
+
+      const marker = L.marker([locker.lat, locker.lng], { icon })
         .bindPopup(`
-          <div style="min-width: 150px;">
+          <div style="min-width: 180px;">
             <p style="font-weight: 600; margin: 0 0 4px 0;">${locker.name}</p>
             <p style="color: #666; margin: 0; font-size: 12px;">${locker.address}</p>
-            <p style="color: #666; margin: 0; font-size: 12px;">${locker.postal_code || ''}</p>
+            <p style="color: #666; margin: 0; font-size: 12px;">${locker.postal_code || ''} ${locker.city}</p>
+            <p style="margin: 8px 0 0 0;">
+              <span style="
+                display: inline-block;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 11px;
+                font-weight: 500;
+                background: ${color}20;
+                color: ${color};
+              ">${locker.courier || 'Locker'}</span>
+            </p>
           </div>
         `)
         .on('click', () => onSelectLockerRef.current(locker));
@@ -130,9 +170,14 @@ function LockerMap({ lockers, selectedLocker, mapCenter, onSelectLocker, onBound
   // Update marker icons when selection changes
   useEffect(() => {
     markersRef.current.forEach((marker, id) => {
-      marker.setIcon(selectedLocker?.id === id ? selectedIcon : defaultIcon);
+      const locker = lockers.find(l => l.id === id);
+      if (locker) {
+        const color = getCourierColor(locker.courier);
+        const isSelected = selectedLocker?.id === id;
+        marker.setIcon(createCourierIcon(color, isSelected));
+      }
     });
-  }, [selectedLocker]);
+  }, [selectedLocker, lockers]);
 
   // Pan to center when it changes significantly
   useEffect(() => {
@@ -140,6 +185,27 @@ function LockerMap({ lockers, selectedLocker, mapCenter, onSelectLocker, onBound
       mapRef.current.setView(mapCenter, 14, { animate: true });
     }
   }, [mapCenter]);
+
+  // Handle user location marker
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    // Remove previous user marker
+    if (userMarkerRef.current) {
+      userMarkerRef.current.remove();
+      userMarkerRef.current = null;
+    }
+
+    // Add new user marker if location exists
+    if (userLocation) {
+      userMarkerRef.current = L.marker(userLocation, { icon: userLocationIcon })
+        .addTo(mapRef.current)
+        .bindPopup('Locația ta');
+      
+      // Zoom to user location
+      mapRef.current.setView(userLocation, 14, { animate: true });
+    }
+  }, [userLocation]);
 
   return <div ref={mapContainerRef} className="h-full w-full" />;
 }
