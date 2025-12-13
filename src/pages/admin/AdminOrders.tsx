@@ -108,6 +108,7 @@ interface Category {
 const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
   pending: { label: 'În așteptare', color: 'bg-yellow-500/10 text-yellow-600', icon: Clock },
   processing: { label: 'În procesare', color: 'bg-blue-500/10 text-blue-600', icon: Package },
+  pregatita_ridicare: { label: 'Pregătită pentru ridicare', color: 'bg-purple-500/10 text-purple-600', icon: MapPin },
   shipped: { label: 'Expediată', color: 'bg-indigo-500/10 text-indigo-600', icon: Truck },
   delivered: { label: 'Finalizată', color: 'bg-green-500/10 text-green-600', icon: CheckCircle },
   cancelled: { label: 'Anulată', color: 'bg-red-500/10 text-red-600', icon: XCircle },
