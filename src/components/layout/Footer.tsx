@@ -7,7 +7,8 @@ import logoDarkChristmas from '@/assets/logo-dark-christmas.png';
 import logoLight from '@/assets/logo-light.png';
 import logoLightNew from '@/assets/logo-light-new.png';
 import logoLightChristmas from '@/assets/logo-light-christmas.png';
-import anpcBadge from '@/assets/anpc-badge.png';
+import anpcSalBadge from '@/assets/anpc-sal-badge.png';
+import anpcSolBadge from '@/assets/anpc-sol-badge.png';
 
 export function Footer() {
   const { t, language } = useLanguage();
@@ -94,14 +95,22 @@ export function Footer() {
 
         {/* ANPC Badge & Copyright */}
         <div className="mt-14 pt-8 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 flex-wrap">
             <a 
-              href="https://anpc.ro/" 
+              href="https://anpc.ro/ce-este-sal" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="opacity-70 hover:opacity-100 transition-opacity"
+              className="opacity-80 hover:opacity-100 transition-opacity"
             >
-              <img src={anpcBadge} alt="ANPC" className="h-10" />
+              <img src={anpcSalBadge} alt="ANPC - Soluționarea Alternativă a Litigiilor" className="h-12" />
+            </a>
+            <a 
+              href="https://ec.europa.eu/consumers/odr" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="opacity-80 hover:opacity-100 transition-opacity"
+            >
+              <img src={anpcSolBadge} alt="Soluționarea Online a Litigiilor" className="h-12" />
             </a>
           </div>
           <p className="text-sm text-muted-foreground text-center md:text-right">
