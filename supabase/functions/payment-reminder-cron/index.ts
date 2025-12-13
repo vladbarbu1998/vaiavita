@@ -23,17 +23,16 @@ serve(async (req) => {
 
     const now = new Date();
     
-    // 24 hours ago (for reminders)
+    // 24 hours ago (for reminders - abandoned checkouts)
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const twentyFiveHoursAgo = new Date(now.getTime() - 25 * 60 * 60 * 1000);
     
     // 48 hours ago (for auto-cancellation)
     const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
-    const fortyNineHoursAgo = new Date(now.getTime() - 49 * 60 * 60 * 1000);
 
     logStep("Starting payment reminder cron job", { 
-      reminderWindow: `${twentyFiveHoursAgo.toISOString()} to ${twentyFourHoursAgo.toISOString()}`,
-      cancelWindow: `${fortyNineHoursAgo.toISOString()} to ${fortyEightHoursAgo.toISOString()}`
+      reminderWindow: `orders older than ${twentyFourHoursAgo.toISOString()}`,
+      cancelWindow: `orders older than ${fortyEightHoursAgo.toISOString()}`
     });
 
     const results = {
@@ -41,16 +40,16 @@ serve(async (req) => {
       cancellations: [] as any[]
     };
 
-    // 1. Find orders needing 24h reminder (failed payment, no reminder sent yet)
+    // 1. Find ABANDONED orders needing reminder (pending payment, no reminder sent, 24h+ old)
+    // This catches abandoned Stripe checkouts where user never completed payment
     const { data: reminderOrders, error: reminderError } = await supabase
       .from("orders")
-      .select("id, order_number, customer_email")
+      .select("id, order_number, customer_email, payment_status")
       .eq("payment_method", "stripe")
-      .eq("payment_status", "failed")
+      .in("payment_status", ["pending", "failed"]) // Both abandoned and failed
       .eq("status", "pending")
       .is("payment_reminder_sent_at", null)
-      .gte("created_at", twentyFiveHoursAgo.toISOString())
-      .lte("created_at", twentyFourHoursAgo.toISOString());
+      .lt("created_at", twentyFourHoursAgo.toISOString());
 
     if (reminderError) {
       logStep("Error fetching reminder orders", { error: reminderError.message });
@@ -59,11 +58,13 @@ serve(async (req) => {
 
       for (const order of reminderOrders || []) {
         try {
-          // Send reminder email
+          // Send reminder email based on status
+          const emailType = order.payment_status === "failed" ? "payment_failed" : "payment_reminder";
+          
           const { error: emailError } = await supabase.functions.invoke("send-order-email", {
             body: {
               orderId: order.id,
-              emailType: "payment_reminder",
+              emailType,
               language: "ro",
             },
           });
@@ -78,7 +79,7 @@ serve(async (req) => {
               .update({ payment_reminder_sent_at: now.toISOString() })
               .eq("id", order.id);
             
-            logStep(`Reminder sent for ${order.order_number}`);
+            logStep(`Reminder sent for ${order.order_number} (status: ${order.payment_status})`);
             results.reminders.push({ orderId: order.id, success: true });
           }
         } catch (err: any) {
@@ -88,15 +89,15 @@ serve(async (req) => {
       }
     }
 
-    // 2. Find orders to auto-cancel (48h+ with failed payment)
+    // 2. Find orders to auto-cancel (48h+ with pending or failed payment)
+    // This catches both abandoned checkouts and failed payments
     const { data: cancelOrders, error: cancelError } = await supabase
       .from("orders")
-      .select("id, order_number, customer_email")
+      .select("id, order_number, customer_email, payment_status")
       .eq("payment_method", "stripe")
-      .eq("payment_status", "failed")
+      .in("payment_status", ["pending", "failed"]) // Both abandoned and failed
       .eq("status", "pending")
-      .gte("created_at", fortyNineHoursAgo.toISOString())
-      .lte("created_at", fortyEightHoursAgo.toISOString());
+      .lt("created_at", fortyEightHoursAgo.toISOString());
 
     if (cancelError) {
       logStep("Error fetching cancel orders", { error: cancelError.message });
@@ -105,14 +106,17 @@ serve(async (req) => {
 
       for (const order of cancelOrders || []) {
         try {
+          const cancelReason = order.payment_status === "failed" 
+            ? "Plata a eșuat și nu a fost reîncercată în 48 de ore"
+            : "Plata nu a fost finalizată în 48 de ore (checkout abandonat)";
+          
           // Update order to cancelled
           const { error: updateError } = await supabase
             .from("orders")
             .update({ 
               status: "cancelled",
-              cancel_reason: "Plata nu a fost finalizată în 48 de ore",
-              cancel_source: "auto_48h",
-              cancelled_email_sent_at: now.toISOString()
+              cancel_reason: cancelReason,
+              cancel_source: "auto_48h_abandoned",
             })
             .eq("id", order.id);
 
@@ -125,12 +129,18 @@ serve(async (req) => {
               body: {
                 orderId: order.id,
                 emailType: "cancelled",
-                cancellationReason: "Plata nu a fost finalizată în 48 de ore",
+                cancellationReason: cancelReason,
                 language: "ro",
               },
             });
+            
+            // Update email sent timestamp
+            await supabase
+              .from("orders")
+              .update({ cancelled_email_sent_at: now.toISOString() })
+              .eq("id", order.id);
 
-            logStep(`Auto-cancelled ${order.order_number}`);
+            logStep(`Auto-cancelled ${order.order_number} (was: ${order.payment_status})`);
             results.cancellations.push({ orderId: order.id, success: true });
           }
         } catch (err: any) {
