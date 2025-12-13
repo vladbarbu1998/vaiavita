@@ -35,7 +35,11 @@ interface EcoletLocker {
   lng: number;
   courier: string;
   schedule?: {
-    weekdays?: string;
+    monday?: string;
+    tuesday?: string;
+    wednesday?: string;
+    thursday?: string;
+    friday?: string;
     saturday?: string;
     sunday?: string;
   };
@@ -164,16 +168,27 @@ async function getMapPoints(
     console.log('Sample point data:', JSON.stringify(mapPointsData[0], null, 2));
   }
 
+  // Helper to format time range
+  const formatTimeRange = (dayData: { opened?: string; closed?: string } | undefined): string | undefined => {
+    if (!dayData || !dayData.opened || !dayData.closed) return undefined;
+    if (dayData.opened === '00:00' && dayData.closed === '00:00') return 'închis';
+    return `${dayData.opened}-${dayData.closed}`;
+  };
+
   // Map to our format - no limit, get all points
   const lockers: EcoletLocker[] = (Array.isArray(mapPointsData) ? mapPointsData : []).map((point: any) => {
-    // Parse schedule from API if available
+    // Parse schedule from open_hours field
     let schedule: EcoletLocker['schedule'] = undefined;
-    if (point.schedule || point.working_hours || point.openingHours) {
-      const scheduleData = point.schedule || point.working_hours || point.openingHours;
+    if (point.open_hours) {
+      const oh = point.open_hours;
       schedule = {
-        weekdays: scheduleData.weekdays || scheduleData.monday || scheduleData.mon_fri || '08:00 - 21:00',
-        saturday: scheduleData.saturday || scheduleData.sat || '09:00 - 18:00',
-        sunday: scheduleData.sunday || scheduleData.sun || '10:00 - 16:00',
+        monday: formatTimeRange(oh.monday),
+        tuesday: formatTimeRange(oh.tuesday),
+        wednesday: formatTimeRange(oh.wednesday),
+        thursday: formatTimeRange(oh.thursday),
+        friday: formatTimeRange(oh.friday),
+        saturday: formatTimeRange(oh.saturday),
+        sunday: formatTimeRange(oh.sunday),
       };
     }
     
