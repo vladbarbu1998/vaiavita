@@ -157,6 +157,12 @@ async function getMapPoints(
   // Response format: { mapPoints: { boundingBox: [...], mapPoints: [...] } }
   const mapPointsData = data?.mapPoints?.mapPoints || data?.mapPoints || [];
   console.log(`Found ${Array.isArray(mapPointsData) ? mapPointsData.length : 0} map points`);
+  
+  // Log first point to see available fields including schedule
+  if (Array.isArray(mapPointsData) && mapPointsData.length > 0) {
+    console.log('Sample point keys:', Object.keys(mapPointsData[0]));
+    console.log('Sample point data:', JSON.stringify(mapPointsData[0], null, 2));
+  }
 
   // Map to our format - no limit, get all points
   const lockers: EcoletLocker[] = (Array.isArray(mapPointsData) ? mapPointsData : []).map((point: any) => {
