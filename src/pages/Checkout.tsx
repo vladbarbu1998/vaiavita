@@ -582,7 +582,12 @@ const Checkout = () => {
       if (itemsError) throw itemsError;
 
       // Send order to Ecolet for shipping/postal/locker deliveries (background task)
-      if (form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal' || form.deliveryMethod === 'locker') {
+      // ONLY for cash on delivery - for Stripe payments, webhook will handle this after successful payment
+      const shouldSyncToEcolet = 
+        (form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal' || form.deliveryMethod === 'locker') &&
+        form.paymentMethod === 'cash_on_delivery';
+      
+      if (shouldSyncToEcolet) {
         try {
           const ecoletPayload = {
             orderId: order.id,

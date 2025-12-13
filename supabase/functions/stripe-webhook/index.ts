@@ -93,6 +93,78 @@ serve(async (req) => {
           }
 
           logStep("Order updated successfully", { orderId, status: "paid" });
+
+          // Now sync to Ecolet after successful payment
+          // Fetch order details to get all required data
+          const { data: orderData, error: orderError } = await supabaseClient
+            .from("orders")
+            .select("*, order_items(*)")
+            .eq("id", orderId)
+            .single();
+
+          if (orderError) {
+            logStep("Error fetching order for Ecolet sync", { error: orderError.message });
+          } else if (orderData && orderData.delivery_method !== 'pickup') {
+            logStep("Syncing order to Ecolet", { orderId, deliveryMethod: orderData.delivery_method });
+            
+            const shippingAddress = orderData.shipping_address as any;
+            
+            const ecoletPayload = {
+              orderId: orderData.id,
+              orderNumber: orderData.order_number,
+              customerFirstName: orderData.customer_first_name,
+              customerLastName: orderData.customer_last_name,
+              customerEmail: orderData.customer_email,
+              customerPhone: orderData.customer_phone,
+              deliveryMethod: orderData.delivery_method,
+              shippingAddress: orderData.delivery_method !== 'locker' ? {
+                country: shippingAddress?.country || 'România',
+                countryCode: shippingAddress?.countryCode || 'RO',
+                address: shippingAddress?.address || '',
+                addressLine2: shippingAddress?.addressLine2 || '',
+                city: shippingAddress?.city || '',
+                county: shippingAddress?.county || '',
+                postalCode: shippingAddress?.postalCode || '',
+              } : null,
+              lockerId: orderData.locker_id,
+              lockerName: orderData.locker_name,
+              lockerAddress: orderData.locker_address,
+              lockerLocalityId: orderData.locker_locality_id,
+              total: orderData.total,
+              paymentMethod: orderData.payment_method,
+              items: (orderData.order_items || []).map((item: any) => ({
+                productName: item.product_name,
+                quantity: item.quantity,
+              })),
+            };
+
+            // Call Ecolet function (fire and forget within webhook)
+            try {
+              const ecoletResponse = await fetch(
+                `${Deno.env.get("SUPABASE_URL")}/functions/v1/create-ecolet-parcel`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                  },
+                  body: JSON.stringify(ecoletPayload),
+                }
+              );
+              
+              const ecoletResult = await ecoletResponse.json();
+              if (ecoletResponse.ok) {
+                logStep("Ecolet sync successful", { orderId });
+              } else {
+                logStep("Ecolet sync failed", { error: ecoletResult });
+              }
+            } catch (ecoletError) {
+              const ecoletErrorMessage = ecoletError instanceof Error ? ecoletError.message : String(ecoletError);
+              logStep("Ecolet sync error", { error: ecoletErrorMessage });
+            }
+          } else {
+            logStep("Skipping Ecolet sync - pickup order or no order data");
+          }
         } else {
           logStep("WARNING: No orderId in payment metadata");
         }
