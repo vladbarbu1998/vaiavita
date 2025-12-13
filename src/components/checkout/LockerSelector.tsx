@@ -40,14 +40,13 @@ export interface Locker {
   };
 }
 
-// Courier types available
+// Courier types available (with logo paths)
 export const COURIERS = [
-  { id: 'easybox', name: 'EasyBox', color: '#8B5CF6' },
-  { id: 'dpd', name: 'DPD', color: '#DC2626' },
-  { id: 'cargus', name: 'Cargus', color: '#F59E0B' },
-  { id: 'fan', name: 'FAN Courier', color: '#3B82F6' },
-  { id: 'gls', name: 'GLS', color: '#10B981' },
-  { id: 'sameday', name: 'Sameday', color: '#EC4899' },
+  { id: 'dpd', name: 'DPD', color: '#DC2626', logo: '/couriers/dpd.png' },
+  { id: 'cargus', name: 'Cargus', color: '#F59E0B', logo: '/couriers/cargus.png' },
+  { id: 'fan', name: 'FAN Courier', color: '#3B82F6', logo: '/couriers/fan.png' },
+  { id: 'gls', name: 'GLS', color: '#10B981', logo: '/couriers/gls.png' },
+  { id: 'sameday', name: 'Sameday', color: '#EC4899', logo: '/couriers/sameday.png' },
 ] as const;
 
 // Static list of Romanian counties for instant dropdown

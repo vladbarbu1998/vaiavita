@@ -14,12 +14,41 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// Create colored marker icons for each courier
-const createCourierIcon = (color: string, isSelected: boolean = false) => {
-  const size = isSelected ? 32 : 24;
+// Create marker icons with courier logos
+const createCourierIcon = (courierInfo: { color: string; logo?: string }, isSelected: boolean = false) => {
+  const size = isSelected ? 40 : 32;
+  const borderWidth = isSelected ? 3 : 2;
+  
+  // Use logo image if available, otherwise fallback to colored pin
+  if (courierInfo.logo) {
+    return L.divIcon({
+      html: `
+        <div style="
+          width: ${size}px;
+          height: ${size}px;
+          background: white;
+          border-radius: 50%;
+          border: ${borderWidth}px solid ${isSelected ? '#000' : courierInfo.color};
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        ">
+          <img src="${courierInfo.logo}" alt="" style="width: ${size - 8}px; height: ${size - 8}px; object-fit: contain;" />
+        </div>
+      `,
+      className: 'courier-marker',
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
+      popupAnchor: [0, -size / 2],
+    });
+  }
+  
+  // Fallback to SVG pin marker
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}">
-      <path fill="${color}" stroke="${isSelected ? '#000' : '#fff'}" stroke-width="1.5" 
+      <path fill="${courierInfo.color}" stroke="${isSelected ? '#000' : '#fff'}" stroke-width="1.5" 
         d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
       <circle cx="12" cy="9" r="3" fill="white"/>
     </svg>
@@ -87,11 +116,11 @@ function LockerMap({ lockers, selectedLocker, mapCenter, mapZoom, userLocation, 
     onBoundsChangeRef.current = onBoundsChange;
   }, [onSelectLocker, onBoundsChange]);
 
-  // Get courier color
-  const getCourierColor = (courierName: string): string => {
+  // Get courier info (color and logo)
+  const getCourierInfo = (courierName: string): { color: string; logo?: string } => {
     const courierLower = (courierName || '').toLowerCase();
     const courier = COURIERS.find(c => courierLower.includes(c.id));
-    return courier?.color || '#6B7280';
+    return courier ? { color: courier.color, logo: courier.logo } : { color: '#6B7280' };
   };
 
   // Initialize map
@@ -188,9 +217,9 @@ function LockerMap({ lockers, selectedLocker, mapCenter, mapZoom, userLocation, 
 
     // Add new markers
     lockers.forEach(locker => {
-      const color = getCourierColor(locker.courier);
+      const courierInfo = getCourierInfo(locker.courier);
       const isSelected = selectedLocker?.id === locker.id;
-      const icon = createCourierIcon(color, isSelected);
+      const icon = createCourierIcon(courierInfo, isSelected);
 
       const marker = L.marker([locker.lat, locker.lng], { icon })
         .bindPopup(`
@@ -205,8 +234,8 @@ function LockerMap({ lockers, selectedLocker, mapCenter, mapZoom, userLocation, 
                 border-radius: 4px;
                 font-size: 11px;
                 font-weight: 500;
-                background: ${color}20;
-                color: ${color};
+                background: ${courierInfo.color}20;
+                color: ${courierInfo.color};
               ">${locker.courier || 'Locker'}</span>
             </p>
           </div>
@@ -223,9 +252,9 @@ function LockerMap({ lockers, selectedLocker, mapCenter, mapZoom, userLocation, 
     markersRef.current.forEach((marker, id) => {
       const locker = lockers.find(l => l.id === id);
       if (locker) {
-        const color = getCourierColor(locker.courier);
+        const courierInfo = getCourierInfo(locker.courier);
         const isSelected = selectedLocker?.id === id;
-        marker.setIcon(createCourierIcon(color, isSelected));
+        marker.setIcon(createCourierIcon(courierInfo, isSelected));
       }
     });
   }, [selectedLocker, lockers]);
