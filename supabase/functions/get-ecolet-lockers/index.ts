@@ -111,9 +111,10 @@ async function getMapPoints(
 ): Promise<EcoletLocker[]> {
   console.log(`Fetching map points for country: ${countryCode}, localityId: ${localityId}, query: ${searchQuery}`);
 
+  // Include all courier IDs: 1=DPD, 2=SameDay/EasyBox, 3=FanCourier, 4=GLS, 7=Cargus
   const requestBody: Record<string, unknown> = {
     destination: 'receiver',
-    couriers: [2, 3, 7], // SameDay, FanCourier, Cargus easybox providers
+    couriers: [1, 2, 3, 4, 7],
   };
 
   if (localityId) {
@@ -152,11 +153,8 @@ async function getMapPoints(
   const mapPointsData = data?.mapPoints?.mapPoints || data?.mapPoints || [];
   console.log(`Found ${Array.isArray(mapPointsData) ? mapPointsData.length : 0} map points`);
 
-  // Limit to 200 results for performance
-  const limitedPoints = (Array.isArray(mapPointsData) ? mapPointsData : []).slice(0, 200);
-
-  // Map to our format
-  const lockers: EcoletLocker[] = limitedPoints.map((point: any) => ({
+  // Map to our format - no limit, get all points
+  const lockers: EcoletLocker[] = (Array.isArray(mapPointsData) ? mapPointsData : []).map((point: any) => ({
     id: String(point.id || ''),
     name: point.name || '',
     address: point.address || '',
@@ -168,6 +166,7 @@ async function getMapPoints(
     courier: point.courier_slug || point.courier || 'ecolet',
   }));
 
+  console.log(`Returning ${lockers.length} lockers`);
   return lockers;
 }
 
