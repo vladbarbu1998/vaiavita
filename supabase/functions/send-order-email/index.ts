@@ -246,7 +246,8 @@ function generateProcessingEmail(order: any): string {
 
       <div style="text-align: center; padding: 20px; background: #f9fafb; border-radius: 12px;">
         <p style="color: #6b7280; margin: 0 0 10px;">Ai întrebări despre comandă?</p>
-        <a href="mailto:office@vaiavita.com" style="color: #025951; font-weight: 600; text-decoration: none;">office@vaiavita.com</a>
+        <a href="tel:0732111117" style="color: #025951; font-weight: 600; text-decoration: none; display: block; margin-bottom: 8px;">📞 0732 111 117</a>
+        <a href="mailto:office@vaiavita.com" style="color: #025951; font-weight: 600; text-decoration: none;">✉️ office@vaiavita.com</a>
       </div>
     </div>
     <div style="text-align: center; padding: 30px 20px;">
@@ -387,7 +388,8 @@ function generateShippedEmail(order: any, awbNumber: string, courierName: string
 
       <div style="text-align: center; padding: 20px; background: #f9fafb; border-radius: 12px;">
         <p style="color: #6b7280; margin: 0 0 10px;">Ai întrebări despre livrare?</p>
-        <a href="mailto:office@vaiavita.com" style="color: #025951; font-weight: 600; text-decoration: none;">office@vaiavita.com</a>
+        <a href="tel:0732111117" style="color: #025951; font-weight: 600; text-decoration: none; display: block; margin-bottom: 8px;">📞 0732 111 117</a>
+        <a href="mailto:office@vaiavita.com" style="color: #025951; font-weight: 600; text-decoration: none;">✉️ office@vaiavita.com</a>
       </div>
     </div>
     <div style="text-align: center; padding: 30px 20px;">
@@ -511,7 +513,8 @@ function generateCancelledEmail(order: any, cancellationReason: string): string 
 
       <div style="text-align: center; padding: 20px; background: #f9fafb; border-radius: 12px;">
         <p style="color: #6b7280; margin: 0 0 10px;">Ai întrebări?</p>
-        <a href="mailto:office@vaiavita.com" style="color: #025951; font-weight: 600; text-decoration: none;">office@vaiavita.com</a>
+        <a href="tel:0732111117" style="color: #025951; font-weight: 600; text-decoration: none; display: block; margin-bottom: 8px;">📞 0732 111 117</a>
+        <a href="mailto:office@vaiavita.com" style="color: #025951; font-weight: 600; text-decoration: none;">✉️ office@vaiavita.com</a>
       </div>
     </div>
     <div style="text-align: center; padding: 30px 20px;">
@@ -566,7 +569,8 @@ function generatePaymentFailedEmail(order: any): string {
 
       <div style="text-align: center; padding: 20px; background: #f9fafb; border-radius: 12px;">
         <p style="color: #6b7280; margin: 0 0 10px;">Ai nevoie de ajutor?</p>
-        <a href="mailto:office@vaiavita.com" style="color: #025951; font-weight: 600; text-decoration: none;">office@vaiavita.com</a>
+        <a href="tel:0732111117" style="color: #025951; font-weight: 600; text-decoration: none; display: block; margin-bottom: 8px;">📞 0732 111 117</a>
+        <a href="mailto:office@vaiavita.com" style="color: #025951; font-weight: 600; text-decoration: none;">✉️ office@vaiavita.com</a>
       </div>
     </div>
     <div style="text-align: center; padding: 30px 20px;">
@@ -623,7 +627,8 @@ function generatePaymentReminderEmail(order: any): string {
 
       <div style="text-align: center; padding: 20px; background: #f9fafb; border-radius: 12px;">
         <p style="color: #6b7280; margin: 0 0 10px;">Ai întrebări?</p>
-        <a href="mailto:office@vaiavita.com" style="color: #025951; font-weight: 600; text-decoration: none;">office@vaiavita.com</a>
+        <a href="tel:0732111117" style="color: #025951; font-weight: 600; text-decoration: none; display: block; margin-bottom: 8px;">📞 0732 111 117</a>
+        <a href="mailto:office@vaiavita.com" style="color: #025951; font-weight: 600; text-decoration: none;">✉️ office@vaiavita.com</a>
       </div>
     </div>
     <div style="text-align: center; padding: 30px 20px;">
