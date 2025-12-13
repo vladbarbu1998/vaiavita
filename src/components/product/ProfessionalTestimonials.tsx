@@ -25,13 +25,6 @@ interface Testimonial {
 
 const testimonials: Testimonial[] = [
   {
-    content_ro: 'Pacienții noștri adoră această pastă de dinți și mulți dintre ei au început chiar să o achiziționeze în cantități mai mari. Dentistul nostru a observat, de asemenea, o reducere semnificativă a sângerărilor gingivale de când am introdus această pastă în cabinet.',
-    content_en: 'Our patients love this toothpaste and many of them have started purchasing it in larger quantities. Our dentist has also noticed a significant reduction in gum bleeding since we introduced this toothpaste in our practice.',
-    author: 'HK Dentist',
-    title_ro: 'Medic stomatolog',
-    title_en: 'Dentist',
-  },
-  {
     content_ro: 'Folosesc Dent-Tastic de doi ani și l-am recomandat atât pacienților mei, cât și prietenilor. Cu toții am devenit dependenți de senzația sa revigorantă și de prospețimea de lungă durată pe care o oferă. Încercați și voi — beneficiile depășesc cu mult sănătatea orală convențională. Împărtășiți și cu familia voastră; merită tot ce e mai bun.',
     content_en: 'I have been using Dent-Tastic for two years and have recommended it to both my patients and friends. We have all become addicted to its refreshing sensation and the long-lasting freshness it provides. Try it too — the benefits far exceed conventional oral health. Share it with your family as well; they deserve the best.',
     author: 'Prof. A-Bakr M. Rabie',
@@ -41,6 +34,13 @@ const testimonials: Testimonial[] = [
     linkedinUrl: 'https://www.linkedin.com/in/prof-bakr-rabie-830231200/',
     linkedinPostUrl: 'https://www.linkedin.com/posts/prof-bakr-rabie-830231200_past%C4%83-de-din%C8%9Bi-natural%C4%83-dent-tastic-activity-7397429607756595200-90xA/',
     hasProof: true,
+  },
+  {
+    content_ro: 'Pacienții noștri adoră această pastă de dinți și mulți dintre ei au început chiar să o achiziționeze în cantități mai mari. Dentistul nostru a observat, de asemenea, o reducere semnificativă a sângerărilor gingivale de când am introdus această pastă în cabinet.',
+    content_en: 'Our patients love this toothpaste and many of them have started purchasing it in larger quantities. Our dentist has also noticed a significant reduction in gum bleeding since we introduced this toothpaste in our practice.',
+    author: 'HK Dentist',
+    title_ro: 'Medic stomatolog',
+    title_en: 'Dentist',
   },
 ];
 
@@ -112,35 +112,36 @@ export function ProfessionalTestimonials() {
 
       {/* Mobile: Carousel */}
       <div className="md:hidden">
-        <div className="flex items-center justify-center gap-2">
+        <div className="relative">
+          {/* Navigation arrows */}
           <Button
             variant="ghost"
             size="icon"
-            className="shrink-0 h-10 w-10"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 bg-background/80 backdrop-blur-sm shadow-md"
             onClick={prevTestimonial}
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
 
-          <div className="flex-1 max-w-[320px]">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border border-primary/20 p-5 shadow-lg">
+          <div className="px-12">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border border-primary/20 p-6 shadow-lg">
               {/* Decorative quote */}
               <div className="absolute -top-2 -left-2 w-16 h-16 bg-primary/10 rounded-full blur-xl" />
-              <Quote className="w-8 h-8 text-primary/30 absolute top-4 right-4" />
+              <Quote className="w-10 h-10 text-primary/30 absolute top-4 right-4" />
               
-              <p className="text-sm leading-relaxed text-foreground/90 mb-4 pr-8 relative z-10">
+              <p className="text-base leading-relaxed text-foreground/90 mb-5 pr-10 relative z-10">
                 "{language === 'ro' 
                   ? testimonials[currentIndex].content_ro 
                   : testimonials[currentIndex].content_en}"
               </p>
               
-              <div className="border-t border-primary/20 pt-3 mt-3 relative z-10">
+              <div className="border-t border-primary/20 pt-4 mt-4 relative z-10">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="font-semibold text-foreground">
+                    <p className="font-semibold text-foreground text-base">
                       {testimonials[currentIndex].author}
                     </p>
-                    <p className="text-xs text-primary font-medium">
+                    <p className="text-sm text-primary font-medium">
                       {language === 'ro' 
                         ? testimonials[currentIndex].title_ro 
                         : testimonials[currentIndex].title_en}
@@ -159,10 +160,10 @@ export function ProfessionalTestimonials() {
                       href={testimonials[currentIndex].linkedinUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="shrink-0 w-8 h-8 rounded-full bg-[#0077B5]/10 hover:bg-[#0077B5]/20 flex items-center justify-center transition-colors"
+                      className="shrink-0 w-9 h-9 rounded-full bg-[#0077B5]/10 hover:bg-[#0077B5]/20 flex items-center justify-center transition-colors"
                       title="LinkedIn"
                     >
-                      <ExternalLink className="w-3.5 h-3.5 text-[#0077B5]" />
+                      <ExternalLink className="w-4 h-4 text-[#0077B5]" />
                     </a>
                   )}
                 </div>
@@ -173,7 +174,7 @@ export function ProfessionalTestimonials() {
           <Button
             variant="ghost"
             size="icon"
-            className="shrink-0 h-10 w-10"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 bg-background/80 backdrop-blur-sm shadow-md"
             onClick={nextTestimonial}
           >
             <ChevronRight className="w-5 h-5" />
