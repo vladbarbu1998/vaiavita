@@ -171,6 +171,38 @@ const AdminOrders = () => {
   const [awbFetchError, setAwbFetchError] = useState<string | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
   const [sendCancelEmail, setSendCancelEmail] = useState(true);
+  // Play notification sound
+  const playNotificationSound = (type: 'new_order' | 'payment_confirmed') => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      if (type === 'new_order') {
+        // Two-tone notification for new order
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.2);
+      } else {
+        // Success chime for payment confirmed
+        oscillator.frequency.setValueAtTime(523, audioContext.currentTime); // C5
+        oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.1); // E5
+        oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.2); // G5
+      }
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.4);
+    } catch (error) {
+      console.log('Could not play notification sound:', error);
+    }
+  };
+
   useEffect(() => {
     fetchData();
 
@@ -187,10 +219,27 @@ const AdminOrders = () => {
         (payload) => {
           console.log('Realtime order update:', payload);
           if (payload.eventType === 'INSERT') {
-            setOrders(prev => [payload.new as Order, ...prev]);
-            toast.success(`Comandă nouă: ${(payload.new as Order).order_number}`);
+            const newOrder = payload.new as Order;
+            setOrders(prev => [newOrder, ...prev]);
+            playNotificationSound('new_order');
+            toast.success(`🔔 Comandă nouă: ${newOrder.order_number}`, {
+              duration: 8000,
+              description: `${newOrder.customer_first_name} ${newOrder.customer_last_name} - ${Number(newOrder.total).toFixed(2)} lei`
+            });
           } else if (payload.eventType === 'UPDATE') {
-            setOrders(prev => prev.map(o => o.id === payload.new.id ? payload.new as Order : o));
+            const updatedOrder = payload.new as Order;
+            const oldOrder = payload.old as Partial<Order>;
+            
+            setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
+            
+            // Check if payment was just confirmed (Stripe webhook updated the order)
+            if (oldOrder.payment_status === 'pending' && updatedOrder.payment_status === 'paid') {
+              playNotificationSound('payment_confirmed');
+              toast.success(`💳 Plată confirmată: ${updatedOrder.order_number}`, {
+                duration: 8000,
+                description: `${updatedOrder.customer_first_name} ${updatedOrder.customer_last_name} - ${Number(updatedOrder.total).toFixed(2)} lei`
+              });
+            }
           } else if (payload.eventType === 'DELETE') {
             setOrders(prev => prev.filter(o => o.id !== payload.old.id));
           }
