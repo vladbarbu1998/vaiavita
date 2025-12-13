@@ -82,12 +82,16 @@ interface Order {
   admin_notes: string | null;
   ecolet_synced: boolean | null;
   ecolet_sync_error: string | null;
+  ecolet_order_id: string | null;
   oblio_invoice_number: string | null;
   oblio_series_name: string | null;
   oblio_invoice_link: string | null;
   oblio_invoice_date: string | null;
   awb_number: string | null;
   courier_name: string | null;
+  tracking_url: string | null;
+  cancel_reason: string | null;
+  cancel_source: string | null;
   created_at: string;
 }
 
@@ -162,8 +166,11 @@ const AdminOrders = () => {
   const [pendingStatusOrder, setPendingStatusOrder] = useState<Order | null>(null);
   const [awbNumber, setAwbNumber] = useState('');
   const [courierName, setCourierName] = useState('');
+  const [trackingUrl, setTrackingUrl] = useState('');
+  const [fetchingAwb, setFetchingAwb] = useState(false);
+  const [awbFetchError, setAwbFetchError] = useState<string | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
-
+  const [sendCancelEmail, setSendCancelEmail] = useState(true);
   useEffect(() => {
     fetchData();
 
@@ -287,31 +294,74 @@ const AdminOrders = () => {
     }
   };
 
-  const handleStatusChange = (order: Order, newStatus: string) => {
+  const handleStatusChange = async (order: Order, newStatus: string) => {
     if (newStatus === 'shipped') {
       setPendingStatusOrder(order);
-      setAwbNumber('');
-      setCourierName('');
+      setAwbNumber(order.awb_number || '');
+      setCourierName(order.courier_name || '');
+      setTrackingUrl(order.tracking_url || '');
+      setAwbFetchError(null);
       setShippedDialogOpen(true);
+      
+      // Auto-fetch AWB from Ecolet if synced
+      if (order.ecolet_synced) {
+        fetchAwbFromEcolet(order.id);
+      }
     } else if (newStatus === 'cancelled') {
       setPendingStatusOrder(order);
-      setCancellationReason('');
+      setCancellationReason(order.cancel_reason || '');
+      setSendCancelEmail(true);
       setCancelDialogOpen(true);
     } else {
       updateOrderStatus(order.id, newStatus as any);
     }
   };
 
+  const fetchAwbFromEcolet = async (orderId: string) => {
+    setFetchingAwb(true);
+    setAwbFetchError(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('get-ecolet-awb', {
+        body: { orderId },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setAwbNumber(data.awb_number || '');
+        setCourierName(data.courier_name || '');
+        setTrackingUrl(data.tracking_url || '');
+        toast.success('AWB preluat din Ecolet!');
+      } else if (data?.awbNotGenerated) {
+        setAwbFetchError('AWB-ul nu a fost încă generat în Ecolet. Generează-l din panoul Ecolet și apoi apasă "Reîncearcă".');
+      } else if (data?.needsSync) {
+        setAwbFetchError('Comanda nu a fost sincronizată în Ecolet. Sincronizeaz-o mai întâi.');
+      } else if (data?.notFound) {
+        setAwbFetchError('Comanda nu a fost găsită în Ecolet.');
+      } else {
+        setAwbFetchError(data?.error || 'Eroare la preluarea AWB');
+      }
+    } catch (err: any) {
+      console.error('Error fetching AWB:', err);
+      setAwbFetchError(err.message || 'Eroare la conectarea cu Ecolet');
+    } finally {
+      setFetchingAwb(false);
+    }
+  };
+
   const confirmShippedStatus = async () => {
     if (!pendingStatusOrder) return;
     
-    // Save AWB and courier to database along with status
+    // Save AWB, courier and tracking URL to database along with status
     const { error } = await supabase
       .from('orders')
       .update({ 
         status: 'shipped',
         awb_number: awbNumber || null,
-        courier_name: courierName || null
+        courier_name: courierName || null,
+        tracking_url: trackingUrl || null,
+        shipped_email_sent_at: new Date().toISOString()
       })
       .eq('id', pendingStatusOrder.id);
 
@@ -325,7 +375,8 @@ const AdminOrders = () => {
           ...selectedOrder, 
           status: 'shipped',
           awb_number: awbNumber || null,
-          courier_name: courierName || null
+          courier_name: courierName || null,
+          tracking_url: trackingUrl || null
         });
       }
       
@@ -343,24 +394,42 @@ const AdminOrders = () => {
   const confirmCancelledStatus = async () => {
     if (!pendingStatusOrder) return;
     
+    // Save cancellation reason and update status
+    const updateData: any = { 
+      status: 'cancelled',
+      cancel_reason: cancellationReason || null,
+      cancel_source: 'admin_manual'
+    };
+    
+    if (sendCancelEmail) {
+      updateData.cancelled_email_sent_at = new Date().toISOString();
+    }
+    
     const { error } = await supabase
       .from('orders')
-      .update({ status: 'cancelled' })
+      .update(updateData)
       .eq('id', pendingStatusOrder.id);
 
     if (error) {
       toast.error('Eroare la actualizare');
     } else {
-      toast.success('Status actualizat');
+      toast.success('Comandă anulată');
       fetchData();
       if (selectedOrder?.id === pendingStatusOrder.id) {
-        setSelectedOrder({ ...selectedOrder, status: 'cancelled' });
+        setSelectedOrder({ 
+          ...selectedOrder, 
+          status: 'cancelled',
+          cancel_reason: cancellationReason || null,
+          cancel_source: 'admin_manual'
+        });
       }
       
-      // Send email with cancellation reason
-      await sendOrderEmail(pendingStatusOrder.id, 'cancelled', { 
-        cancellationReason: cancellationReason || 'Comanda a fost anulată.' 
-      });
+      // Send email only if checkbox is checked
+      if (sendCancelEmail) {
+        await sendOrderEmail(pendingStatusOrder.id, 'cancelled', { 
+          cancellationReason: cancellationReason || 'Comanda a fost anulată.' 
+        });
+      }
     }
     
     setCancelDialogOpen(false);
@@ -1304,7 +1373,7 @@ const AdminOrders = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Shipped Status Dialog - AWB & Courier */}
+      {/* Shipped Status Dialog - AWB & Courier with Ecolet auto-fetch */}
       <Dialog open={shippedDialogOpen} onOpenChange={setShippedDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -1313,10 +1382,53 @@ const AdminOrders = () => {
               Detalii expediere
             </DialogTitle>
             <DialogDescription>
-              Introdu datele de tracking pentru comanda {pendingStatusOrder?.order_number}
+              Datele de tracking pentru comanda {pendingStatusOrder?.order_number}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {/* Ecolet sync status & fetch */}
+            {pendingStatusOrder?.ecolet_synced && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <div className="flex items-center gap-2 text-green-700">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span className="text-sm font-medium">Sincronizat în Ecolet</span>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => fetchAwbFromEcolet(pendingStatusOrder.id)}
+                    disabled={fetchingAwb}
+                    className="gap-2"
+                  >
+                    {fetchingAwb ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                    {fetchingAwb ? 'Se preia...' : 'Preia AWB din Ecolet'}
+                  </Button>
+                </div>
+                {awbFetchError && (
+                  <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-700">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      <span>{awbFetchError}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {!pendingStatusOrder?.ecolet_synced && pendingStatusOrder && canSendToEcolet(pendingStatusOrder) && (
+              <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-700">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>Comanda nu a fost sincronizată în Ecolet. Poți introduce AWB-ul manual sau sincroniza mai întâi.</span>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="awb">Număr AWB *</Label>
               <Input
@@ -1343,6 +1455,18 @@ const AdminOrders = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="tracking">Link tracking (opțional)</Label>
+              <Input
+                id="tracking"
+                placeholder="https://..."
+                value={trackingUrl}
+                onChange={(e) => setTrackingUrl(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Link-ul va fi inclus în email-ul de expediere
+              </p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShippedDialogOpen(false)}>
@@ -1353,14 +1477,14 @@ const AdminOrders = () => {
               disabled={!awbNumber.trim() || !courierName}
               className="gap-2"
             >
-              <Send className="w-4 h-4" />
-              Confirmă expedierea
+              <Mail className="w-4 h-4" />
+              Trimite email + Confirmă
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Cancel Status Dialog - Reason */}
+      {/* Cancel Status Dialog - Reason + Email checkbox */}
       <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -1374,7 +1498,7 @@ const AdminOrders = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="reason">Motivul anulării</Label>
+              <Label htmlFor="reason">Motivul anulării *</Label>
               <Textarea
                 id="reason"
                 placeholder="Ex: Clientul a solicitat anularea comenzii..."
@@ -1382,6 +1506,18 @@ const AdminOrders = () => {
                 onChange={(e) => setCancellationReason(e.target.value)}
                 rows={4}
               />
+            </div>
+            <div className="flex items-center space-x-2 p-3 rounded-lg bg-muted/50">
+              <input
+                type="checkbox"
+                id="sendCancelEmail"
+                checked={sendCancelEmail}
+                onChange={(e) => setSendCancelEmail(e.target.checked)}
+                className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+              />
+              <Label htmlFor="sendCancelEmail" className="text-sm cursor-pointer">
+                Trimite email de notificare către client
+              </Label>
             </div>
           </div>
           <DialogFooter>
@@ -1391,10 +1527,11 @@ const AdminOrders = () => {
             <Button 
               variant="destructive"
               onClick={confirmCancelledStatus}
+              disabled={!cancellationReason.trim()}
               className="gap-2"
             >
               <XCircle className="w-4 h-4" />
-              Confirmă anularea
+              {sendCancelEmail ? 'Anulează + Trimite email' : 'Anulează comandă'}
             </Button>
           </DialogFooter>
         </DialogContent>

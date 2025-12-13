@@ -174,11 +174,12 @@ serve(async (req) => {
       case "payment_intent.payment_failed": {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         const orderId = paymentIntent.metadata?.orderId;
+        const failureReason = paymentIntent.last_payment_error?.message || 'Plata nu a putut fi procesată';
         
         logStep("Payment failed", { 
           paymentIntentId: paymentIntent.id, 
           orderId,
-          error: paymentIntent.last_payment_error?.message 
+          error: failureReason 
         });
 
         if (orderId) {
@@ -187,7 +188,9 @@ serve(async (req) => {
             .from("orders")
             .update({ 
               payment_status: "failed",
-              payment_id: paymentIntent.id
+              payment_id: paymentIntent.id,
+              cancel_reason: failureReason,
+              cancel_source: 'stripe_webhook'
             })
             .eq("id", orderId);
 
@@ -195,6 +198,39 @@ serve(async (req) => {
             logStep("Error updating order for failed payment", { error: error.message });
           } else {
             logStep("Order marked as payment failed", { orderId });
+            
+            // Send payment failed email
+            try {
+              const emailResponse = await fetch(
+                `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-order-email`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                  },
+                  body: JSON.stringify({
+                    orderId,
+                    emailType: "payment_failed",
+                    language: "ro",
+                  }),
+                }
+              );
+              
+              if (emailResponse.ok) {
+                logStep("Payment failed email sent", { orderId });
+                
+                // Update email sent timestamp
+                await supabaseClient
+                  .from("orders")
+                  .update({ payment_failed_email_sent_at: new Date().toISOString() })
+                  .eq("id", orderId);
+              } else {
+                logStep("Failed to send payment failed email", { orderId });
+              }
+            } catch (emailError) {
+              logStep("Error sending payment failed email", { error: emailError });
+            }
           }
         }
         break;
