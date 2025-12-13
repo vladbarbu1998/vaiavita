@@ -36,7 +36,10 @@ import {
   Calendar,
   Banknote,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  FileText,
+  ExternalLink,
+  Trash2
 } from 'lucide-react';
 
 interface Order {
@@ -65,6 +68,10 @@ interface Order {
   admin_notes: string | null;
   ecolet_synced: boolean | null;
   ecolet_sync_error: string | null;
+  oblio_invoice_number: string | null;
+  oblio_series_name: string | null;
+  oblio_invoice_link: string | null;
+  oblio_invoice_date: string | null;
   created_at: string;
 }
 
@@ -128,6 +135,8 @@ const AdminOrders = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [sendingToEcolet, setSendingToEcolet] = useState<string | null>(null);
+  const [generatingInvoice, setGeneratingInvoice] = useState<string | null>(null);
+  const [cancellingInvoice, setCancellingInvoice] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -287,6 +296,90 @@ const AdminOrders = () => {
       fetchData();
     } finally {
       setSendingToEcolet(null);
+    }
+  };
+
+  const generateInvoice = async (order: Order) => {
+    setGeneratingInvoice(order.id);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('oblio-invoice', {
+        body: {
+          action: 'create',
+          orderId: order.id,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success(`Factură generată: ${data.seriesName} ${data.invoiceNumber}`);
+        fetchData();
+        // Update selected order if it's the same
+        if (selectedOrder?.id === order.id) {
+          setSelectedOrder({
+            ...selectedOrder,
+            oblio_invoice_number: data.invoiceNumber,
+            oblio_series_name: data.seriesName,
+            oblio_invoice_link: data.link,
+            oblio_invoice_date: new Date().toISOString(),
+          });
+        }
+      } else {
+        throw new Error(data?.error || 'Eroare necunoscută');
+      }
+    } catch (err: any) {
+      console.error('Invoice generation error:', err);
+      toast.error(`Eroare: ${err.message}`);
+    } finally {
+      setGeneratingInvoice(null);
+    }
+  };
+
+  const cancelInvoice = async (order: Order) => {
+    if (!confirm(`Sigur vrei să anulezi factura ${order.oblio_series_name} ${order.oblio_invoice_number}?`)) {
+      return;
+    }
+    
+    setCancellingInvoice(order.id);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('oblio-invoice', {
+        body: {
+          action: 'cancel',
+          orderId: order.id,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success('Factură anulată cu succes');
+        fetchData();
+        // Update selected order if it's the same
+        if (selectedOrder?.id === order.id) {
+          setSelectedOrder({
+            ...selectedOrder,
+            oblio_invoice_number: null,
+            oblio_series_name: null,
+            oblio_invoice_link: null,
+            oblio_invoice_date: null,
+          });
+        }
+      } else {
+        throw new Error(data?.error || 'Eroare necunoscută');
+      }
+    } catch (err: any) {
+      console.error('Invoice cancel error:', err);
+      toast.error(`Eroare: ${err.message}`);
+    } finally {
+      setCancellingInvoice(null);
+    }
+  };
+
+  const viewInvoice = (order: Order) => {
+    if (order.oblio_invoice_link) {
+      window.open(order.oblio_invoice_link, '_blank');
     }
   };
 
@@ -857,6 +950,77 @@ const AdminOrders = () => {
                   )}
                 </div>
               )}
+
+              {/* Invoice Section */}
+              <div className="space-y-3 pt-4 border-t border-border">
+                <h3 className="font-medium flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  Facturare Oblio
+                </h3>
+                
+                {selectedOrder.oblio_invoice_number ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      <div className="flex-1">
+                        <p className="font-medium text-green-700">
+                          Factură: {selectedOrder.oblio_series_name} {selectedOrder.oblio_invoice_number}
+                        </p>
+                        {selectedOrder.oblio_invoice_date && (
+                          <p className="text-sm text-green-600">
+                            Emisă la: {formatDate(selectedOrder.oblio_invoice_date)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => viewInvoice(selectedOrder)}
+                        className="gap-2"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Vezi factura
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => cancelInvoice(selectedOrder)}
+                        disabled={cancellingInvoice === selectedOrder.id}
+                        className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        {cancellingInvoice === selectedOrder.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                        Anulează factura
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <Button
+                      onClick={() => generateInvoice(selectedOrder)}
+                      disabled={generatingInvoice === selectedOrder.id || selectedOrder.status === 'cancelled'}
+                      className="gap-2"
+                    >
+                      {generatingInvoice === selectedOrder.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <FileText className="w-4 h-4" />
+                      )}
+                      Generează factură
+                    </Button>
+                    {selectedOrder.status === 'cancelled' && (
+                      <span className="text-sm text-muted-foreground">
+                        Nu se poate genera factură pentru comenzi anulate
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </DialogContent>
