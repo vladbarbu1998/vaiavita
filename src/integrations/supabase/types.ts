@@ -259,6 +259,10 @@ export type Database = {
           locker_locality_id: number | null
           locker_name: string | null
           locker_postal_code: string | null
+          oblio_invoice_date: string | null
+          oblio_invoice_link: string | null
+          oblio_invoice_number: string | null
+          oblio_series_name: string | null
           order_number: string
           payment_id: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
@@ -294,6 +298,10 @@ export type Database = {
           locker_locality_id?: number | null
           locker_name?: string | null
           locker_postal_code?: string | null
+          oblio_invoice_date?: string | null
+          oblio_invoice_link?: string | null
+          oblio_invoice_number?: string | null
+          oblio_series_name?: string | null
           order_number: string
           payment_id?: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
@@ -329,6 +337,10 @@ export type Database = {
           locker_locality_id?: number | null
           locker_name?: string | null
           locker_postal_code?: string | null
+          oblio_invoice_date?: string | null
+          oblio_invoice_link?: string | null
+          oblio_invoice_number?: string | null
+          oblio_series_name?: string | null
           order_number?: string
           payment_id?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
