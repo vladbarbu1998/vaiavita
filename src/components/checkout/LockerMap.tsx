@@ -116,11 +116,13 @@ function LockerMap({ lockers, selectedLocker, mapCenter, mapZoom, userLocation, 
     onBoundsChangeRef.current = onBoundsChange;
   }, [onSelectLocker, onBoundsChange]);
 
-  // Get courier info (color and logo)
-  const getCourierInfo = (courierName: string): { color: string; logo?: string } => {
+  // Get courier info (color, logo, and display name)
+  const getCourierInfo = (courierName: string): { color: string; logo?: string; displayName: string } => {
     const courierLower = (courierName || '').toLowerCase();
     const courier = COURIERS.find(c => courierLower.includes(c.id));
-    return courier ? { color: courier.color, logo: courier.logo } : { color: '#6B7280' };
+    return courier 
+      ? { color: courier.color, logo: courier.logo, displayName: courier.name } 
+      : { color: '#6B7280', displayName: courierName || 'Locker' };
   };
 
   // Initialize map
@@ -236,7 +238,7 @@ function LockerMap({ lockers, selectedLocker, mapCenter, mapZoom, userLocation, 
                 font-weight: 500;
                 background: ${courierInfo.color}20;
                 color: ${courierInfo.color};
-              ">${locker.courier || 'Locker'}</span>
+              ">${courierInfo.displayName}</span>
             </p>
           </div>
         `)
