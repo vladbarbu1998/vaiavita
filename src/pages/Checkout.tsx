@@ -439,8 +439,8 @@ const Checkout = () => {
       if (field === 'deliveryMethod') {
         let newPaymentMethod = prev.paymentMethod;
         
-        // If switching to locker and payment is cash_on_delivery, reset to stripe
-        if (value === 'locker' && prev.paymentMethod === 'cash_on_delivery') {
+        // If switching to locker or pickup and payment is cash_on_delivery, reset to stripe
+        if ((value === 'locker' || value === 'pickup') && prev.paymentMethod === 'cash_on_delivery') {
           newPaymentMethod = 'stripe';
         }
         
@@ -986,8 +986,8 @@ const Checkout = () => {
                     onValueChange={(value) => updateForm('paymentMethod', value)}
                     className="space-y-3"
                   >
-                    {/* Cash on delivery - only for Romania and not locker */}
-                    {isRomania && form.deliveryMethod !== 'locker' && (
+                    {/* Cash on delivery - only for Romania, not locker, not pickup */}
+                    {isRomania && form.deliveryMethod !== 'locker' && form.deliveryMethod !== 'pickup' && (
                       <label 
                         className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
                           form.paymentMethod === 'cash_on_delivery' 
