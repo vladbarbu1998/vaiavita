@@ -62,14 +62,19 @@ const CommandList = React.forwardRef<
     e.stopPropagation();
   };
   
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.stopPropagation();
+  };
+  
   return (
     <CommandPrimitive.List
       ref={ref}
       className={cn(
-        "max-h-[300px] overflow-y-auto overflow-x-hidden overscroll-contain",
+        "max-h-[300px] overflow-y-auto overflow-x-hidden overscroll-contain touch-pan-y",
         className
       )}
       onWheel={handleWheel}
+      onTouchMove={handleTouchMove}
       {...props}
     />
   );
