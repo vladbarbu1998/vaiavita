@@ -13,9 +13,26 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('vaiavita-theme');
     if (saved === 'dark' || saved === 'light') return saved;
-    // Default to light mode
+    // Detect system preference
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
     return 'light';
   });
+
+  // Listen for system theme changes (only if user hasn't manually set a preference)
+  useEffect(() => {
+    const savedPreference = localStorage.getItem('vaiavita-theme');
+    if (savedPreference) return; // User has a saved preference, don't override
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      setTheme(e.matches ? 'dark' : 'light');
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
