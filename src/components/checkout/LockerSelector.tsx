@@ -18,7 +18,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
 
 export interface Locker {
   id: string;
@@ -44,6 +43,7 @@ export const COURIERS = [
   { id: 'cargus', name: 'Cargus', color: '#F59E0B' },
   { id: 'fan', name: 'FAN Courier', color: '#3B82F6' },
   { id: 'gls', name: 'GLS', color: '#10B981' },
+  { id: 'sameday', name: 'Sameday', color: '#EC4899' },
 ] as const;
 
 interface LockerSelectorProps {
@@ -155,8 +155,8 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
       );
     }
 
-    // Limit to 300 for performance
-    setFilteredLockers(filtered.slice(0, 300));
+    // Limit to 500 for performance
+    setFilteredLockers(filtered.slice(0, 500));
   }, [allLockers, selectedCity, searchQuery, mapBounds, activeCouriers]);
 
   // When city changes, center map on that city
@@ -361,7 +361,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                       <button
                         key={courier.id}
                         onClick={() => toggleCourier(courier.id)}
-                        className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-colors ${
+                        className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-colors cursor-pointer ${
                           activeCouriers.includes(courier.id) 
                             ? 'border-primary bg-primary/5' 
                             : 'border-border opacity-50'
@@ -374,10 +374,17 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                           />
                           <span className="font-medium">{courier.name}</span>
                         </div>
-                        <Switch 
-                          checked={activeCouriers.includes(courier.id)}
-                          onCheckedChange={() => toggleCourier(courier.id)}
-                        />
+                        <div 
+                          className={`w-10 h-6 rounded-full transition-colors relative ${
+                            activeCouriers.includes(courier.id) ? 'bg-primary' : 'bg-muted'
+                          }`}
+                        >
+                          <div 
+                            className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                              activeCouriers.includes(courier.id) ? 'translate-x-5' : 'translate-x-1'
+                            }`}
+                          />
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -385,19 +392,21 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
               </PopoverContent>
             </Popover>
 
-            {/* Locate me button */}
+            {/* Locate me button - text version */}
             <Button 
               variant="outline" 
-              size="icon"
               onClick={handleLocateMe}
               disabled={locatingUser}
-              title={language === 'ro' ? 'Localizează-mă' : 'Locate me'}
+              className="gap-2"
             >
               {locatingUser ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Crosshair className="h-4 w-4" />
               )}
+              <span className="hidden sm:inline">
+                {language === 'ro' ? 'Localizează-mă' : 'Locate me'}
+              </span>
             </Button>
           </div>
           

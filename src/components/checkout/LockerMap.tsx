@@ -1,6 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster';
 import { COURIERS } from './LockerSelector';
 
 // Fix for default marker icons in Leaflet with webpack/vite
@@ -72,7 +75,7 @@ function LockerMap({ lockers, selectedLocker, mapCenter, userLocation, onSelectL
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
-  const markerClusterRef = useRef<L.LayerGroup | null>(null);
+  const markerClusterRef = useRef<any>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
   const onSelectLockerRef = useRef(onSelectLocker);
   const onBoundsChangeRef = useRef(onBoundsChange);
@@ -100,7 +103,53 @@ function LockerMap({ lockers, selectedLocker, mapCenter, userLocation, onSelectL
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(mapRef.current);
 
-    markerClusterRef.current = L.layerGroup().addTo(mapRef.current);
+    // Create marker cluster group with custom styling
+    markerClusterRef.current = (L as any).markerClusterGroup({
+      showCoverageOnHover: false,
+      maxClusterRadius: 50,
+      spiderfyOnMaxZoom: true,
+      disableClusteringAtZoom: 15,
+      iconCreateFunction: (cluster: any) => {
+        const count = cluster.getChildCount();
+        let size = 'small';
+        let color = '#10B981'; // green
+        
+        if (count > 100) {
+          size = 'large';
+          color = '#EF4444'; // red
+        } else if (count > 50) {
+          size = 'medium';
+          color = '#F59E0B'; // orange
+        } else if (count > 20) {
+          color = '#EAB308'; // yellow
+        }
+        
+        const dimensions = size === 'large' ? 50 : size === 'medium' ? 40 : 30;
+        
+        return L.divIcon({
+          html: `
+            <div style="
+              background: ${color};
+              color: white;
+              width: ${dimensions}px;
+              height: ${dimensions}px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-weight: bold;
+              font-size: ${size === 'large' ? '14px' : size === 'medium' ? '12px' : '11px'};
+              border: 3px solid white;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            ">${count}</div>
+          `,
+          className: 'marker-cluster',
+          iconSize: L.point(dimensions, dimensions),
+        });
+      }
+    });
+    
+    mapRef.current.addLayer(markerClusterRef.current);
 
     // Report bounds on move/zoom end
     const reportBounds = () => {
