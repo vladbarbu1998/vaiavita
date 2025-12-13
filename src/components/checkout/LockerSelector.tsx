@@ -362,65 +362,79 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         <div className="p-3 md:p-4 border-b space-y-2 md:space-y-3">
           {/* Row 1: County selector + Locate me */}
           <div className="flex gap-2">
-            {/* County dropdown with search - same style as Checkout */}
-            <Popover open={countyDropdownOpen} onOpenChange={setCountyDropdownOpen}>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  role="combobox" 
-                  aria-expanded={countyDropdownOpen}
-                  className="flex-1 justify-between text-xs md:text-sm bg-background"
-                >
-                  <span className="truncate">
-                    {selectedCounty || (language === 'ro' ? 'Selectează județ...' : 'Select county...')}
-                  </span>
-                  <ChevronsUpDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[220px] p-0 bg-background z-[200]" align="start">
-                <Command>
-                  <CommandInput placeholder={language === 'ro' ? 'Caută județ...' : 'Search county...'} />
-                  <CommandList>
-                    <CommandEmpty>{language === 'ro' ? 'Nu s-a găsit.' : 'Not found.'}</CommandEmpty>
-                    <CommandGroup>
-                      <CommandItem
-                        value="toate-judetele"
-                        onSelect={() => {
-                          setSelectedCounty('');
-                          setCountyDropdownOpen(false);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            !selectedCounty ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {language === 'ro' ? 'Toate județele' : 'All counties'}
-                      </CommandItem>
-                      {availableCounties.map((county) => (
+            {/* County dropdown with search and clear button */}
+            <div className="flex-1 flex gap-1">
+              <Popover open={countyDropdownOpen} onOpenChange={setCountyDropdownOpen}>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    role="combobox" 
+                    aria-expanded={countyDropdownOpen}
+                    className="flex-1 justify-between text-xs md:text-sm bg-background"
+                  >
+                    <span className="truncate">
+                      {selectedCounty || (language === 'ro' ? 'Selectează județ...' : 'Select county...')}
+                    </span>
+                    <ChevronsUpDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[220px] p-0 bg-background z-[200]" align="start">
+                  <Command>
+                    <CommandInput placeholder={language === 'ro' ? 'Caută județ...' : 'Search county...'} />
+                    <CommandList>
+                      <CommandEmpty>{language === 'ro' ? 'Nu s-a găsit.' : 'Not found.'}</CommandEmpty>
+                      <CommandGroup>
                         <CommandItem
-                          key={county}
-                          value={county}
+                          value="toate-judetele"
                           onSelect={() => {
-                            setSelectedCounty(county);
+                            setSelectedCounty('');
                             setCountyDropdownOpen(false);
                           }}
                         >
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              selectedCounty === county ? "opacity-100" : "opacity-0"
+                              !selectedCounty ? "opacity-100" : "opacity-0"
                             )}
                           />
-                          {county}
+                          {language === 'ro' ? 'Toate județele' : 'All counties'}
                         </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+                        {availableCounties.map((county) => (
+                          <CommandItem
+                            key={county}
+                            value={county}
+                            onSelect={() => {
+                              setSelectedCounty(county);
+                              setCountyDropdownOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedCounty === county ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {county}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              
+              {/* Clear county button */}
+              {selectedCounty && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 h-9 w-9"
+                  onClick={() => setSelectedCounty('')}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
 
             {/* Locate me button */}
             <Button 
@@ -440,7 +454,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
 
           {/* Row 2: Search + Filter */}
           <div className="flex gap-2">
-            {/* Search input */}
+            {/* Search input with clear button */}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -449,8 +463,17 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                   : 'Search by name, address...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 text-sm"
+                className="pl-10 pr-9 text-sm"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
 
             {/* Filter button */}
@@ -532,9 +555,9 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         {/* Main content - split view on desktop, stacked on mobile */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
           {/* Map - shows first on mobile, right side on desktop */}
-          <div className="h-[180px] shrink-0 md:h-auto md:w-3/5 md:order-2 flex flex-col md:border-l">
+          <div className="h-[180px] mb-2 shrink-0 md:mb-0 md:h-auto md:w-3/5 md:order-2 flex flex-col md:border-l">
             {/* Map */}
-            <div className="h-full relative bg-muted">
+            <div className="h-full relative bg-muted rounded-b-lg md:rounded-none overflow-hidden">
               <Suspense fallback={
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -608,13 +631,8 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
             )}
           </div>
 
-          {/* Mobile separator between map and list */}
-          <div className="md:hidden h-2 shrink-0 bg-gradient-to-b from-muted/80 to-background border-t border-b shadow-sm flex items-center justify-center">
-            <div className="w-12 h-1 bg-muted-foreground/30 rounded-full" />
-          </div>
-
           {/* List - shows second on mobile, left side on desktop */}
-          <div className="flex-1 min-h-0 md:w-2/5 md:order-1 overflow-y-auto">
+          <div className="flex-1 min-h-0 md:w-2/5 md:order-1 overflow-y-auto border-t md:border-t-0">
             {loading ? (
               <div className="flex items-center justify-center h-full py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
