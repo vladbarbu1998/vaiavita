@@ -12,6 +12,18 @@ interface EcoletTokenResponse {
   refresh_token: string;
 }
 
+interface Locality {
+  id: number;
+  name: string;
+  municipality: string;
+  postal_code: string;
+  county: {
+    id: number;
+    name: string;
+    code: string;
+  };
+}
+
 interface EcoletLocker {
   id: string;
   name: string;
@@ -64,17 +76,57 @@ async function getEcoletToken(): Promise<string> {
   return data.access_token;
 }
 
-async function getMapPoints(token: string, countryCode: string = 'ro'): Promise<EcoletLocker[]> {
-  console.log(`Fetching map points for country: ${countryCode}`);
+// Search for localities
+async function searchLocalities(token: string, query: string, countryCode: string = 'RO'): Promise<Locality[]> {
+  console.log(`Searching localities for: ${query}`);
 
-  // According to Ecolet API docs, destination should be "receiver" or "sender"
-  const requestBody = {
-    destination: 'receiver',  // This is the key - must be 'receiver' or 'sender'
+  const response = await fetch(`https://panel.ecolet.ro/api/v1/locations/${countryCode}/localities/${encodeURIComponent(query)}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+      'Accept-Language': 'ro',
+    },
+  });
+
+  console.log(`Localities search response status: ${response.status}`);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Localities search error:', response.status, errorText);
+    return [];
+  }
+
+  const data = await response.json();
+  console.log(`Found ${Array.isArray(data) ? data.length : 0} localities`);
+  return Array.isArray(data) ? data : [];
+}
+
+// Get map points with optional locality filter
+async function getMapPoints(
+  token: string, 
+  countryCode: string = 'RO',
+  localityId?: number,
+  searchQuery?: string
+): Promise<EcoletLocker[]> {
+  console.log(`Fetching map points for country: ${countryCode}, localityId: ${localityId}, query: ${searchQuery}`);
+
+  const requestBody: Record<string, unknown> = {
+    destination: 'receiver',
+    couriers: [2, 3, 7], // SameDay, FanCourier, Cargus easybox providers
   };
+
+  if (localityId) {
+    requestBody.localityId = localityId;
+  }
+
+  if (searchQuery) {
+    requestBody.searchQuery = searchQuery;
+  }
 
   console.log('Request body:', JSON.stringify(requestBody));
 
-  const response = await fetch(`https://panel.ecolet.ro/api/v1/map-points/${countryCode.toLowerCase()}`, {
+  const response = await fetch(`https://panel.ecolet.ro/api/v1/map-points/${countryCode.toUpperCase()}`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -100,8 +152,11 @@ async function getMapPoints(token: string, countryCode: string = 'ro'): Promise<
   const mapPointsData = data?.mapPoints?.mapPoints || data?.mapPoints || [];
   console.log(`Found ${Array.isArray(mapPointsData) ? mapPointsData.length : 0} map points`);
 
+  // Limit to 200 results for performance
+  const limitedPoints = (Array.isArray(mapPointsData) ? mapPointsData : []).slice(0, 200);
+
   // Map to our format
-  const lockers: EcoletLocker[] = (Array.isArray(mapPointsData) ? mapPointsData : []).map((point: any) => ({
+  const lockers: EcoletLocker[] = limitedPoints.map((point: any) => ({
     id: String(point.id || ''),
     name: point.name || '',
     address: point.address || '',
@@ -123,13 +178,23 @@ serve(async (req) => {
   }
 
   try {
-    const { countryCode = 'ro' } = await req.json().catch(() => ({}));
+    const body = await req.json().catch(() => ({}));
+    const { countryCode = 'RO', searchQuery, localityId, action } = body;
 
     // Get OAuth token
     const token = await getEcoletToken();
     
-    // Fetch map points
-    const lockers = await getMapPoints(token, countryCode);
+    // If action is 'search-localities', search for localities first
+    if (action === 'search-localities' && searchQuery) {
+      const localities = await searchLocalities(token, searchQuery, countryCode);
+      return new Response(
+        JSON.stringify({ success: true, localities }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Fetch map points with optional filters
+    const lockers = await getMapPoints(token, countryCode, localityId, searchQuery);
 
     console.log(`Returning ${lockers.length} lockers to frontend`);
 

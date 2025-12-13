@@ -135,7 +135,15 @@ const Checkout = () => {
   const [countyOpen, setCountyOpen] = useState(false);
   const [postalCodeError, setPostalCodeError] = useState('');
   const [lockerSelectorOpen, setLockerSelectorOpen] = useState(false);
-  const [selectedLocker, setSelectedLocker] = useState<{ id: string; name: string; address: string } | null>(null);
+  const [selectedLocker, setSelectedLocker] = useState<{ 
+    id: string; 
+    name: string; 
+    address: string; 
+    city: string; 
+    postal_code: string; 
+    lat: number; 
+    lng: number; 
+  } | null>(null);
   
   const [form, setForm] = useState<CheckoutForm>({
     firstName: '',
@@ -526,6 +534,10 @@ const Checkout = () => {
           locker_id: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.id : null,
           locker_name: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.name : null,
           locker_address: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.address : null,
+          locker_city: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.city : null,
+          locker_postal_code: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.postal_code : null,
+          locker_lat: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.lat : null,
+          locker_lng: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.lng : null,
           subtotal: totalPrice,
           shipping_cost: shippingCost,
           discount: discount,
@@ -1320,7 +1332,7 @@ const Checkout = () => {
           <LockerSelector
             open={lockerSelectorOpen}
             onOpenChange={setLockerSelectorOpen}
-            onSelectLocker={setSelectedLocker}
+            onSelectLocker={(locker) => setSelectedLocker(locker)}
             selectedLockerId={selectedLocker?.id}
           />
         </div>
