@@ -707,9 +707,13 @@ const AdminOrders = () => {
   const activeFiltersCount = [statusFilter, productFilter, categoryFilter, deliveryFilter, paymentFilter].filter(f => f !== 'all').length + (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
 
   const canSendToEcolet = (order: Order) => {
-    return ['shipping', 'postal', 'locker'].includes(order.delivery_method) && 
-           order.status !== 'cancelled' && 
-           order.status !== 'delivered';
+    // Don't show button for pickup orders
+    if (!['shipping', 'postal', 'locker'].includes(order.delivery_method)) return false;
+    // Don't show for cancelled or delivered
+    if (order.status === 'cancelled' || order.status === 'delivered') return false;
+    // Don't show for Stripe orders that haven't been paid (webhook handles auto-sync)
+    if (order.payment_method === 'stripe' && order.payment_status !== 'paid') return false;
+    return true;
   };
 
   return (
