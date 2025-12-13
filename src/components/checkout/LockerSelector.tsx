@@ -594,6 +594,11 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
             )}
           </div>
 
+          {/* Mobile separator between map and list */}
+          <div className="md:hidden h-2 bg-gradient-to-b from-muted/80 to-background border-t border-b shadow-sm flex items-center justify-center">
+            <div className="w-12 h-1 bg-muted-foreground/30 rounded-full" />
+          </div>
+
           {/* List - shows second on mobile, left side on desktop */}
           <div className="flex-1 md:w-2/5 md:order-1 overflow-y-auto min-h-0">
             {loading ? (
