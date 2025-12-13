@@ -55,6 +55,7 @@ interface Order {
   locker_id: string | null;
   locker_name: string | null;
   locker_address: string | null;
+  locker_locality_id: number | null;
   coupon_code: string | null;
   subtotal: number;
   shipping_cost: number;
@@ -246,6 +247,7 @@ const AdminOrders = () => {
         lockerId: order.locker_id,
         lockerName: order.locker_name,
         lockerAddress: order.locker_address,
+        lockerLocalityId: order.locker_locality_id,
         total: order.total,
         paymentMethod: order.payment_method,
         items: items.map(item => ({

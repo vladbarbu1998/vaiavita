@@ -168,6 +168,51 @@ async function getLocalityId(token: string, localityName: string, county?: strin
   }
 }
 
+// Get locality_id from a map point (locker) by its ID
+async function getMapPointLocalityId(token: string, mapPointId: string): Promise<number | null> {
+  try {
+    console.log('Fetching locality_id for map point:', mapPointId);
+    
+    // Fetch all map points and find the one we need
+    const response = await fetch(`https://panel.ecolet.ro/api/v1/map-points/RO`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language': 'ro',
+      },
+      body: JSON.stringify({
+        destination: 'receiver',
+        couriers: [1, 2, 3, 4, 7],
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('Map points fetch failed:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    const mapPoints = data?.mapPoints?.mapPoints || data?.mapPoints || [];
+    
+    // Find the specific map point
+    const mapPoint = mapPoints.find((p: any) => String(p.id) === String(mapPointId));
+    
+    if (mapPoint) {
+      const localityId = mapPoint.locality_id || mapPoint.locality?.id || null;
+      console.log('Found map point locality_id:', localityId);
+      return localityId;
+    }
+    
+    console.log('Map point not found:', mapPointId);
+    return null;
+  } catch (error) {
+    console.error('Error fetching map point locality:', error);
+    return null;
+  }
+}
+
 // Normalize Romanian text for comparison
 function normalizeRomanianText(text: string): string {
   return text
@@ -361,11 +406,18 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
 
   // Add receiver data
   if (isLockerDelivery) {
-    console.log('Setting up locker delivery for locker ID:', orderData.lockerId, 'locality_id:', orderData.lockerLocalityId);
+    // Get locker locality_id - use provided value or fetch from API
+    let lockerLocalityId = orderData.lockerLocalityId;
+    if (!lockerLocalityId && orderData.lockerId) {
+      console.log('No locker locality_id provided, fetching from API...');
+      lockerLocalityId = await getMapPointLocalityId(token, orderData.lockerId);
+    }
+    
+    console.log('Setting up locker delivery for locker ID:', orderData.lockerId, 'locality_id:', lockerLocalityId);
     parcelData.receiver = {
       name: `${orderData.customerFirstName} ${orderData.customerLastName}`.substring(0, 60),
       country: 'ro',
-      locality_id: orderData.lockerLocalityId || null,
+      locality_id: lockerLocalityId || null,
       contact_person: `${orderData.customerFirstName} ${orderData.customerLastName}`.substring(0, 60),
       email: orderData.customerEmail,
       phone: cleanPhoneNumber(orderData.customerPhone),
