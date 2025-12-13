@@ -805,6 +805,7 @@ const Checkout = () => {
                         id="firstName"
                         value={form.firstName}
                         onChange={(e) => updateForm('firstName', e.target.value)}
+                        autoComplete="given-name"
                         required
                       />
                     </div>
@@ -816,6 +817,7 @@ const Checkout = () => {
                         id="lastName"
                         value={form.lastName}
                         onChange={(e) => updateForm('lastName', e.target.value)}
+                        autoComplete="family-name"
                         required
                       />
                     </div>
@@ -830,6 +832,7 @@ const Checkout = () => {
                         type="email"
                         value={form.email}
                         onChange={(e) => updateForm('email', e.target.value)}
+                        autoComplete="email"
                         required
                       />
                     </div>
@@ -842,6 +845,7 @@ const Checkout = () => {
                         type="tel"
                         value={form.phone}
                         onChange={(e) => updateForm('phone', e.target.value)}
+                        autoComplete="tel"
                         required
                       />
                     </div>
@@ -858,6 +862,7 @@ const Checkout = () => {
                         value={form.city}
                         onChange={(e) => updateForm('city', e.target.value)}
                         placeholder={language === 'ro' ? 'Localitate' : 'City'}
+                        autoComplete="address-level2"
                         required
                       />
                     </div>
@@ -916,6 +921,7 @@ const Checkout = () => {
                           value={form.county}
                           onChange={(e) => updateForm('county', e.target.value)}
                           placeholder={language === 'ro' ? 'Regiune/Stat' : 'Region/State'}
+                          autoComplete="address-level1"
                         />
                       </div>
                     )}
@@ -931,6 +937,7 @@ const Checkout = () => {
                       value={form.address}
                       onChange={(e) => updateForm('address', e.target.value)}
                       placeholder={language === 'ro' ? 'Strada, număr' : 'Street, number'}
+                      autoComplete="street-address"
                       required={form.deliveryMethod === 'shipping'}
                     />
                   </div>
@@ -945,6 +952,7 @@ const Checkout = () => {
                       value={form.addressLine2}
                       onChange={(e) => updateForm('addressLine2', e.target.value)}
                       placeholder={language === 'ro' ? 'Apartament, bloc, scară' : 'Apartment, building, entrance'}
+                      autoComplete="address-line2"
                     />
                   </div>
 
@@ -963,6 +971,7 @@ const Checkout = () => {
                       value={form.postalCode}
                       onChange={(e) => handlePostalCodeChange(e.target.value)}
                       placeholder={selectedCountry?.postalExample || (language === 'ro' ? 'Cod poștal' : 'Postal code')}
+                      autoComplete="postal-code"
                       className={postalCodeError ? 'border-destructive' : ''}
                     />
                     {postalCodeError && (
