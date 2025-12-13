@@ -256,6 +256,7 @@ export type Database = {
           locker_id: string | null
           locker_lat: number | null
           locker_lng: number | null
+          locker_locality_id: number | null
           locker_name: string | null
           locker_postal_code: string | null
           order_number: string
@@ -290,6 +291,7 @@ export type Database = {
           locker_id?: string | null
           locker_lat?: number | null
           locker_lng?: number | null
+          locker_locality_id?: number | null
           locker_name?: string | null
           locker_postal_code?: string | null
           order_number: string
@@ -324,6 +326,7 @@ export type Database = {
           locker_id?: string | null
           locker_lat?: number | null
           locker_lng?: number | null
+          locker_locality_id?: number | null
           locker_name?: string | null
           locker_postal_code?: string | null
           order_number?: string
