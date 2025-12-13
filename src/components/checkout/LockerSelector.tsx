@@ -351,7 +351,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] md:w-[900px] lg:w-[1000px] h-[90vh] md:h-[85vh] max-w-none flex flex-col p-0 gap-0 overflow-hidden">
+      <DialogContent className="w-[95vw] md:w-[900px] lg:w-[1000px] h-[95vh] md:h-[85vh] max-w-none flex flex-col p-0 gap-0 overflow-hidden">
         <DialogHeader className="p-3 md:p-4 pb-2 border-b">
           <DialogTitle className="text-base md:text-lg">
             {language === 'ro' ? 'Selectează punctul de livrare' : 'Select delivery point'}
@@ -555,7 +555,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         {/* Main content - split view on desktop, stacked on mobile */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
           {/* Map - shows first on mobile, right side on desktop */}
-          <div className="h-[140px] mb-2 shrink-0 md:mb-0 md:h-auto md:w-3/5 md:order-2 flex flex-col md:border-l">
+          <div className="h-[180px] mb-2 shrink-0 md:mb-0 md:h-auto md:w-3/5 md:order-2 flex flex-col md:border-l">
             {/* Map */}
             <div className="h-full relative bg-muted rounded-b-lg md:rounded-none overflow-hidden">
               <Suspense fallback={
