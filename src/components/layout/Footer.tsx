@@ -95,14 +95,14 @@ export function Footer() {
 
         {/* ANPC Badge & Copyright */}
         <div className="mt-14 pt-8 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-4">
             <a 
               href="https://anpc.ro/ce-este-sal" 
               target="_blank" 
               rel="noopener noreferrer"
               className="opacity-80 hover:opacity-100 transition-opacity"
             >
-              <img src={anpcSalBadge} alt="ANPC - Soluționarea Alternativă a Litigiilor" className="h-12" />
+              <img src={anpcSalBadge} alt="ANPC - Soluționarea Alternativă a Litigiilor" className="h-8 sm:h-12" />
             </a>
             <a 
               href="https://ec.europa.eu/consumers/odr" 
@@ -110,7 +110,7 @@ export function Footer() {
               rel="noopener noreferrer"
               className="opacity-80 hover:opacity-100 transition-opacity"
             >
-              <img src={anpcSolBadge} alt="Soluționarea Online a Litigiilor" className="h-12" />
+              <img src={anpcSolBadge} alt="Soluționarea Online a Litigiilor" className="h-8 sm:h-12" />
             </a>
           </div>
           <p className="text-sm text-muted-foreground text-center md:text-right">
