@@ -1427,11 +1427,30 @@ const AdminOrders = () => {
             )}
             
             {!pendingStatusOrder?.ecolet_synced && pendingStatusOrder && canSendToEcolet(pendingStatusOrder) && (
-              <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-700">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>Comanda nu a fost sincronizată în Ecolet. Poți introduce AWB-ul manual sau sincroniza mai întâi.</span>
+              <div className="space-y-2">
+                <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-700">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>Comanda nu a fost sincronizată în Ecolet. Poți introduce AWB-ul manual sau sincroniza mai întâi.</span>
+                  </div>
                 </div>
+                <Button 
+                  variant="outline" 
+                  onClick={async () => {
+                    await sendToEcolet(pendingStatusOrder);
+                    // After sync, auto-fetch AWB
+                    setTimeout(() => fetchAwbFromEcolet(pendingStatusOrder.id), 1000);
+                  }}
+                  disabled={sendingToEcolet === pendingStatusOrder.id}
+                  className="w-full gap-2"
+                >
+                  {sendingToEcolet === pendingStatusOrder.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  Sincronizează în Ecolet
+                </Button>
               </div>
             )}
 
