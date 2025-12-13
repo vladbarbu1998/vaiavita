@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.send-review-coupon]
 verify_jwt = false
+
+[functions.create-ecolet-parcel]
+verify_jwt = false
