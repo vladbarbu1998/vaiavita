@@ -240,6 +240,9 @@ export type Database = {
         Row: {
           admin_notes: string | null
           awb_number: string | null
+          cancel_reason: string | null
+          cancel_source: string | null
+          cancelled_email_sent_at: string | null
           coupon_code: string | null
           courier_name: string | null
           created_at: string
@@ -250,6 +253,7 @@ export type Database = {
           customer_phone: string
           delivery_method: Database["public"]["Enums"]["delivery_method"]
           discount: number | null
+          ecolet_order_id: string | null
           ecolet_sync_error: string | null
           ecolet_synced: boolean | null
           id: string
@@ -266,21 +270,28 @@ export type Database = {
           oblio_invoice_number: string | null
           oblio_series_name: string | null
           order_number: string
+          payment_failed_email_sent_at: string | null
           payment_id: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_reminder_sent_at: string | null
           payment_status: string | null
           pickup_location: string | null
           review_tokens: string[] | null
+          shipped_email_sent_at: string | null
           shipping_address: Json | null
           shipping_cost: number | null
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
+          tracking_url: string | null
           updated_at: string
         }
         Insert: {
           admin_notes?: string | null
           awb_number?: string | null
+          cancel_reason?: string | null
+          cancel_source?: string | null
+          cancelled_email_sent_at?: string | null
           coupon_code?: string | null
           courier_name?: string | null
           created_at?: string
@@ -291,6 +302,7 @@ export type Database = {
           customer_phone: string
           delivery_method: Database["public"]["Enums"]["delivery_method"]
           discount?: number | null
+          ecolet_order_id?: string | null
           ecolet_sync_error?: string | null
           ecolet_synced?: boolean | null
           id?: string
@@ -307,21 +319,28 @@ export type Database = {
           oblio_invoice_number?: string | null
           oblio_series_name?: string | null
           order_number: string
+          payment_failed_email_sent_at?: string | null
           payment_id?: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_reminder_sent_at?: string | null
           payment_status?: string | null
           pickup_location?: string | null
           review_tokens?: string[] | null
+          shipped_email_sent_at?: string | null
           shipping_address?: Json | null
           shipping_cost?: number | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
+          tracking_url?: string | null
           updated_at?: string
         }
         Update: {
           admin_notes?: string | null
           awb_number?: string | null
+          cancel_reason?: string | null
+          cancel_source?: string | null
+          cancelled_email_sent_at?: string | null
           coupon_code?: string | null
           courier_name?: string | null
           created_at?: string
@@ -332,6 +351,7 @@ export type Database = {
           customer_phone?: string
           delivery_method?: Database["public"]["Enums"]["delivery_method"]
           discount?: number | null
+          ecolet_order_id?: string | null
           ecolet_sync_error?: string | null
           ecolet_synced?: boolean | null
           id?: string
@@ -348,16 +368,20 @@ export type Database = {
           oblio_invoice_number?: string | null
           oblio_series_name?: string | null
           order_number?: string
+          payment_failed_email_sent_at?: string | null
           payment_id?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          payment_reminder_sent_at?: string | null
           payment_status?: string | null
           pickup_location?: string | null
           review_tokens?: string[] | null
+          shipped_email_sent_at?: string | null
           shipping_address?: Json | null
           shipping_cost?: number | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
+          tracking_url?: string | null
           updated_at?: string
         }
         Relationships: []
