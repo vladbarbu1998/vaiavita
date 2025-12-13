@@ -439,7 +439,45 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
               </div>
             ) : (
               <div className="divide-y">
-                {filteredLockers.map((locker) => {
+                {/* Show selected locker first if exists */}
+                {selectedLocker && (
+                  (() => {
+                    const courierInfo = getCourierInfo(selectedLocker.courier);
+                    return (
+                      <button
+                        key={`selected-${selectedLocker.id}`}
+                        onClick={() => handleSelectLocker(selectedLocker)}
+                        className="w-full p-3 text-left bg-primary/10 border-l-4 border-primary"
+                      >
+                        <div className="flex items-start gap-2">
+                          <div 
+                            className="w-2 h-2 rounded-full mt-2 shrink-0" 
+                            style={{ backgroundColor: courierInfo.color }}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-sm truncate">{selectedLocker.name}</p>
+                              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                            </div>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {selectedLocker.address}{selectedLocker.postal_code ? `, ${selectedLocker.postal_code}` : ''}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span 
+                                className="text-[10px] px-1.5 py-0.5 rounded font-medium text-white"
+                                style={{ backgroundColor: courierInfo.color }}
+                              >
+                                {courierInfo.name}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">{selectedLocker.city}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })()
+                )}
+                {filteredLockers.filter(l => l.id !== selectedLocker?.id).map((locker) => {
                   const courierInfo = getCourierInfo(locker.courier);
                   return (
                     <button
