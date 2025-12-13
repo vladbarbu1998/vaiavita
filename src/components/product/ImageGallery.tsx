@@ -87,7 +87,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
 
   return (
     <>
-      <div className="flex gap-4 opacity-0 animate-fade-up px-6 md:px-0">
+      <div className="flex gap-4 opacity-0 animate-fade-up px-6 md:px-6 lg:px-0">
         {/* Thumbnails - Left Side */}
         {images.length > 1 && (
           <div 
