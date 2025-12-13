@@ -30,7 +30,11 @@ export interface Locker {
   lng: number;
   courier: string;
   schedule?: {
-    weekdays?: string;
+    monday?: string;
+    tuesday?: string;
+    wednesday?: string;
+    thursday?: string;
+    friday?: string;
     saturday?: string;
     sunday?: string;
   };
@@ -130,6 +134,15 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
       const fetchedLockers = data?.lockers || [];
       setAllLockers(fetchedLockers);
       setFilteredLockers(fetchedLockers);
+      
+      // Cache for instant popup next time
+      cachedLockers = fetchedLockers;
+      
+      // Log sample lockers from Brașov and București for verification
+      const brasovLocker = fetchedLockers.find((l: Locker) => l.city?.toLowerCase().includes('brașov') || l.city?.toLowerCase().includes('brasov'));
+      const bucuresti = fetchedLockers.find((l: Locker) => l.city?.toLowerCase().includes('bucurești') || l.city?.toLowerCase().includes('bucuresti'));
+      if (brasovLocker) console.log('Sample Brașov locker:', { name: brasovLocker.name, schedule: brasovLocker.schedule });
+      if (bucuresti) console.log('Sample București locker:', { name: bucuresti.name, schedule: bucuresti.schedule });
 
       if (fetchedLockers.length === 0) {
         setError(language === 'ro' 
@@ -284,6 +297,33 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
   const getCourierInfo = (courierName: string) => {
     const courierLower = (courierName || '').toLowerCase();
     return COURIERS.find(c => courierLower.includes(c.id)) || { id: 'other', name: courierName, color: '#6B7280' };
+  };
+
+  // Format schedule for display
+  const formatSchedule = (schedule?: Locker['schedule']) => {
+    if (!schedule) return null;
+    
+    // Check if all weekdays are the same
+    const weekdays = [schedule.monday, schedule.tuesday, schedule.wednesday, schedule.thursday, schedule.friday];
+    const allWeekdaysSame = weekdays.every(d => d === weekdays[0]);
+    
+    const parts: string[] = [];
+    
+    if (allWeekdaysSame && weekdays[0]) {
+      parts.push(`L-V ${weekdays[0]}`);
+    } else {
+      // Show individual days if different
+      if (schedule.monday) parts.push(`L ${schedule.monday}`);
+      if (schedule.tuesday && schedule.tuesday !== schedule.monday) parts.push(`Ma ${schedule.tuesday}`);
+      if (schedule.wednesday && schedule.wednesday !== schedule.tuesday) parts.push(`Mi ${schedule.wednesday}`);
+      if (schedule.thursday && schedule.thursday !== schedule.wednesday) parts.push(`J ${schedule.thursday}`);
+      if (schedule.friday && schedule.friday !== schedule.thursday) parts.push(`V ${schedule.friday}`);
+    }
+    
+    if (schedule.saturday) parts.push(`S ${schedule.saturday}`);
+    if (schedule.sunday) parts.push(`D ${schedule.sunday}`);
+    
+    return parts.length > 0 ? parts.join(', ') : null;
   };
 
   return (
@@ -498,16 +538,15 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                   </div>
                 </div>
 
-                {/* Schedule - show note that schedules vary */}
-                <div className="flex items-start gap-2 text-xs">
-                  <Clock className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-                  <div className="text-muted-foreground">
-                    <p className="italic">{language === 'ro' ? 'Program standard (poate varia):' : 'Standard hours (may vary):'}</p>
-                    <p>{language === 'ro' ? 'Luni-Vineri' : 'Mon-Fri'}: 08:00 - 21:00</p>
-                    <p>{language === 'ro' ? 'Sâmbătă' : 'Sat'}: 09:00 - 18:00</p>
-                    <p>{language === 'ro' ? 'Duminică' : 'Sun'}: 10:00 - 16:00</p>
+                {/* Schedule - show actual schedule from API */}
+                {formatSchedule(selectedLocker.schedule) && (
+                  <div className="flex items-start gap-2 text-xs">
+                    <Clock className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
+                    <div className="text-muted-foreground">
+                      <p><span className="font-medium">{language === 'ro' ? 'Program:' : 'Hours:'}</span> {formatSchedule(selectedLocker.schedule)}</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
@@ -552,6 +591,11 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                             <p className="text-[11px] md:text-xs text-muted-foreground truncate">
                               {selectedLocker.address}{selectedLocker.postal_code ? `, ${selectedLocker.postal_code}` : ''}
                             </p>
+                            {formatSchedule(selectedLocker.schedule) && (
+                              <p className="text-[10px] text-muted-foreground/80 truncate">
+                                {language === 'ro' ? 'Program:' : 'Hours:'} {formatSchedule(selectedLocker.schedule)}
+                              </p>
+                            )}
                             <div className="flex items-center gap-2 mt-1">
                               <span 
                                 className="text-[9px] md:text-[10px] px-1.5 py-0.5 rounded font-medium text-white"
@@ -592,6 +636,11 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                           <p className="text-[11px] md:text-xs text-muted-foreground truncate">
                             {locker.address}{locker.postal_code ? `, ${locker.postal_code}` : ''}
                           </p>
+                          {formatSchedule(locker.schedule) && (
+                            <p className="text-[10px] text-muted-foreground/80 truncate">
+                              {language === 'ro' ? 'Program:' : 'Hours:'} {formatSchedule(locker.schedule)}
+                            </p>
+                          )}
                           <div className="flex items-center gap-2 mt-1">
                             <span 
                               className="text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full font-medium"
@@ -625,6 +674,11 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-sm truncate">{selectedLocker.name}</p>
                   <p className="text-xs text-muted-foreground truncate">{selectedLocker.address}, {selectedLocker.city}</p>
+                  {formatSchedule(selectedLocker.schedule) && (
+                    <p className="text-[10px] text-muted-foreground/80 truncate">
+                      {language === 'ro' ? 'Program:' : 'Hours:'} {formatSchedule(selectedLocker.schedule)}
+                    </p>
+                  )}
                 </div>
                 <div 
                   className="px-2 py-0.5 rounded text-[10px] font-medium shrink-0"
