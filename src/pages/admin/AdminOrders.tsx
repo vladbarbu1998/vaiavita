@@ -130,6 +130,50 @@ const AdminOrders = () => {
 
   useEffect(() => {
     fetchData();
+
+    // Setup realtime subscription for orders
+    const ordersChannel = supabase
+      .channel('admin-orders-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders'
+        },
+        (payload) => {
+          console.log('Realtime order update:', payload);
+          if (payload.eventType === 'INSERT') {
+            setOrders(prev => [payload.new as Order, ...prev]);
+            toast.success(`Comandă nouă: ${(payload.new as Order).order_number}`);
+          } else if (payload.eventType === 'UPDATE') {
+            setOrders(prev => prev.map(o => o.id === payload.new.id ? payload.new as Order : o));
+          } else if (payload.eventType === 'DELETE') {
+            setOrders(prev => prev.filter(o => o.id !== payload.old.id));
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'order_items'
+        },
+        (payload) => {
+          console.log('Realtime order_items update:', payload);
+          const newItem = payload.new as OrderItem & { order_id: string };
+          setOrderItemsMap(prev => ({
+            ...prev,
+            [newItem.order_id]: [...(prev[newItem.order_id] || []), newItem]
+          }));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(ordersChannel);
+    };
   }, []);
 
   const fetchData = async () => {
