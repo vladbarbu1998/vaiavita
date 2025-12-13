@@ -180,7 +180,8 @@ function generateOrderConfirmationEmail(order: any, orderItems: any[]): string {
       <!-- Contact Section -->
       <div style="text-align: center; padding: 20px; background: #f9fafb; border-radius: 12px;">
         <p style="color: #6b7280; margin: 0 0 10px;">Ai întrebări despre comandă?</p>
-        <a href="mailto:office@vaiavita.com" style="color: #025951; font-weight: 600; text-decoration: none;">office@vaiavita.com</a>
+        <a href="tel:0732111117" style="color: #025951; font-weight: 600; text-decoration: none; display: block; margin-bottom: 8px;">📞 0732 111 117</a>
+        <a href="mailto:office@vaiavita.com" style="color: #025951; font-weight: 600; text-decoration: none;">✉️ office@vaiavita.com</a>
       </div>
     </div>
 
@@ -259,6 +260,9 @@ function generateProcessingEmail(order: any): string {
 }
 
 function generateReadyPickupEmail(order: any): string {
+  const PICKUP_ADDRESS = "Strada Iuliu Maniu 60, Brașov, 500091";
+  const COMPANY_PHONE = "0732 111 117";
+  
   return `
 <!DOCTYPE html>
 <html>
@@ -274,26 +278,53 @@ function generateReadyPickupEmail(order: any): string {
         <span style="font-size: 30px;">🏪</span>
       </div>
       <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">Comanda ta este pregătită!</h1>
+      <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 16px;">Te așteptăm să o ridici, ${order.customer_first_name}!</p>
     </div>
     <div style="background: white; border-radius: 0 0 16px 16px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-      <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; padding: 20px; margin-bottom: 25px; text-align: center;">
-        <div style="font-size: 16px; font-weight: 600; color: #92400e;">📍 Locație ridicare</div>
-        <div style="font-size: 14px; color: #78350f; margin-top: 10px;">Brașov, România</div>
-        <div style="font-size: 12px; color: #a16207; margin-top: 5px;">Te vom contacta pentru detalii exacte</div>
+      
+      <!-- Pickup Location Box -->
+      <div style="background: linear-gradient(135deg, #025951 0%, #047857 100%); border-radius: 12px; padding: 25px; margin-bottom: 25px; text-align: center;">
+        <div style="font-size: 32px; margin-bottom: 10px;">📍</div>
+        <div style="font-size: 12px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Locație ridicare</div>
+        <div style="font-size: 18px; font-weight: 600; color: white;">${PICKUP_ADDRESS}</div>
       </div>
 
+      <!-- Order Number -->
       <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 12px; padding: 20px; margin-bottom: 25px; text-align: center;">
         <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Număr comandă</div>
         <div style="font-size: 24px; font-weight: 700; color: #025951;">${order.order_number}</div>
       </div>
 
-      <p style="color: #4b5563; text-align: center; margin-bottom: 25px;">
-        Te vom contacta telefonic pentru a stabili detaliile exacte ale ridicării.
-      </p>
+      <!-- Instructions -->
+      <div style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+        <div style="font-size: 14px; font-weight: 600; color: #025951; margin-bottom: 15px;">📋 Instrucțiuni ridicare:</div>
+        <ul style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px; line-height: 1.8;">
+          <li>Prezintă numărul comenzii: <strong>${order.order_number}</strong></li>
+          <li>Ai la tine un act de identitate</li>
+          <li>Program: Luni - Vineri, 10:00 - 18:00</li>
+        </ul>
+      </div>
 
+      <!-- Total -->
+      <div style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 12px; color: #6b7280; text-transform: uppercase;">Total de plată</div>
+            <div style="font-size: 22px; font-weight: 700; color: #025951;">${order.total.toFixed(2)} lei</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 12px; color: #6b7280; text-transform: uppercase;">Plată</div>
+            <div style="font-size: 14px; color: #1f2937;">${order.payment_method === 'cash_on_delivery' ? 'Cash la ridicare' : 'Card online'}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact -->
       <div style="text-align: center; padding: 20px; background: #f9fafb; border-radius: 12px;">
-        <p style="color: #6b7280; margin: 0 0 10px;">Pentru programare:</p>
-        <a href="mailto:office@vaiavita.com" style="color: #025951; font-weight: 600; text-decoration: none;">office@vaiavita.com</a>
+        <p style="color: #6b7280; margin: 0 0 15px;">Ai întrebări? Sună-ne:</p>
+        <a href="tel:${COMPANY_PHONE.replace(/\s/g, '')}" style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #025951 0%, #047857 100%); color: white; text-decoration: none; border-radius: 50px; font-size: 16px; font-weight: 600;">
+          📞 ${COMPANY_PHONE}
+        </a>
       </div>
     </div>
     <div style="text-align: center; padding: 30px 20px;">
