@@ -633,9 +633,55 @@ const Checkout = () => {
         clearCart();
         navigate(`/comanda-confirmata?order=${order.order_number}`);
       } else if (form.paymentMethod === 'stripe') {
-        toast.info(language === 'ro' ? 'Plata cu card va fi disponibilă în curând' : 'Card payment coming soon');
+        // Create Stripe checkout session
+        const stripeItems = items
+          .filter(item => !item.isGift) // Exclude gift items from payment
+          .map(item => ({
+            name: language === 'ro' ? item.name : (item.nameEn || item.name),
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+          }));
+
+        // Add shipping as a line item if there's a cost
+        if (shippingCost > 0) {
+          stripeItems.push({
+            name: language === 'ro' ? 'Transport' : 'Shipping',
+            price: shippingCost,
+            quantity: 1,
+            image: undefined,
+          });
+        }
+
+        // Apply discount as negative line item or adjust prices
+        // For simplicity, we'll include discount info in metadata and adjust total via Stripe
+        
+        const { data: stripeData, error: stripeError } = await supabase.functions.invoke('create-stripe-checkout', {
+          body: {
+            items: stripeItems,
+            customerEmail: form.email,
+            customerName: `${form.firstName} ${form.lastName}`,
+            orderId: order.id,
+            orderNumber: order.order_number,
+            successUrl: `${window.location.origin}/comanda-confirmata?order=${order.order_number}&payment=success`,
+            cancelUrl: `${window.location.origin}/checkout?payment=cancelled`,
+          },
+        });
+
+        if (stripeError || !stripeData?.url) {
+          console.error('Stripe checkout error:', stripeError);
+          toast.error(language === 'ro' ? 'Eroare la inițializarea plății' : 'Error initializing payment');
+          // Don't clear cart on error so user can retry
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Clear cart before redirecting to Stripe
         clearCart();
-        navigate(`/comanda-confirmata?order=${order.order_number}`);
+        
+        // Redirect to Stripe Checkout
+        window.location.href = stripeData.url;
+        return; // Stop execution here
       }
     } catch (error: any) {
       console.error('Order error:', error);
