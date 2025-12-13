@@ -81,6 +81,52 @@ async function getEcoletToken(): Promise<string> {
   return tokenData.access_token;
 }
 
+// Search for locality ID by name
+async function getLocalityId(token: string, localityName: string, county?: string): Promise<number | null> {
+  try {
+    const searchQuery = encodeURIComponent(localityName);
+    const response = await fetch(`https://panel.ecolet.ro/api/v1/locations/RO/localities/${searchQuery}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language': 'ro',
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Locality search failed:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log('Locality search results for', localityName, ':', JSON.stringify(data, null, 2));
+
+    if (data.data && data.data.length > 0) {
+      // Try to find exact match with county if provided
+      if (county) {
+        const normalizedCounty = county.toLowerCase().replace(/ș/g, 's').replace(/ț/g, 't').replace(/ă/g, 'a').replace(/â/g, 'a').replace(/î/g, 'i');
+        const match = data.data.find((loc: any) => {
+          const locCounty = (loc.county?.name || '').toLowerCase().replace(/ș/g, 's').replace(/ț/g, 't').replace(/ă/g, 'a').replace(/â/g, 'a').replace(/î/g, 'i');
+          return locCounty.includes(normalizedCounty) || normalizedCounty.includes(locCounty);
+        });
+        if (match) {
+          console.log('Found locality match with county:', match.id, match.name);
+          return match.id;
+        }
+      }
+      // Return first result
+      console.log('Using first locality result:', data.data[0].id, data.data[0].name);
+      return data.data[0].id;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error searching locality:', error);
+    return null;
+  }
+}
+
 // Get sender address from address book or settings
 async function getSenderAddress(token: string): Promise<any> {
   console.log('Fetching sender address from Ecolet...');
@@ -113,15 +159,37 @@ async function getSenderAddress(token: string): Promise<any> {
   return {
     name: 'VAIAVITA S.R.L.',
     country: 'ro',
-    county: 'Brașov',
-    locality: 'Brașov',
+    county: 'Brasov',
+    locality: 'Brasov',
+    locality_id: 1578, // Brasov locality ID
     postal_code: '500001',
     street_name: 'N/A',
     street_number: 'N/A',
     contact_person: 'VAIAVITA',
     email: 'office@vaiavita.com',
-    phone: '0700000000',
+    phone: '0742661831',
   };
+}
+
+// Clean phone number to only contain digits (5-15 digits required)
+function cleanPhoneNumber(phone: string): string {
+  // Remove all non-digit characters
+  const digits = phone.replace(/\D/g, '');
+  // Ensure it's between 5 and 15 digits
+  if (digits.length < 5) {
+    return '0700000000'; // Default fallback
+  }
+  if (digits.length > 15) {
+    return digits.substring(0, 15);
+  }
+  return digits;
+}
+
+// Clean block field (max 10 characters)
+function cleanBlock(block: string | null | undefined): string {
+  if (!block) return '';
+  // Truncate to 10 characters max
+  return block.substring(0, 10);
 }
 
 // Create parcel order in Ecolet
@@ -143,33 +211,54 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
   // Map country code to lowercase for Ecolet API
   const receiverCountry = orderData.shippingAddress?.countryCode?.toLowerCase() || 'ro';
 
+  // Get locality IDs
+  const senderLocalityId = senderAddress.locality_id || await getLocalityId(token, senderAddress.locality || 'Brasov', senderAddress.county);
+  const receiverLocalityId = await getLocalityId(token, orderData.shippingAddress?.city || '', orderData.shippingAddress?.county);
+
+  console.log('Sender locality ID:', senderLocalityId);
+  console.log('Receiver locality ID:', receiverLocalityId);
+
   let parcelData: any = {
     sender: {
       name: senderAddress.name || 'VAIAVITA S.R.L.',
       country: senderAddress.country || 'ro',
-      county: senderAddress.county || 'Brașov',
-      locality: senderAddress.locality || 'Brașov',
+      county: senderAddress.county || 'Brasov',
+      locality: senderAddress.locality || 'Brasov',
+      locality_id: senderLocalityId,
       postal_code: senderAddress.postal_code || '500001',
       street_name: senderAddress.street_name || 'N/A',
       street_number: senderAddress.street_number || 'N/A',
+      block: cleanBlock(senderAddress.block),
+      entrance: senderAddress.entrance || '',
+      floor: senderAddress.floor || '',
+      flat: senderAddress.flat || '',
       contact_person: senderAddress.contact_person || 'VAIAVITA',
       email: senderAddress.email || 'office@vaiavita.com',
-      phone: senderAddress.phone || '0700000000',
+      phone: cleanPhoneNumber(senderAddress.phone || '0742661831'),
     },
     parcel: {
       type: 'package',
       amount: 1,
       weight: 1, // Default weight in kg
-      length: 20, // Default dimensions in cm
-      width: 15,
-      height: 10,
+      dimensions: {
+        length: 20, // Default dimensions in cm
+        width: 15,
+        height: 10,
+      },
+      shape: 'box', // Required field: box, envelope, tube
       content: contentDescription || 'Produse cosmetice',
-      cod: codAmount > 0 ? codAmount : null,
       observations: `Comanda ${orderData.orderNumber}`,
     },
+    additional_services: {
+      cod: {
+        status: codAmount > 0 ? 'active' : 'inactive',
+        amount: codAmount > 0 ? codAmount : undefined,
+      },
+    },
     courier: {
+      service: 'standard', // Required: standard, express, economy
       pickup: {
-        type: 'without_pickup', // No pickup needed, will be handled separately
+        type: 'no_pickup', // Valid values: scheduled, no_pickup
       },
     },
   };
@@ -182,8 +271,8 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
       country: 'ro',
       contact_person: `${orderData.customerFirstName} ${orderData.customerLastName}`,
       email: orderData.customerEmail,
-      phone: orderData.customerPhone,
-      locker_point_id: orderData.lockerId, // This is the key for locker delivery
+      phone: cleanPhoneNumber(orderData.customerPhone),
+      map_point_id: parseInt(orderData.lockerId || '0', 10), // This is the key for locker delivery
     };
   } else {
     // Standard shipping/postal delivery
@@ -192,13 +281,17 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
       country: receiverCountry,
       county: orderData.shippingAddress?.county || '',
       locality: orderData.shippingAddress?.city || '',
+      locality_id: receiverLocalityId,
       postal_code: orderData.shippingAddress?.postalCode || '',
       street_name: orderData.shippingAddress?.address || 'N/A',
       street_number: 'N/A',
-      block: orderData.shippingAddress?.addressLine2 || null,
+      block: cleanBlock(orderData.shippingAddress?.addressLine2),
+      entrance: '',
+      floor: '',
+      flat: '',
       contact_person: `${orderData.customerFirstName} ${orderData.customerLastName}`,
       email: orderData.customerEmail,
-      phone: orderData.customerPhone,
+      phone: cleanPhoneNumber(orderData.customerPhone),
     };
   }
 
@@ -223,6 +316,15 @@ async function createEcoletParcel(token: string, orderData: OrderData, senderAdd
   } else {
     const reloadData = await reloadResponse.json();
     console.log('Available services:', JSON.stringify(reloadData, null, 2));
+    
+    // Update courier service based on available options if needed
+    if (reloadData.couriers && reloadData.couriers.length > 0) {
+      const firstCourier = reloadData.couriers[0];
+      if (firstCourier.services && firstCourier.services.length > 0) {
+        parcelData.courier.service = firstCourier.services[0].slug || 'standard';
+        console.log('Using courier service:', parcelData.courier.service);
+      }
+    }
   }
 
   // Save the parcel in "orders to send" tab (for manual sending later)
