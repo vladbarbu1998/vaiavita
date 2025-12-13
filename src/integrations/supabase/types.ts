@@ -252,8 +252,12 @@ export type Database = {
           ecolet_synced: boolean | null
           id: string
           locker_address: string | null
+          locker_city: string | null
           locker_id: string | null
+          locker_lat: number | null
+          locker_lng: number | null
           locker_name: string | null
+          locker_postal_code: string | null
           order_number: string
           payment_id: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
@@ -282,8 +286,12 @@ export type Database = {
           ecolet_synced?: boolean | null
           id?: string
           locker_address?: string | null
+          locker_city?: string | null
           locker_id?: string | null
+          locker_lat?: number | null
+          locker_lng?: number | null
           locker_name?: string | null
+          locker_postal_code?: string | null
           order_number: string
           payment_id?: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
@@ -312,8 +320,12 @@ export type Database = {
           ecolet_synced?: boolean | null
           id?: string
           locker_address?: string | null
+          locker_city?: string | null
           locker_id?: string | null
+          locker_lat?: number | null
+          locker_lng?: number | null
           locker_name?: string | null
+          locker_postal_code?: string | null
           order_number?: string
           payment_id?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
