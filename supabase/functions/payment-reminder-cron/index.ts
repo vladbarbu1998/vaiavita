@@ -23,16 +23,15 @@ serve(async (req) => {
 
     const now = new Date();
     
-    // 24 hours ago (for reminders - abandoned checkouts)
-    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const twentyFiveHoursAgo = new Date(now.getTime() - 25 * 60 * 60 * 1000);
+    // 12 hours ago (for reminders - abandoned checkouts)
+    const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
     
-    // 48 hours ago (for auto-cancellation)
-    const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+    // 24 hours ago (for auto-cancellation)
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     logStep("Starting payment reminder cron job", { 
-      reminderWindow: `orders older than ${twentyFourHoursAgo.toISOString()}`,
-      cancelWindow: `orders older than ${fortyEightHoursAgo.toISOString()}`
+      reminderWindow: `orders older than ${twelveHoursAgo.toISOString()}`,
+      cancelWindow: `orders older than ${twentyFourHoursAgo.toISOString()}`
     });
 
     const results = {
@@ -40,7 +39,7 @@ serve(async (req) => {
       cancellations: [] as any[]
     };
 
-    // 1. Find ABANDONED orders needing reminder (pending payment, no reminder sent, 24h+ old)
+    // 1. Find ABANDONED orders needing reminder (pending payment, no reminder sent, 12h+ old)
     // This catches abandoned Stripe checkouts where user never completed payment
     const { data: reminderOrders, error: reminderError } = await supabase
       .from("orders")
@@ -49,7 +48,7 @@ serve(async (req) => {
       .in("payment_status", ["pending", "failed"]) // Both abandoned and failed
       .eq("status", "pending")
       .is("payment_reminder_sent_at", null)
-      .lt("created_at", twentyFourHoursAgo.toISOString());
+      .lt("created_at", twelveHoursAgo.toISOString());
 
     if (reminderError) {
       logStep("Error fetching reminder orders", { error: reminderError.message });
@@ -89,7 +88,7 @@ serve(async (req) => {
       }
     }
 
-    // 2. Find orders to auto-cancel (48h+ with pending or failed payment)
+    // 2. Find orders to auto-cancel (24h+ with pending or failed payment)
     // This catches both abandoned checkouts and failed payments
     const { data: cancelOrders, error: cancelError } = await supabase
       .from("orders")
@@ -97,7 +96,7 @@ serve(async (req) => {
       .eq("payment_method", "stripe")
       .in("payment_status", ["pending", "failed"]) // Both abandoned and failed
       .eq("status", "pending")
-      .lt("created_at", fortyEightHoursAgo.toISOString());
+      .lt("created_at", twentyFourHoursAgo.toISOString());
 
     if (cancelError) {
       logStep("Error fetching cancel orders", { error: cancelError.message });
@@ -107,8 +106,8 @@ serve(async (req) => {
       for (const order of cancelOrders || []) {
         try {
           const cancelReason = order.payment_status === "failed" 
-            ? "Plata a eșuat și nu a fost reîncercată în 48 de ore"
-            : "Plata nu a fost finalizată în 48 de ore (checkout abandonat)";
+            ? "Plata a eșuat și nu a fost reîncercată în 24 de ore"
+            : "Plata nu a fost finalizată în 24 de ore (checkout abandonat)";
           
           // Update order to cancelled
           const { error: updateError } = await supabase
@@ -116,7 +115,7 @@ serve(async (req) => {
             .update({ 
               status: "cancelled",
               cancel_reason: cancelReason,
-              cancel_source: "auto_48h_abandoned",
+              cancel_source: "auto_24h_abandoned",
             })
             .eq("id", order.id);
 
