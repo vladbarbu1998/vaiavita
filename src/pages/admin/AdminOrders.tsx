@@ -6,8 +6,12 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle 
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -149,6 +153,14 @@ const AdminOrders = () => {
   const [generatingInvoice, setGeneratingInvoice] = useState<string | null>(null);
   const [cancellingInvoice, setCancellingInvoice] = useState<string | null>(null);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+  
+  // Dialog states for status changes
+  const [shippedDialogOpen, setShippedDialogOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [pendingStatusOrder, setPendingStatusOrder] = useState<Order | null>(null);
+  const [awbNumber, setAwbNumber] = useState('');
+  const [courierName, setCourierName] = useState('');
+  const [cancellationReason, setCancellationReason] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -273,6 +285,76 @@ const AdminOrders = () => {
     }
   };
 
+  const handleStatusChange = (order: Order, newStatus: string) => {
+    if (newStatus === 'shipped') {
+      setPendingStatusOrder(order);
+      setAwbNumber('');
+      setCourierName('');
+      setShippedDialogOpen(true);
+    } else if (newStatus === 'cancelled') {
+      setPendingStatusOrder(order);
+      setCancellationReason('');
+      setCancelDialogOpen(true);
+    } else {
+      updateOrderStatus(order.id, newStatus as any);
+    }
+  };
+
+  const confirmShippedStatus = async () => {
+    if (!pendingStatusOrder) return;
+    
+    const { error } = await supabase
+      .from('orders')
+      .update({ status: 'shipped' })
+      .eq('id', pendingStatusOrder.id);
+
+    if (error) {
+      toast.error('Eroare la actualizare');
+    } else {
+      toast.success('Status actualizat');
+      fetchData();
+      if (selectedOrder?.id === pendingStatusOrder.id) {
+        setSelectedOrder({ ...selectedOrder, status: 'shipped' });
+      }
+      
+      // Send email with AWB and courier
+      await sendOrderEmail(pendingStatusOrder.id, 'shipped', { 
+        awbNumber: awbNumber || 'N/A', 
+        courierName: courierName || 'Curier' 
+      });
+    }
+    
+    setShippedDialogOpen(false);
+    setPendingStatusOrder(null);
+  };
+
+  const confirmCancelledStatus = async () => {
+    if (!pendingStatusOrder) return;
+    
+    const { error } = await supabase
+      .from('orders')
+      .update({ status: 'cancelled' })
+      .eq('id', pendingStatusOrder.id);
+
+    if (error) {
+      toast.error('Eroare la actualizare');
+    } else {
+      toast.success('Status actualizat');
+      fetchData();
+      if (selectedOrder?.id === pendingStatusOrder.id) {
+        setSelectedOrder({ ...selectedOrder, status: 'cancelled' });
+      }
+      
+      // Send email with cancellation reason
+      await sendOrderEmail(pendingStatusOrder.id, 'cancelled', { 
+        cancellationReason: cancellationReason || 'Comanda a fost anulată.' 
+      });
+    }
+    
+    setCancelDialogOpen(false);
+    setPendingStatusOrder(null);
+  };
+
   const updateOrderStatus = async (orderId: string, newStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'pregatita_ridicare') => {
     const { error } = await supabase
       .from('orders')
@@ -288,10 +370,12 @@ const AdminOrders = () => {
         setSelectedOrder({ ...selectedOrder, status: newStatus });
       }
 
-      // Send email notification for status change
-      const emailType = getEmailTypeForStatus(newStatus);
-      if (emailType) {
-        await sendOrderEmail(orderId, emailType);
+      // Send email notification for status change (except shipped/cancelled which have their own flow)
+      if (newStatus !== 'shipped' && newStatus !== 'cancelled') {
+        const emailType = getEmailTypeForStatus(newStatus);
+        if (emailType) {
+          await sendOrderEmail(orderId, emailType);
+        }
       }
     }
   };
@@ -920,7 +1004,7 @@ const AdminOrders = () => {
                 <span className="text-sm font-medium">Schimbă status:</span>
                 <Select 
                   value={selectedOrder.status} 
-                  onValueChange={(value) => updateOrderStatus(selectedOrder.id, value as any)}
+                  onValueChange={(value) => handleStatusChange(selectedOrder, value)}
                 >
                   <SelectTrigger className="w-48">
                     <SelectValue />
@@ -1192,6 +1276,102 @@ const AdminOrders = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Shipped Status Dialog - AWB & Courier */}
+      <Dialog open={shippedDialogOpen} onOpenChange={setShippedDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Truck className="w-5 h-5 text-primary" />
+              Detalii expediere
+            </DialogTitle>
+            <DialogDescription>
+              Introdu datele de tracking pentru comanda {pendingStatusOrder?.order_number}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="awb">Număr AWB *</Label>
+              <Input
+                id="awb"
+                placeholder="Ex: 1234567890"
+                value={awbNumber}
+                onChange={(e) => setAwbNumber(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="courier">Nume curier *</Label>
+              <Select value={courierName} onValueChange={setCourierName}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selectează curierul" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DPD">DPD</SelectItem>
+                  <SelectItem value="Fan Courier">Fan Courier</SelectItem>
+                  <SelectItem value="Cargus">Cargus</SelectItem>
+                  <SelectItem value="GLS">GLS</SelectItem>
+                  <SelectItem value="Sameday">Sameday</SelectItem>
+                  <SelectItem value="Poșta Română">Poșta Română</SelectItem>
+                  <SelectItem value="Altul">Altul</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShippedDialogOpen(false)}>
+              Anulează
+            </Button>
+            <Button 
+              onClick={confirmShippedStatus}
+              disabled={!awbNumber.trim() || !courierName}
+              className="gap-2"
+            >
+              <Send className="w-4 h-4" />
+              Confirmă expedierea
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Status Dialog - Reason */}
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <XCircle className="w-5 h-5" />
+              Anulare comandă
+            </DialogTitle>
+            <DialogDescription>
+              Specifică motivul anulării comenzii {pendingStatusOrder?.order_number}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="reason">Motivul anulării</Label>
+              <Textarea
+                id="reason"
+                placeholder="Ex: Clientul a solicitat anularea comenzii..."
+                value={cancellationReason}
+                onChange={(e) => setCancellationReason(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>
+              Renunță
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={confirmCancelledStatus}
+              className="gap-2"
+            >
+              <XCircle className="w-4 h-4" />
+              Confirmă anularea
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
