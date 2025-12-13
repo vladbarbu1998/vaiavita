@@ -48,7 +48,8 @@ import {
   ExternalLink,
   Trash2,
   MoreVertical,
-  Settings2
+  Settings2,
+  FileDown
 } from 'lucide-react';
 
 interface Order {
@@ -392,6 +393,18 @@ const AdminOrders = () => {
     }
   };
 
+  const downloadInvoice = (order: Order) => {
+    if (order.oblio_invoice_link) {
+      // Oblio invoice links typically support PDF download by adding /pdf or using the same link
+      // The link itself usually opens a PDF that can be downloaded
+      const downloadLink = document.createElement('a');
+      downloadLink.href = order.oblio_invoice_link;
+      downloadLink.target = '_blank';
+      downloadLink.download = `Factura_${order.oblio_series_name}_${order.oblio_invoice_number}.pdf`;
+      downloadLink.click();
+    }
+  };
+
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
       order.order_number.toLowerCase().includes(search.toLowerCase()) ||
@@ -662,16 +675,19 @@ const AdminOrders = () => {
                   return (
                     <tr key={order.id} className="hover:bg-muted/30 transition-colors">
                       <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{order.order_number}</p>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">{order.order_number}</p>
+                            {order.oblio_invoice_number && (
+                              <span className="inline-flex items-center gap-1 text-xs text-blue-600" title={`Factură: ${order.oblio_series_name} ${order.oblio_invoice_number}`}>
+                                <FileText className="w-3 h-3" />
+                              </span>
+                            )}
+                          </div>
                           {order.ecolet_synced && (
-                            <span className="inline-flex items-center gap-1 text-xs text-green-600" title="Sincronizat cu Ecolet">
+                            <span className="text-xs text-green-600 flex items-center gap-1">
                               <CheckCircle2 className="w-3 h-3" />
-                            </span>
-                          )}
-                          {order.oblio_invoice_number && (
-                            <span className="inline-flex items-center gap-1 text-xs text-blue-600" title={`Factură: ${order.oblio_series_name} ${order.oblio_invoice_number}`}>
-                              <FileText className="w-3 h-3" />
+                              Trimisă în Ecolet
                             </span>
                           )}
                         </div>
@@ -760,6 +776,13 @@ const AdminOrders = () => {
                                   >
                                     <ExternalLink className="w-4 h-4" />
                                     Vezi factura ({order.oblio_series_name} {order.oblio_invoice_number})
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => downloadInvoice(order)}
+                                    className="gap-2"
+                                  >
+                                    <FileDown className="w-4 h-4" />
+                                    Descarcă PDF
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() => cancelInvoice(order)}
