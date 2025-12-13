@@ -103,11 +103,15 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
   const [selectedLocker, setSelectedLocker] = useState<Locker | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([45.9432, 24.9668]); // Romania center
   const [mapZoom, setMapZoom] = useState<number>(7);
+  const [currentZoom, setCurrentZoom] = useState<number>(7); // Track actual map zoom for list visibility
   const [mapBounds, setMapBounds] = useState<[[number, number], [number, number]] | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeCouriers, setActiveCouriers] = useState<string[]>(COURIERS.map(c => c.id));
   const [locatingUser, setLocatingUser] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  
+  // Minimum zoom level to show the list (12 = city level)
+  const MIN_ZOOM_FOR_LIST = 11;
 
   // Load all lockers when dialog opens - use cache if available
   useEffect(() => {
@@ -188,8 +192,8 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
       );
     }
 
-    // Filter by map bounds if available and no county/search filter
-    if (mapBounds && !selectedCounty && !searchQuery.trim()) {
+    // Filter by map bounds when zoomed in enough (for list display)
+    if (mapBounds && currentZoom >= MIN_ZOOM_FOR_LIST && !selectedCounty && !searchQuery.trim()) {
       const [[south, west], [north, east]] = mapBounds;
       filtered = filtered.filter(locker =>
         locker.lat >= south && locker.lat <= north &&
@@ -197,9 +201,9 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
       );
     }
 
-    // Limit to 500 for performance
-    setFilteredLockers(filtered.slice(0, 500));
-  }, [allLockers, selectedCounty, searchQuery, mapBounds, activeCouriers]);
+    // Limit list items for performance (map shows all, list is limited)
+    setFilteredLockers(filtered.slice(0, 100));
+  }, [allLockers, selectedCounty, searchQuery, mapBounds, activeCouriers, currentZoom]);
 
   // When county changes, center map on that county
   useEffect(() => {
@@ -219,8 +223,9 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
     setMapZoom(16); // Zoom in when selecting a locker
   }, []);
 
-  const handleMapBoundsChange = useCallback((bounds: [[number, number], [number, number]]) => {
+  const handleMapBoundsChange = useCallback((bounds: [[number, number], [number, number]], zoom: number) => {
     setMapBounds(bounds);
+    setCurrentZoom(zoom);
   }, []);
 
   const handleConfirm = () => {
@@ -491,7 +496,9 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
           <p className="text-xs text-muted-foreground">
             {loading 
               ? (language === 'ro' ? 'Se încarcă...' : 'Loading...') 
-              : `${filteredLockers.length} ${language === 'ro' ? 'puncte de livrare' : 'delivery points'}`
+              : currentZoom >= MIN_ZOOM_FOR_LIST || searchQuery.trim() || selectedCounty
+                ? `${filteredLockers.length} ${language === 'ro' ? 'puncte în zonă' : 'points in area'}`
+                : `${allLockers.length} ${language === 'ro' ? 'puncte disponibile' : 'points available'}`
             }
           </p>
         </div>
@@ -561,6 +568,20 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
             {loading ? (
               <div className="flex items-center justify-center h-full py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : currentZoom < MIN_ZOOM_FOR_LIST && !selectedLocker && !searchQuery.trim() && !selectedCounty ? (
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
+                <MapPin className="h-10 w-10 mb-3 opacity-50" />
+                <p className="text-center text-sm font-medium">
+                  {language === 'ro' 
+                    ? 'Mărește harta pentru a vedea lista' 
+                    : 'Zoom in to see the list'}
+                </p>
+                <p className="text-center text-xs mt-1 opacity-70">
+                  {language === 'ro' 
+                    ? 'Sau selectează un județ / caută după nume' 
+                    : 'Or select a county / search by name'}
+                </p>
               </div>
             ) : filteredLockers.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
