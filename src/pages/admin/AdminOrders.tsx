@@ -16,7 +16,28 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Search, Eye, Loader2, Package, Truck, CheckCircle, Clock, XCircle, Filter, Calendar, CreditCard, Download } from 'lucide-react';
+import { 
+  Search, 
+  Eye, 
+  Loader2, 
+  Package, 
+  Truck, 
+  CheckCircle, 
+  Clock, 
+  XCircle, 
+  Filter, 
+  CreditCard, 
+  Download, 
+  MapPin,
+  Send,
+  Mail,
+  Phone,
+  User,
+  Calendar,
+  Banknote,
+  AlertCircle,
+  CheckCircle2
+} from 'lucide-react';
 
 interface Order {
   id: string;
@@ -30,12 +51,19 @@ interface Order {
   payment_method: string;
   payment_status: string | null;
   shipping_address: any;
+  pickup_location: string | null;
+  locker_id: string | null;
+  locker_name: string | null;
+  locker_address: string | null;
+  coupon_code: string | null;
   subtotal: number;
   shipping_cost: number;
   discount: number;
   total: number;
   customer_notes: string | null;
   admin_notes: string | null;
+  ecolet_synced: boolean | null;
+  ecolet_sync_error: string | null;
   created_at: string;
 }
 
@@ -67,16 +95,17 @@ const statusConfig: Record<string, { label: string; color: string; icon: any }> 
   cancelled: { label: 'Anulată', color: 'bg-red-500/10 text-red-600', icon: XCircle },
 };
 
-const deliveryLabels: Record<string, string> = {
-  shipping: 'Livrare',
-  pickup: 'Ridicare',
-  locker: 'Locker',
+const deliveryLabels: Record<string, { label: string; icon: any }> = {
+  shipping: { label: 'Curier la adresă', icon: Truck },
+  pickup: { label: 'Ridicare personală', icon: MapPin },
+  locker: { label: 'Easybox / Locker', icon: Package },
+  postal: { label: 'Poșta Română', icon: Package },
 };
 
-const paymentLabels: Record<string, string> = {
-  cash_on_delivery: 'Ramburs',
-  stripe: 'Card',
-  netopia: 'Netopia',
+const paymentLabels: Record<string, { label: string; icon: any }> = {
+  cash_on_delivery: { label: 'Ramburs', icon: Banknote },
+  stripe: { label: 'Card online', icon: CreditCard },
+  netopia: { label: 'Netopia', icon: CreditCard },
 };
 
 const AdminOrders = () => {
@@ -97,6 +126,7 @@ const AdminOrders = () => {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [sendingToEcolet, setSendingToEcolet] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -120,13 +150,6 @@ const AdminOrders = () => {
     setCategories(categoriesRes.data || []);
     
     // Group order items by order_id
-    const itemsMap: Record<string, OrderItem[]> = {};
-    (orderItemsRes.data || []).forEach((item: OrderItem) => {
-      if (!itemsMap[item.product_id || '']) {
-        itemsMap[item.product_id || ''] = [];
-      }
-    });
-    // Actually group by order_id
     const orderItemsGrouped: Record<string, OrderItem[]> = {};
     (orderItemsRes.data || []).forEach((item: any) => {
       if (!orderItemsGrouped[item.order_id]) {
@@ -162,6 +185,65 @@ const AdminOrders = () => {
     }
   };
 
+  const sendToEcolet = async (order: Order) => {
+    setSendingToEcolet(order.id);
+    
+    try {
+      const items = orderItemsMap[order.id] || [];
+      const ecoletPayload = {
+        orderId: order.id,
+        orderNumber: order.order_number,
+        customerFirstName: order.customer_first_name,
+        customerLastName: order.customer_last_name,
+        customerEmail: order.customer_email,
+        customerPhone: order.customer_phone,
+        deliveryMethod: order.delivery_method,
+        shippingAddress: order.shipping_address,
+        lockerId: order.locker_id,
+        lockerName: order.locker_name,
+        lockerAddress: order.locker_address,
+        total: order.total,
+        paymentMethod: order.payment_method,
+        items: items.map(item => ({
+          productName: item.product_name,
+          quantity: item.quantity,
+        })),
+      };
+
+      const { data, error } = await supabase.functions.invoke('create-ecolet-parcel', {
+        body: ecoletPayload,
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        // Update order with sync status
+        await supabase
+          .from('orders')
+          .update({ ecolet_synced: true, ecolet_sync_error: null })
+          .eq('id', order.id);
+        
+        toast.success('Comandă trimisă cu succes în Ecolet!');
+        fetchData();
+      } else {
+        throw new Error(data?.error || 'Eroare necunoscută');
+      }
+    } catch (err: any) {
+      console.error('Ecolet sync error:', err);
+      
+      // Update order with error
+      await supabase
+        .from('orders')
+        .update({ ecolet_synced: false, ecolet_sync_error: err.message })
+        .eq('id', order.id);
+      
+      toast.error(`Eroare: ${err.message}`);
+      fetchData();
+    } finally {
+      setSendingToEcolet(null);
+    }
+  };
+
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
       order.order_number.toLowerCase().includes(search.toLowerCase()) ||
@@ -178,7 +260,7 @@ const AdminOrders = () => {
     const matchesDateFrom = !dateFrom || orderDate >= new Date(dateFrom);
     const matchesDateTo = !dateTo || orderDate <= new Date(dateTo + 'T23:59:59');
     
-    // Product/Category filter - check if order contains the product or products from category
+    // Product/Category filter
     let matchesProduct = productFilter === 'all';
     let matchesCategory = categoryFilter === 'all';
     
@@ -226,8 +308,8 @@ const AdminOrders = () => {
       o.customer_email,
       o.customer_phone,
       statusConfig[o.status]?.label || o.status,
-      deliveryLabels[o.delivery_method] || o.delivery_method,
-      paymentLabels[o.payment_method] || o.payment_method,
+      deliveryLabels[o.delivery_method]?.label || o.delivery_method,
+      paymentLabels[o.payment_method]?.label || o.payment_method,
       Number(o.subtotal).toFixed(2),
       Number(o.shipping_cost || 0).toFixed(2),
       Number(o.discount || 0).toFixed(2),
@@ -244,6 +326,12 @@ const AdminOrders = () => {
   };
 
   const activeFiltersCount = [statusFilter, productFilter, categoryFilter, deliveryFilter, paymentFilter].filter(f => f !== 'all').length + (dateFrom ? 1 : 0) + (dateTo ? 1 : 0);
+
+  const canSendToEcolet = (order: Order) => {
+    return ['shipping', 'postal', 'locker'].includes(order.delivery_method) && 
+           order.status !== 'cancelled' && 
+           order.status !== 'delivered';
+  };
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
@@ -347,7 +435,8 @@ const AdminOrders = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toate</SelectItem>
-                <SelectItem value="shipping">Livrare</SelectItem>
+                <SelectItem value="shipping">Curier</SelectItem>
+                <SelectItem value="postal">Poșta Română</SelectItem>
                 <SelectItem value="pickup">Ridicare</SelectItem>
                 <SelectItem value="locker">Locker</SelectItem>
               </SelectContent>
@@ -421,10 +510,16 @@ const AdminOrders = () => {
               ) : (
                 filteredOrders.map((order) => {
                   const StatusIcon = statusConfig[order.status]?.icon || Clock;
+                  const DeliveryIcon = deliveryLabels[order.delivery_method]?.icon || Truck;
                   return (
                     <tr key={order.id} className="hover:bg-muted/30 transition-colors">
                       <td className="p-4">
                         <p className="font-medium">{order.order_number}</p>
+                        {order.ecolet_synced && (
+                          <span className="inline-flex items-center gap-1 text-xs text-green-600">
+                            <CheckCircle2 className="w-3 h-3" /> Ecolet
+                          </span>
+                        )}
                       </td>
                       <td className="p-4">
                         <p className="font-medium">{order.customer_first_name} {order.customer_last_name}</p>
@@ -432,10 +527,13 @@ const AdminOrders = () => {
                       </td>
                       <td className="p-4">
                         <p className="font-medium">{Number(order.total).toFixed(2)} lei</p>
-                        <p className="text-sm text-muted-foreground">{paymentLabels[order.payment_method]}</p>
+                        <p className="text-sm text-muted-foreground">{paymentLabels[order.payment_method]?.label || order.payment_method}</p>
                       </td>
                       <td className="p-4">
-                        <p className="text-sm">{deliveryLabels[order.delivery_method]}</p>
+                        <div className="flex items-center gap-2">
+                          <DeliveryIcon className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm">{deliveryLabels[order.delivery_method]?.label || order.delivery_method}</span>
+                        </div>
                       </td>
                       <td className="p-4">
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusConfig[order.status]?.color}`}>
@@ -447,9 +545,26 @@ const AdminOrders = () => {
                         <p className="text-sm text-muted-foreground">{formatDate(order.created_at)}</p>
                       </td>
                       <td className="p-4 text-right">
-                        <Button variant="ghost" size="icon" onClick={() => viewOrder(order)}>
-                          <Eye className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          {canSendToEcolet(order) && (
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              onClick={() => sendToEcolet(order)}
+                              disabled={sendingToEcolet === order.id}
+                              title="Trimite în Ecolet"
+                            >
+                              {sendingToEcolet === order.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Send className="w-4 h-4" />
+                              )}
+                            </Button>
+                          )}
+                          <Button variant="ghost" size="icon" onClick={() => viewOrder(order)}>
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -460,23 +575,28 @@ const AdminOrders = () => {
         </div>
       </div>
 
-      {/* Order Detail Dialog */}
+      {/* Order Detail Dialog - Enhanced */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-display text-xl">
+            <DialogTitle className="font-display text-xl flex items-center gap-3">
               Comandă {selectedOrder?.order_number}
+              {selectedOrder && (
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusConfig[selectedOrder.status]?.color}`}>
+                  {statusConfig[selectedOrder.status]?.label}
+                </span>
+              )}
             </DialogTitle>
           </DialogHeader>
 
           {selectedOrder && (
             <div className="space-y-6 py-4">
-              {/* Status Update */}
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground">Status:</span>
+              {/* Quick Actions */}
+              <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-muted/50">
+                <span className="text-sm font-medium">Schimbă status:</span>
                 <Select 
                   value={selectedOrder.status} 
-                  onValueChange={(value) => updateOrderStatus(selectedOrder.id, value as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled')}
+                  onValueChange={(value) => updateOrderStatus(selectedOrder.id, value as any)}
                 >
                   <SelectTrigger className="w-48">
                     <SelectValue />
@@ -489,80 +609,187 @@ const AdminOrders = () => {
                     <SelectItem value="cancelled">Anulată</SelectItem>
                   </SelectContent>
                 </Select>
+
+                {canSendToEcolet(selectedOrder) && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => sendToEcolet(selectedOrder)}
+                    disabled={sendingToEcolet === selectedOrder.id}
+                    className="gap-2"
+                  >
+                    {sendingToEcolet === selectedOrder.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                    Trimite în Ecolet
+                  </Button>
+                )}
+
+                {selectedOrder.ecolet_synced && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-600">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Sincronizat cu Ecolet
+                  </span>
+                )}
+
+                {selectedOrder.ecolet_sync_error && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-600">
+                    <AlertCircle className="w-3 h-3" />
+                    Eroare sincronizare
+                  </span>
+                )}
               </div>
 
-              {/* Customer Info */}
-              <div className="space-y-2">
-                <h3 className="font-medium">Date client</h3>
-                <div className="grid sm:grid-cols-2 gap-2 text-sm">
-                  <p><span className="text-muted-foreground">Nume:</span> {selectedOrder.customer_first_name} {selectedOrder.customer_last_name}</p>
-                  <p><span className="text-muted-foreground">Email:</span> {selectedOrder.customer_email}</p>
-                  <p><span className="text-muted-foreground">Telefon:</span> {selectedOrder.customer_phone}</p>
-                  <p><span className="text-muted-foreground">Data:</span> {formatDate(selectedOrder.created_at)}</p>
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Customer Info */}
+                <div className="space-y-4">
+                  <h3 className="font-medium flex items-center gap-2">
+                    <User className="w-4 h-4 text-primary" />
+                    Date client
+                  </h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center gap-3">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">{selectedOrder.customer_first_name} {selectedOrder.customer_last_name}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      <a href={`mailto:${selectedOrder.customer_email}`} className="text-primary hover:underline">
+                        {selectedOrder.customer_email}
+                      </a>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-4 h-4 text-muted-foreground" />
+                      <a href={`tel:${selectedOrder.customer_phone}`} className="text-primary hover:underline">
+                        {selectedOrder.customer_phone}
+                      </a>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <span>{formatDate(selectedOrder.created_at)}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Delivery Info */}
-              <div className="space-y-2">
-                <h3 className="font-medium">Livrare</h3>
-                <div className="text-sm">
-                  <p><span className="text-muted-foreground">Metodă:</span> {deliveryLabels[selectedOrder.delivery_method]}</p>
-                  {selectedOrder.shipping_address && (
-                    <p className="mt-1">
-                      <span className="text-muted-foreground">Adresă:</span>{' '}
-                      {selectedOrder.shipping_address.address}, {selectedOrder.shipping_address.city}, {selectedOrder.shipping_address.county}
-                    </p>
-                  )}
+                {/* Delivery & Payment Info */}
+                <div className="space-y-4">
+                  <h3 className="font-medium flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-primary" />
+                    Livrare și plată
+                  </h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-start gap-3">
+                      {(() => {
+                        const DeliveryIcon = deliveryLabels[selectedOrder.delivery_method]?.icon || Truck;
+                        return <DeliveryIcon className="w-4 h-4 text-muted-foreground mt-0.5" />;
+                      })()}
+                      <div>
+                        <p className="font-medium">{deliveryLabels[selectedOrder.delivery_method]?.label}</p>
+                        {selectedOrder.shipping_address && (
+                          <p className="text-muted-foreground mt-1">
+                            {selectedOrder.shipping_address.address}
+                            {selectedOrder.shipping_address.addressLine2 && `, ${selectedOrder.shipping_address.addressLine2}`}
+                            <br />
+                            {selectedOrder.shipping_address.city}, {selectedOrder.shipping_address.county}
+                            {selectedOrder.shipping_address.postalCode && ` - ${selectedOrder.shipping_address.postalCode}`}
+                            <br />
+                            {selectedOrder.shipping_address.country}
+                          </p>
+                        )}
+                        {selectedOrder.pickup_location && (
+                          <p className="text-muted-foreground mt-1">{selectedOrder.pickup_location}</p>
+                        )}
+                        {selectedOrder.locker_name && (
+                          <div className="mt-1 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                            <p className="font-medium text-primary">{selectedOrder.locker_name}</p>
+                            <p className="text-muted-foreground text-xs">{selectedOrder.locker_address}</p>
+                            {selectedOrder.locker_id && (
+                              <p className="text-muted-foreground text-xs mt-1">ID: {selectedOrder.locker_id}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {(() => {
+                        const PaymentIcon = paymentLabels[selectedOrder.payment_method]?.icon || CreditCard;
+                        return <PaymentIcon className="w-4 h-4 text-muted-foreground" />;
+                      })()}
+                      <span className="font-medium">{paymentLabels[selectedOrder.payment_method]?.label}</span>
+                    </div>
+                    {selectedOrder.coupon_code && (
+                      <div className="flex items-center gap-3">
+                        <span className="w-4 h-4 text-muted-foreground text-center">🎫</span>
+                        <span>Cupon: <code className="bg-muted px-2 py-0.5 rounded">{selectedOrder.coupon_code}</code></span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* Order Items */}
-              <div className="space-y-2">
-                <h3 className="font-medium">Produse</h3>
+              <div className="space-y-3">
+                <h3 className="font-medium flex items-center gap-2">
+                  <Package className="w-4 h-4 text-primary" />
+                  Produse comandate
+                </h3>
                 <div className="border border-border rounded-xl overflow-hidden">
-                  {orderItems.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 border-b border-border last:border-b-0">
-                      <div>
+                  {orderItems.map((item, idx) => (
+                    <div key={item.id} className={`flex items-center justify-between p-4 ${idx !== orderItems.length - 1 ? 'border-b border-border' : ''}`}>
+                      <div className="flex-1">
                         <p className="font-medium">{item.product_name}</p>
                         <p className="text-sm text-muted-foreground">
                           {item.quantity} x {Number(item.unit_price).toFixed(2)} lei
                         </p>
                       </div>
-                      <p className="font-medium">{Number(item.total_price).toFixed(2)} lei</p>
+                      <p className="font-medium text-lg">{Number(item.total_price).toFixed(2)} lei</p>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Totals */}
-              <div className="space-y-2 pt-4 border-t border-border">
+              <div className="space-y-2 p-4 rounded-xl bg-muted/50">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-muted-foreground">Subtotal produse</span>
                   <span>{Number(selectedOrder.subtotal).toFixed(2)} lei</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Livrare</span>
-                  <span>{Number(selectedOrder.shipping_cost).toFixed(2)} lei</span>
+                  <span className="text-muted-foreground">Cost livrare</span>
+                  <span>{Number(selectedOrder.shipping_cost || 0).toFixed(2)} lei</span>
                 </div>
                 {Number(selectedOrder.discount) > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
-                    <span>Discount</span>
+                    <span>Discount aplicat</span>
                     <span>-{Number(selectedOrder.discount).toFixed(2)} lei</span>
                   </div>
                 )}
-                <div className="flex justify-between font-medium text-lg pt-2 border-t border-border">
-                  <span>Total</span>
+                <div className="flex justify-between font-bold text-xl pt-3 border-t border-border mt-3">
+                  <span>TOTAL</span>
                   <span className="text-primary">{Number(selectedOrder.total).toFixed(2)} lei</span>
                 </div>
               </div>
 
               {/* Notes */}
-              {selectedOrder.customer_notes && (
-                <div className="space-y-2">
-                  <h3 className="font-medium">Note client</h3>
-                  <p className="text-sm text-muted-foreground p-3 bg-muted/50 rounded-lg">
-                    {selectedOrder.customer_notes}
-                  </p>
+              {(selectedOrder.customer_notes || selectedOrder.admin_notes) && (
+                <div className="space-y-3">
+                  {selectedOrder.customer_notes && (
+                    <div className="space-y-2">
+                      <h3 className="font-medium text-sm">Note client</h3>
+                      <p className="text-sm p-3 bg-muted/50 rounded-lg whitespace-pre-wrap">
+                        {selectedOrder.customer_notes}
+                      </p>
+                    </div>
+                  )}
+                  {selectedOrder.admin_notes && (
+                    <div className="space-y-2">
+                      <h3 className="font-medium text-sm">Note admin</h3>
+                      <p className="text-sm p-3 bg-yellow-500/10 rounded-lg whitespace-pre-wrap">
+                        {selectedOrder.admin_notes}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

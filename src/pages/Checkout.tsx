@@ -23,7 +23,8 @@ import {
   Gift,
   Search,
   Check,
-  ChevronsUpDown
+  ChevronsUpDown,
+  Edit
 } from 'lucide-react';
 import {
   Command,
@@ -39,6 +40,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from '@/lib/utils';
+import { LockerSelector } from '@/components/checkout/LockerSelector';
 
 // Romanian counties
 const ROMANIAN_COUNTIES = [
@@ -132,6 +134,8 @@ const Checkout = () => {
   const [countryOpen, setCountryOpen] = useState(false);
   const [countyOpen, setCountyOpen] = useState(false);
   const [postalCodeError, setPostalCodeError] = useState('');
+  const [lockerSelectorOpen, setLockerSelectorOpen] = useState(false);
+  const [selectedLocker, setSelectedLocker] = useState<{ id: string; name: string; address: string } | null>(null);
   
   const [form, setForm] = useState<CheckoutForm>({
     firstName: '',
@@ -479,6 +483,12 @@ const Checkout = () => {
       return;
     }
 
+    // Validate locker selection
+    if (form.deliveryMethod === 'locker' && !selectedLocker) {
+      toast.error(language === 'ro' ? 'Selectează un punct de livrare' : 'Select a delivery point');
+      return;
+    }
+
     // Validate postal code format
     if (form.postalCode.trim() && !validatePostalCode(form.postalCode, form.country)) {
       const country = COUNTRIES.find(c => c.code === form.country);
@@ -503,7 +513,7 @@ const Checkout = () => {
           customer_last_name: form.lastName,
           delivery_method: form.deliveryMethod as 'shipping' | 'pickup' | 'locker',
           payment_method: (form.paymentMethod === 'card_at_locker' ? 'stripe' : form.paymentMethod) as 'stripe' | 'netopia' | 'cash_on_delivery',
-          shipping_address: form.deliveryMethod === 'shipping' ? {
+          shipping_address: form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal' ? {
             country: countryDisplayName,
             countryCode: form.country,
             address: form.address,
@@ -513,6 +523,9 @@ const Checkout = () => {
             postalCode: form.postalCode,
           } : null,
           pickup_location: form.deliveryMethod === 'pickup' ? 'Brașov, România' : null,
+          locker_id: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.id : null,
+          locker_name: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.name : null,
+          locker_address: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.address : null,
           subtotal: totalPrice,
           shipping_cost: shippingCost,
           discount: discount,
@@ -549,8 +562,8 @@ const Checkout = () => {
 
       if (itemsError) throw itemsError;
 
-      // Send order to Ecolet for shipping/postal deliveries (background task)
-      if (form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal') {
+      // Send order to Ecolet for shipping/postal/locker deliveries (background task)
+      if (form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal' || form.deliveryMethod === 'locker') {
         try {
           const ecoletPayload = {
             orderId: order.id,
@@ -560,7 +573,7 @@ const Checkout = () => {
             customerEmail: form.email,
             customerPhone: form.phone,
             deliveryMethod: form.deliveryMethod,
-            shippingAddress: {
+            shippingAddress: form.deliveryMethod !== 'locker' ? {
               country: countryDisplayName,
               countryCode: form.country,
               address: form.address,
@@ -568,7 +581,10 @@ const Checkout = () => {
               city: form.city,
               county: form.county,
               postalCode: form.postalCode,
-            },
+            } : null,
+            lockerId: selectedLocker?.id || null,
+            lockerName: selectedLocker?.name || null,
+            lockerAddress: selectedLocker?.address || null,
             total: finalTotal,
             paymentMethod: form.paymentMethod,
             items: items.map(item => ({
@@ -967,24 +983,65 @@ const Checkout = () => {
 
                       {/* Locker - only for Romania */}
                       {availableDeliveryMethods.includes('locker') && (
-                        <label 
-                          className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
-                            form.deliveryMethod === 'locker' 
-                              ? 'border-primary bg-primary/5' 
-                              : 'border-border hover:border-primary/50'
-                          }`}
-                        >
-                          <RadioGroupItem value="locker" id="locker" />
-                          <Package className="w-5 h-5 text-primary" />
-                          <div className="flex-1">
-                            <p className="font-medium">
-                              {language === 'ro' ? 'Easybox / Locker' : 'Easybox / Locker'}
-                            </p>
-                          </div>
-                          <span className="font-medium">
-                            15 lei
-                          </span>
-                        </label>
+                        <div className="space-y-3">
+                          <label 
+                            className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                              form.deliveryMethod === 'locker' 
+                                ? 'border-primary bg-primary/5' 
+                                : 'border-border hover:border-primary/50'
+                            }`}
+                          >
+                            <RadioGroupItem value="locker" id="locker" />
+                            <Package className="w-5 h-5 text-primary" />
+                            <div className="flex-1">
+                              <p className="font-medium">
+                                {language === 'ro' ? 'Easybox / Locker' : 'Easybox / Locker'}
+                              </p>
+                            </div>
+                            <span className="font-medium">
+                              15 lei
+                            </span>
+                          </label>
+
+                          {/* Locker selection UI - appears below when locker is selected */}
+                          {form.deliveryMethod === 'locker' && (
+                            <div className="ml-9 space-y-3">
+                              {selectedLocker ? (
+                                <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="flex-1">
+                                      <p className="font-medium flex items-center gap-2">
+                                        <MapPin className="w-4 h-4 text-primary" />
+                                        {language === 'ro' ? 'Punct selectat:' : 'Selected point:'}
+                                      </p>
+                                      <p className="text-sm font-medium mt-1">{selectedLocker.name}</p>
+                                      <p className="text-sm text-muted-foreground">{selectedLocker.address}</p>
+                                    </div>
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => setLockerSelectorOpen(true)}
+                                    >
+                                      <Edit className="w-4 h-4 mr-1" />
+                                      {language === 'ro' ? 'Schimbă' : 'Change'}
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <Button 
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => setLockerSelectorOpen(true)}
+                                  className="w-full justify-start gap-2"
+                                >
+                                  <MapPin className="w-4 h-4 text-primary" />
+                                  {language === 'ro' ? 'Selectează punctul de livrare' : 'Select delivery point'}
+                                </Button>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       )}
                     </RadioGroup>
 
@@ -1258,6 +1315,14 @@ const Checkout = () => {
               </div>
             </div>
           </form>
+
+          {/* Locker Selector Modal */}
+          <LockerSelector
+            open={lockerSelectorOpen}
+            onOpenChange={setLockerSelectorOpen}
+            onSelectLocker={setSelectedLocker}
+            selectedLockerId={selectedLocker?.id}
+          />
         </div>
       </section>
     </MainLayout>

@@ -248,8 +248,12 @@ export type Database = {
           customer_phone: string
           delivery_method: Database["public"]["Enums"]["delivery_method"]
           discount: number | null
+          ecolet_sync_error: string | null
+          ecolet_synced: boolean | null
           id: string
+          locker_address: string | null
           locker_id: string | null
+          locker_name: string | null
           order_number: string
           payment_id: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
@@ -274,8 +278,12 @@ export type Database = {
           customer_phone: string
           delivery_method: Database["public"]["Enums"]["delivery_method"]
           discount?: number | null
+          ecolet_sync_error?: string | null
+          ecolet_synced?: boolean | null
           id?: string
+          locker_address?: string | null
           locker_id?: string | null
+          locker_name?: string | null
           order_number: string
           payment_id?: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
@@ -300,8 +308,12 @@ export type Database = {
           customer_phone?: string
           delivery_method?: Database["public"]["Enums"]["delivery_method"]
           discount?: number | null
+          ecolet_sync_error?: string | null
+          ecolet_synced?: boolean | null
           id?: string
+          locker_address?: string | null
           locker_id?: string | null
+          locker_name?: string | null
           order_number?: string
           payment_id?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
