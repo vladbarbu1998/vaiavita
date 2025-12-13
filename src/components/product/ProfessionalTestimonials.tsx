@@ -112,88 +112,85 @@ export function ProfessionalTestimonials() {
 
       {/* Mobile: Carousel */}
       <div className="md:hidden">
-        <div className="relative">
-          {/* Navigation arrows */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 bg-background/80 backdrop-blur-sm shadow-md"
-            onClick={prevTestimonial}
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-
-          <div className="px-12">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border border-primary/20 p-6 shadow-lg">
-              {/* Decorative quote */}
-              <div className="absolute -top-2 -left-2 w-16 h-16 bg-primary/10 rounded-full blur-xl" />
-              <Quote className="w-10 h-10 text-primary/30 absolute top-4 right-4" />
-              
-              <p className="text-base leading-relaxed text-foreground/90 mb-5 pr-10 relative z-10">
-                "{language === 'ro' 
-                  ? testimonials[currentIndex].content_ro 
-                  : testimonials[currentIndex].content_en}"
-              </p>
-              
-              <div className="border-t border-primary/20 pt-4 mt-4 relative z-10">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-semibold text-foreground text-base">
-                      {testimonials[currentIndex].author}
-                    </p>
-                    <p className="text-sm text-primary font-medium">
-                      {language === 'ro' 
-                        ? testimonials[currentIndex].title_ro 
-                        : testimonials[currentIndex].title_en}
-                    </p>
-                    {testimonials[currentIndex].credentials && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {testimonials[currentIndex].credentials}
-                      </p>
-                    )}
-                    {testimonials[currentIndex].hasProof && (
-                      <ProofDialog language={language} />
-                    )}
-                  </div>
-                  {testimonials[currentIndex].linkedinUrl && (
-                    <a 
-                      href={testimonials[currentIndex].linkedinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 w-9 h-9 rounded-full bg-[#0077B5]/10 hover:bg-[#0077B5]/20 flex items-center justify-center transition-colors"
-                      title="LinkedIn"
-                    >
-                      <ExternalLink className="w-4 h-4 text-[#0077B5]" />
-                    </a>
-                  )}
-                </div>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border border-primary/20 p-6 shadow-lg">
+          {/* Decorative quote */}
+          <div className="absolute -top-2 -left-2 w-16 h-16 bg-primary/10 rounded-full blur-xl" />
+          <Quote className="w-10 h-10 text-primary/30 absolute top-4 right-4" />
+          
+          <p className="text-base leading-relaxed text-foreground/90 mb-5 pr-10 relative z-10">
+            "{language === 'ro' 
+              ? testimonials[currentIndex].content_ro 
+              : testimonials[currentIndex].content_en}"
+          </p>
+          
+          <div className="border-t border-primary/20 pt-4 mt-4 relative z-10">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="font-semibold text-foreground text-base">
+                  {testimonials[currentIndex].author}
+                </p>
+                <p className="text-sm text-primary font-medium">
+                  {language === 'ro' 
+                    ? testimonials[currentIndex].title_ro 
+                    : testimonials[currentIndex].title_en}
+                </p>
+                {testimonials[currentIndex].credentials && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {testimonials[currentIndex].credentials}
+                  </p>
+                )}
+                {testimonials[currentIndex].hasProof && (
+                  <ProofDialog language={language} />
+                )}
               </div>
+              {testimonials[currentIndex].linkedinUrl && (
+                <a 
+                  href={testimonials[currentIndex].linkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 w-9 h-9 rounded-full bg-[#0077B5]/10 hover:bg-[#0077B5]/20 flex items-center justify-center transition-colors"
+                  title="LinkedIn"
+                >
+                  <ExternalLink className="w-4 h-4 text-[#0077B5]" />
+                </a>
+              )}
             </div>
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 bg-background/80 backdrop-blur-sm shadow-md"
-            onClick={nextTestimonial}
-          >
-            <ChevronRight className="w-5 h-5" />
-          </Button>
-        </div>
-
-        {/* Dots indicator */}
-        <div className="flex justify-center gap-1.5 mt-4">
-          {testimonials.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentIndex 
-                  ? 'bg-primary w-4' 
-                  : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
-              }`}
-            />
-          ))}
+          {/* Navigation arrows inside card */}
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-primary/10">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 px-3"
+              onClick={prevTestimonial}
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              {language === 'ro' ? 'Anterior' : 'Previous'}
+            </Button>
+            <div className="flex gap-1.5">
+              {testimonials.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    index === currentIndex 
+                      ? 'bg-primary w-4' 
+                      : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                  }`}
+                />
+              ))}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 px-3"
+              onClick={nextTestimonial}
+            >
+              {language === 'ro' ? 'Următor' : 'Next'}
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
         </div>
       </div>
 
