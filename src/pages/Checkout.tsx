@@ -549,6 +549,50 @@ const Checkout = () => {
 
       if (itemsError) throw itemsError;
 
+      // Send order to Ecolet for shipping/postal deliveries (background task)
+      if (form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal') {
+        try {
+          const ecoletPayload = {
+            orderId: order.id,
+            orderNumber: order.order_number,
+            customerFirstName: form.firstName,
+            customerLastName: form.lastName,
+            customerEmail: form.email,
+            customerPhone: form.phone,
+            deliveryMethod: form.deliveryMethod,
+            shippingAddress: {
+              country: countryDisplayName,
+              countryCode: form.country,
+              address: form.address,
+              addressLine2: form.addressLine2,
+              city: form.city,
+              county: form.county,
+              postalCode: form.postalCode,
+            },
+            total: finalTotal,
+            paymentMethod: form.paymentMethod,
+            items: items.map(item => ({
+              productName: language === 'ro' ? item.name : item.nameEn,
+              quantity: item.quantity,
+            })),
+          };
+          
+          // Fire and forget - don't block checkout
+          supabase.functions.invoke('create-ecolet-parcel', { body: ecoletPayload })
+            .then(result => {
+              if (result.error) {
+                console.error('Ecolet sync error:', result.error);
+              } else {
+                console.log('Ecolet sync result:', result.data);
+              }
+            })
+            .catch(err => console.error('Ecolet sync failed:', err));
+        } catch (ecoletError) {
+          console.error('Ecolet integration error:', ecoletError);
+          // Don't block checkout if Ecolet fails
+        }
+      }
+
       if (form.paymentMethod === 'cash_on_delivery' || form.paymentMethod === 'card_at_locker') {
         clearCart();
         navigate(`/comanda-confirmata?order=${order.order_number}`);
