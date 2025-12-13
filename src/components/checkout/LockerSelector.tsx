@@ -169,32 +169,32 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         });
       }
 
-      // Filter by county (only as initial filter, will be refined by map bounds)
-      if (selectedCounty) {
-        filtered = filtered.filter(locker => 
-          locker.county?.toLowerCase().includes(selectedCounty.toLowerCase())
-        );
-      }
-
-      // Filter by search query
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        filtered = filtered.filter(locker =>
-          locker.name.toLowerCase().includes(query) ||
-          locker.address.toLowerCase().includes(query) ||
-          locker.city.toLowerCase().includes(query) ||
-          locker.postal_code.includes(query)
-        );
-      }
-
-      // Filter by map bounds when zoomed in - but NOT when county is selected
-      // When county is selected, show ALL lockers in that county
-      if (!selectedCounty && mapBounds && currentZoom >= MIN_ZOOM_FOR_LOCKERS) {
+      // When zoomed in enough, always filter by map bounds (takes priority)
+      // This allows users to pan/zoom to see lockers in any area
+      if (mapBounds && currentZoom >= MIN_ZOOM_FOR_LOCKERS) {
         const [[south, west], [north, east]] = mapBounds;
         filtered = filtered.filter(locker =>
           locker.lat >= south && locker.lat <= north &&
           locker.lng >= west && locker.lng <= east
         );
+      } else {
+        // Only apply county/search filters when NOT zoomed in enough
+        // These act as initial navigation helpers
+        if (selectedCounty) {
+          filtered = filtered.filter(locker => 
+            locker.county?.toLowerCase().includes(selectedCounty.toLowerCase())
+          );
+        }
+
+        if (searchQuery.trim()) {
+          const query = searchQuery.toLowerCase();
+          filtered = filtered.filter(locker =>
+            locker.name.toLowerCase().includes(query) ||
+            locker.address.toLowerCase().includes(query) ||
+            locker.city.toLowerCase().includes(query) ||
+            locker.postal_code.includes(query)
+          );
+        }
       }
 
       // Limit for performance
