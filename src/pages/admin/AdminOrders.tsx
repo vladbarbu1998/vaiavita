@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,7 +53,10 @@ import {
   Trash2,
   MoreVertical,
   Settings2,
-  FileDown
+  FileDown,
+  Volume2,
+  VolumeX,
+  Bell
 } from 'lucide-react';
 
 interface Order {
@@ -171,36 +174,61 @@ const AdminOrders = () => {
   const [awbFetchError, setAwbFetchError] = useState<string | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
   const [sendCancelEmail, setSendCancelEmail] = useState(true);
+  const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Initialize audio context on first user interaction
+  const getAudioContext = () => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    return audioContextRef.current;
+  };
+
   // Play notification sound
   const playNotificationSound = (type: 'new_order' | 'payment_confirmed') => {
+    if (!soundEnabled) return;
+    
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
+      const audioContext = getAudioContext();
       
       if (type === 'new_order') {
-        // Two-tone notification for new order
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
-        oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.2);
+        // Play 3 ascending tones for new order
+        [800, 1000, 1200].forEach((freq, i) => {
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.12 + 0.15);
+          osc.start(audioContext.currentTime + i * 0.12);
+          osc.stop(audioContext.currentTime + i * 0.12 + 0.15);
+        });
       } else {
-        // Success chime for payment confirmed
-        oscillator.frequency.setValueAtTime(523, audioContext.currentTime); // C5
-        oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.1); // E5
-        oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.2); // G5
+        // Play chord for payment confirmed
+        [523, 659, 784].forEach((freq, i) => {
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+          osc.start(audioContext.currentTime);
+          osc.stop(audioContext.currentTime + 0.5);
+        });
       }
-      
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.4);
     } catch (error) {
       console.log('Could not play notification sound:', error);
     }
+  };
+
+  // Test sound button handler
+  const testSound = (type: 'new_order' | 'payment_confirmed') => {
+    playNotificationSound(type);
+    toast.info(type === 'new_order' ? '🔔 Test: Comandă nouă' : '💳 Test: Plată confirmată');
   };
 
   useEffect(() => {
@@ -261,10 +289,14 @@ const AdminOrders = () => {
           }));
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+        setIsRealtimeConnected(status === 'SUBSCRIBED');
+      });
 
     return () => {
       supabase.removeChannel(ordersChannel);
+      setIsRealtimeConnected(false);
     };
   }, []);
 
@@ -772,10 +804,56 @@ const AdminOrders = () => {
           <h1 className="font-display text-2xl md:text-3xl tracking-wide">Comenzi</h1>
           <p className="text-muted-foreground mt-1">Gestionează comenzile primite</p>
         </div>
-        <Button variant="outline" onClick={exportOrders}>
-          <Download className="w-4 h-4 mr-2" />
-          Export CSV
-        </Button>
+        <div className="flex items-center gap-3">
+          {/* Live Status Indicator */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border">
+            <span 
+              className={`w-2 h-2 rounded-full ${isRealtimeConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}
+            />
+            <span className="text-xs font-medium text-muted-foreground">
+              {isRealtimeConnected ? 'Live' : 'Offline'}
+            </span>
+          </div>
+          
+          {/* Sound Toggle & Test */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                Sunet
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setSoundEnabled(!soundEnabled)}>
+                {soundEnabled ? (
+                  <>
+                    <VolumeX className="w-4 h-4 mr-2" />
+                    Dezactivează sunet
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-4 h-4 mr-2" />
+                    Activează sunet
+                  </>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => testSound('new_order')}>
+                <Bell className="w-4 h-4 mr-2" />
+                Test: Comandă nouă
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => testSound('payment_confirmed')}>
+                <CreditCard className="w-4 h-4 mr-2" />
+                Test: Plată confirmată
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <Button variant="outline" onClick={exportOrders}>
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Search and Filter Toggle */}
