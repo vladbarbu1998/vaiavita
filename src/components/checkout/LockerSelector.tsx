@@ -1,10 +1,23 @@
-import React, { useState, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, MapPin, Loader2, Package, CheckCircle2 } from 'lucide-react';
+import { Search, MapPin, Loader2, Package, CheckCircle2, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export interface Locker {
   id: string;
@@ -16,18 +29,6 @@ export interface Locker {
   lat: number;
   lng: number;
   courier: string;
-}
-
-interface Locality {
-  id: number;
-  name: string;
-  municipality: string;
-  postal_code: string;
-  county: {
-    id: number;
-    name: string;
-    code: string;
-  };
 }
 
 interface LockerSelectorProps {
@@ -45,92 +46,122 @@ interface LockerSelectorProps {
   selectedLockerId?: string;
 }
 
+// Romanian major cities for quick filter
+const ROMANIAN_CITIES = [
+  'București', 'Cluj-Napoca', 'Timișoara', 'Iași', 'Constanța', 'Craiova', 
+  'Brașov', 'Galați', 'Ploiești', 'Oradea', 'Brăila', 'Arad', 'Pitești',
+  'Sibiu', 'Bacău', 'Târgu Mureș', 'Baia Mare', 'Buzău', 'Botoșani', 'Satu Mare',
+  'Râmnicu Vâlcea', 'Drobeta-Turnu Severin', 'Suceava', 'Piatra Neamț', 'Târgu Jiu',
+  'Târgoviște', 'Focșani', 'Bistrița', 'Reșița', 'Tulcea', 'Călărași', 'Giurgiu',
+  'Alba Iulia', 'Deva', 'Hunedoara', 'Zalău', 'Sfântu Gheorghe', 'Slobozia',
+  'Vaslui', 'Roman', 'Turda', 'Mediaș', 'Lugoj', 'Onești', 'Sighișoara'
+];
+
 // Lazy load the map component
 const LockerMap = lazy(() => import('./LockerMap'));
 
 export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLockerId }: LockerSelectorProps) {
   const { language } = useLanguage();
-  const [lockers, setLockers] = useState<Locker[]>([]);
+  const [allLockers, setAllLockers] = useState<Locker[]>([]);
+  const [filteredLockers, setFilteredLockers] = useState<Locker[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [cityOpen, setCityOpen] = useState(false);
   const [selectedLocker, setSelectedLocker] = useState<Locker | null>(null);
-  const [hasSearched, setHasSearched] = useState(false);
   const [mapCenter, setMapCenter] = useState<[number, number]>([45.9432, 24.9668]); // Romania center
+  const [mapBounds, setMapBounds] = useState<[[number, number], [number, number]] | null>(null);
 
-  const searchLockers = useCallback(async () => {
-    if (searchQuery.length < 3) {
-      setError(language === 'ro' ? 'Introdu cel puțin 3 caractere' : 'Enter at least 3 characters');
-      return;
+  // Load all lockers when dialog opens
+  useEffect(() => {
+    if (open && allLockers.length === 0) {
+      loadAllLockers();
     }
+  }, [open]);
 
+  const loadAllLockers = async () => {
     setLoading(true);
     setError(null);
-    setHasSearched(true);
 
     try {
-      // First search for localities
-      const { data: localityData, error: localityError } = await supabase.functions.invoke('get-ecolet-lockers', {
-        body: { 
-          action: 'search-localities',
-          searchQuery: searchQuery,
-          countryCode: 'RO'
-        }
-      });
-
-      if (localityError) throw localityError;
-
-      const localities: Locality[] = localityData?.localities || [];
-      let localityId: number | undefined;
-
-      if (localities.length > 0) {
-        // Use the first matching locality
-        localityId = localities[0].id;
-        console.log('Found locality:', localities[0].name, 'ID:', localityId);
-      }
-
-      // Now fetch lockers with the locality filter
       const { data, error: lockersError } = await supabase.functions.invoke('get-ecolet-lockers', {
-        body: { 
-          localityId,
-          searchQuery: searchQuery,
-          countryCode: 'RO'
-        }
+        body: { countryCode: 'RO' }
       });
 
       if (lockersError) throw lockersError;
 
       const fetchedLockers = data?.lockers || [];
-      setLockers(fetchedLockers);
-
-      // Center map on first result if available
-      if (fetchedLockers.length > 0) {
-        const firstLocker = fetchedLockers[0];
-        setMapCenter([firstLocker.lat, firstLocker.lng]);
-      }
+      setAllLockers(fetchedLockers);
+      setFilteredLockers(fetchedLockers);
 
       if (fetchedLockers.length === 0) {
         setError(language === 'ro' 
-          ? 'Nu am găsit niciun punct de livrare pentru această zonă' 
-          : 'No delivery points found for this area');
+          ? 'Nu am găsit niciun punct de livrare' 
+          : 'No delivery points found');
       }
     } catch (err) {
-      console.error('Error searching lockers:', err);
-      setError(language === 'ro' ? 'Eroare la căutarea punctelor de livrare' : 'Error searching delivery points');
+      console.error('Error loading lockers:', err);
+      setError(language === 'ro' ? 'Eroare la încărcarea punctelor de livrare' : 'Error loading delivery points');
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, language]);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      searchLockers();
-    }
   };
+
+  // Filter lockers based on search query, city, and map bounds
+  useEffect(() => {
+    let filtered = allLockers;
+
+    // Filter by city
+    if (selectedCity) {
+      filtered = filtered.filter(locker => 
+        locker.city.toLowerCase().includes(selectedCity.toLowerCase())
+      );
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(locker =>
+        locker.name.toLowerCase().includes(query) ||
+        locker.address.toLowerCase().includes(query) ||
+        locker.city.toLowerCase().includes(query) ||
+        locker.postal_code.includes(query)
+      );
+    }
+
+    // Filter by map bounds if available and no city/search filter
+    if (mapBounds && !selectedCity && !searchQuery.trim()) {
+      const [[south, west], [north, east]] = mapBounds;
+      filtered = filtered.filter(locker =>
+        locker.lat >= south && locker.lat <= north &&
+        locker.lng >= west && locker.lng <= east
+      );
+    }
+
+    // Limit to 300 for performance
+    setFilteredLockers(filtered.slice(0, 300));
+  }, [allLockers, selectedCity, searchQuery, mapBounds]);
+
+  // When city changes, center map on that city
+  useEffect(() => {
+    if (selectedCity && allLockers.length > 0) {
+      const cityLocker = allLockers.find(l => 
+        l.city.toLowerCase().includes(selectedCity.toLowerCase())
+      );
+      if (cityLocker) {
+        setMapCenter([cityLocker.lat, cityLocker.lng]);
+      }
+    }
+  }, [selectedCity, allLockers]);
 
   const handleSelectLocker = useCallback((locker: Locker) => {
     setSelectedLocker(locker);
     setMapCenter([locker.lat, locker.lng]);
+  }, []);
+
+  const handleMapBoundsChange = useCallback((bounds: [[number, number], [number, number]]) => {
+    setMapBounds(bounds);
   }, []);
 
   const handleConfirm = () => {
@@ -149,79 +180,124 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
   };
 
   // Reset state when dialog closes
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open) {
-      setLockers([]);
       setSearchQuery('');
+      setSelectedCity('');
       setSelectedLocker(null);
-      setHasSearched(false);
-      setError(null);
+      setMapBounds(null);
+      setMapCenter([45.9432, 24.9668]);
     }
   }, [open]);
 
+  // Get unique cities from lockers for dropdown
+  const availableCities = React.useMemo(() => {
+    const cities = new Set(allLockers.map(l => l.city).filter(Boolean));
+    return Array.from(cities).sort();
+  }, [allLockers]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl h-[80vh] flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-5xl h-[85vh] flex flex-col p-0 gap-0">
         <DialogHeader className="p-4 pb-2 border-b">
           <DialogTitle>
             {language === 'ro' ? 'Selectează punctul de livrare' : 'Select delivery point'}
           </DialogTitle>
         </DialogHeader>
         
-        {/* Search bar */}
-        <div className="p-4 border-b">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
+        {/* Search and filter bar */}
+        <div className="p-4 border-b space-y-3">
+          <div className="flex gap-2 flex-wrap">
+            {/* City dropdown */}
+            <Popover open={cityOpen} onOpenChange={setCityOpen}>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  role="combobox" 
+                  aria-expanded={cityOpen}
+                  className="w-[200px] justify-between"
+                >
+                  {selectedCity || (language === 'ro' ? 'Selectează oraș...' : 'Select city...')}
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[200px] p-0 z-[100]" align="start">
+                <Command>
+                  <CommandInput placeholder={language === 'ro' ? 'Caută oraș...' : 'Search city...'} />
+                  <CommandList>
+                    <CommandEmpty>{language === 'ro' ? 'Niciun oraș găsit' : 'No city found'}</CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem
+                        value=""
+                        onSelect={() => {
+                          setSelectedCity('');
+                          setCityOpen(false);
+                        }}
+                      >
+                        {language === 'ro' ? 'Toate orașele' : 'All cities'}
+                      </CommandItem>
+                      {availableCities.map((city) => (
+                        <CommandItem
+                          key={city}
+                          value={city}
+                          onSelect={(value) => {
+                            setSelectedCity(value);
+                            setCityOpen(false);
+                          }}
+                        >
+                          {city}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+
+            {/* Search input */}
+            <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={language === 'ro' 
-                  ? 'Caută după oraș, adresă sau nume locker...' 
-                  : 'Search by city, address or locker name...'}
+                  ? 'Caută după nume locker, adresă, cod poștal...' 
+                  : 'Search by locker name, address, postal code...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
                 className="pl-10"
               />
             </div>
-            <Button onClick={searchLockers} disabled={loading || searchQuery.length < 3}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (language === 'ro' ? 'Caută' : 'Search')}
-            </Button>
           </div>
-          {error && <p className="text-sm text-destructive mt-2">{error}</p>}
+          
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          
+          <p className="text-xs text-muted-foreground">
+            {loading 
+              ? (language === 'ro' ? 'Se încarcă...' : 'Loading...') 
+              : `${filteredLockers.length} ${language === 'ro' ? 'puncte de livrare' : 'delivery points'}`
+            }
+          </p>
         </div>
 
         {/* Main content - split view */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left - List */}
           <div className="w-2/5 border-r overflow-y-auto">
-            {!hasSearched ? (
-              <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
-                <MapPin className="h-12 w-12 mb-4 opacity-50" />
-                <p className="text-center">
-                  {language === 'ro' 
-                    ? 'Caută un oraș sau adresă pentru a vedea punctele de livrare disponibile' 
-                    : 'Search for a city or address to see available delivery points'}
-                </p>
-              </div>
-            ) : loading ? (
+            {loading ? (
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span className="ml-2 text-muted-foreground">
-                  {language === 'ro' ? 'Se încarcă...' : 'Loading...'}
-                </span>
               </div>
-            ) : lockers.length === 0 ? (
+            ) : filteredLockers.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
                 <Package className="h-12 w-12 mb-4 opacity-50" />
                 <p className="text-center">
                   {language === 'ro' 
-                    ? 'Nu am găsit puncte de livrare. Încearcă altă căutare.' 
-                    : 'No delivery points found. Try another search.'}
+                    ? 'Nu am găsit puncte de livrare. Încearcă altă căutare sau mută harta.' 
+                    : 'No delivery points found. Try another search or move the map.'}
                 </p>
               </div>
             ) : (
               <div className="divide-y">
-                {lockers.map((locker) => (
+                {filteredLockers.map((locker) => (
                   <button
                     key={locker.id}
                     onClick={() => handleSelectLocker(locker)}
@@ -237,9 +313,11 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
                       )}
                       <div className="min-w-0">
                         <p className="font-medium text-sm truncate">{locker.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{locker.address}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {locker.city}{locker.postal_code ? `, ${locker.postal_code}` : ''}
+                        <p className="text-xs text-muted-foreground truncate">
+                          {locker.address}{locker.postal_code ? `, ${locker.postal_code}` : ''}
+                        </p>
+                        <p className="text-xs text-muted-foreground opacity-70">
+                          {locker.city}
                         </p>
                       </div>
                     </div>
@@ -257,10 +335,11 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
               </div>
             }>
               <LockerMap 
-                lockers={lockers}
+                lockers={filteredLockers}
                 selectedLocker={selectedLocker}
                 mapCenter={mapCenter}
                 onSelectLocker={handleSelectLocker}
+                onBoundsChange={handleMapBoundsChange}
               />
             </Suspense>
           </div>
