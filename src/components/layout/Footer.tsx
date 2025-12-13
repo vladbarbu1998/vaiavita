@@ -3,6 +3,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { Mail, MapPin } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.png';
+import logoDarkChristmas from '@/assets/logo-dark-christmas.png';
 import logoLight from '@/assets/logo-light.png';
 import logoLightNew from '@/assets/logo-light-new.png';
 import logoLightChristmas from '@/assets/logo-light-christmas.png';
@@ -25,7 +26,7 @@ export function Footer() {
           <div className="space-y-5">
             <Link to="/" className="inline-block transition-transform hover:scale-105">
               <img 
-                src={theme === 'dark' ? logoLight : logoLightChristmas} 
+                src={theme === 'dark' ? logoDarkChristmas : logoLightChristmas} 
                 alt="VAIAVITA" 
                 className="h-12 w-auto"
               />
