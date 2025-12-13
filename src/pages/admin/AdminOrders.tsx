@@ -15,6 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { 
   Search, 
@@ -39,7 +46,9 @@ import {
   CheckCircle2,
   FileText,
   ExternalLink,
-  Trash2
+  Trash2,
+  MoreVertical,
+  Settings2
 } from 'lucide-react';
 
 interface Order {
@@ -653,12 +662,19 @@ const AdminOrders = () => {
                   return (
                     <tr key={order.id} className="hover:bg-muted/30 transition-colors">
                       <td className="p-4">
-                        <p className="font-medium">{order.order_number}</p>
-                        {order.ecolet_synced && (
-                          <span className="inline-flex items-center gap-1 text-xs text-green-600">
-                            <CheckCircle2 className="w-3 h-3" /> Ecolet
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{order.order_number}</p>
+                          {order.ecolet_synced && (
+                            <span className="inline-flex items-center gap-1 text-xs text-green-600" title="Sincronizat cu Ecolet">
+                              <CheckCircle2 className="w-3 h-3" />
+                            </span>
+                          )}
+                          {order.oblio_invoice_number && (
+                            <span className="inline-flex items-center gap-1 text-xs text-blue-600" title={`Factură: ${order.oblio_series_name} ${order.oblio_invoice_number}`}>
+                              <FileText className="w-3 h-3" />
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="p-4">
                         <p className="font-medium">{order.customer_first_name} {order.customer_last_name}</p>
@@ -703,25 +719,77 @@ const AdminOrders = () => {
                         <p className="text-sm text-muted-foreground">{formatDate(order.created_at)}</p>
                       </td>
                       <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {canSendToEcolet(order) && (
-                            <Button 
-                              variant="outline" 
-                              size="icon"
-                              onClick={() => sendToEcolet(order)}
-                              disabled={sendingToEcolet === order.id}
-                              title="Trimite în Ecolet"
-                            >
-                              {sendingToEcolet === order.id ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Send className="w-4 h-4" />
-                              )}
-                            </Button>
-                          )}
-                          <Button variant="ghost" size="icon" onClick={() => viewOrder(order)}>
+                        <div className="flex items-center justify-end gap-1">
+                          {/* View Order Button */}
+                          <Button variant="ghost" size="icon" onClick={() => viewOrder(order)} title="Vezi comanda">
                             <Eye className="w-4 h-4" />
                           </Button>
+                          
+                          {/* Actions Dropdown */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" title="Acțiuni">
+                                <Settings2 className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56">
+                              {/* Ecolet Actions */}
+                              {canSendToEcolet(order) && (
+                                <DropdownMenuItem
+                                  onClick={() => sendToEcolet(order)}
+                                  disabled={sendingToEcolet === order.id}
+                                  className="gap-2"
+                                >
+                                  {sendingToEcolet === order.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Send className="w-4 h-4" />
+                                  )}
+                                  {order.ecolet_synced ? 'Retrimite în Ecolet' : 'Trimite în Ecolet'}
+                                </DropdownMenuItem>
+                              )}
+                              
+                              <DropdownMenuSeparator />
+                              
+                              {/* Oblio Actions */}
+                              {order.oblio_invoice_number ? (
+                                <>
+                                  <DropdownMenuItem
+                                    onClick={() => viewInvoice(order)}
+                                    className="gap-2"
+                                  >
+                                    <ExternalLink className="w-4 h-4" />
+                                    Vezi factura ({order.oblio_series_name} {order.oblio_invoice_number})
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => cancelInvoice(order)}
+                                    disabled={cancellingInvoice === order.id}
+                                    className="gap-2 text-red-600 focus:text-red-600"
+                                  >
+                                    {cancellingInvoice === order.id ? (
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="w-4 h-4" />
+                                    )}
+                                    Anulează factura
+                                  </DropdownMenuItem>
+                                </>
+                              ) : (
+                                <DropdownMenuItem
+                                  onClick={() => generateInvoice(order)}
+                                  disabled={generatingInvoice === order.id || order.status === 'cancelled'}
+                                  className="gap-2"
+                                >
+                                  {generatingInvoice === order.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <FileText className="w-4 h-4" />
+                                  )}
+                                  Generează factură
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </td>
                     </tr>
