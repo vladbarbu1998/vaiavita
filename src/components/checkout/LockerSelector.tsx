@@ -187,8 +187,9 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         );
       }
 
-      // Filter by map bounds when zoomed in (always apply, even with county selected)
-      if (mapBounds && currentZoom >= MIN_ZOOM_FOR_LOCKERS) {
+      // Filter by map bounds when zoomed in - but NOT when county is selected
+      // When county is selected, show ALL lockers in that county
+      if (!selectedCounty && mapBounds && currentZoom >= MIN_ZOOM_FOR_LOCKERS) {
         const [[south, west], [north, east]] = mapBounds;
         filtered = filtered.filter(locker =>
           locker.lat >= south && locker.lat <= north &&
@@ -531,7 +532,7 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
         {/* Main content - split view on desktop, stacked on mobile */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
           {/* Map - shows first on mobile, right side on desktop */}
-          <div className="h-[200px] shrink-0 md:h-auto md:w-3/5 md:order-2 flex flex-col md:border-l">
+          <div className="h-[180px] shrink-0 md:h-auto md:w-3/5 md:order-2 flex flex-col md:border-l">
             {/* Map */}
             <div className="h-full relative bg-muted">
               <Suspense fallback={
@@ -608,12 +609,12 @@ export function LockerSelector({ open, onOpenChange, onSelectLocker, selectedLoc
           </div>
 
           {/* Mobile separator between map and list */}
-          <div className="md:hidden h-2 bg-gradient-to-b from-muted/80 to-background border-t border-b shadow-sm flex items-center justify-center">
+          <div className="md:hidden h-2 shrink-0 bg-gradient-to-b from-muted/80 to-background border-t border-b shadow-sm flex items-center justify-center">
             <div className="w-12 h-1 bg-muted-foreground/30 rounded-full" />
           </div>
 
           {/* List - shows second on mobile, left side on desktop */}
-          <div className="h-[calc(100%-200px-2rem)] md:h-auto md:flex-1 md:w-2/5 md:order-1 overflow-y-auto">
+          <div className="flex-1 min-h-0 md:w-2/5 md:order-1 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center h-full py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
