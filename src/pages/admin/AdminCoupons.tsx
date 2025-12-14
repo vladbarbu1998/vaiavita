@@ -63,6 +63,14 @@ const AdminCoupons = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [saving, setSaving] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'review' | 'general'>('all');
+
+  // Filter coupons based on selected filter
+  const filteredCoupons = coupons.filter(coupon => {
+    if (filter === 'review') return coupon.review_id !== null;
+    if (filter === 'general') return coupon.review_id === null;
+    return true;
+  });
 
   const [form, setForm] = useState({
     code: '',
@@ -324,7 +332,7 @@ const AdminCoupons = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid sm:grid-cols-3 gap-4">
+      <div className="grid sm:grid-cols-4 gap-4">
         <div className="card-premium p-4">
           <p className="text-sm text-muted-foreground">Total cupoane</p>
           <p className="text-2xl font-bold">{coupons.length}</p>
@@ -334,9 +342,39 @@ const AdminCoupons = () => {
           <p className="text-2xl font-bold text-green-600">{coupons.filter(c => c.is_active).length}</p>
         </div>
         <div className="card-premium p-4">
+          <p className="text-sm text-muted-foreground">Cupoane review</p>
+          <p className="text-2xl font-bold text-purple-600">{coupons.filter(c => c.review_id !== null).length}</p>
+        </div>
+        <div className="card-premium p-4">
           <p className="text-sm text-muted-foreground">Utilizări totale</p>
           <p className="text-2xl font-bold">{coupons.reduce((acc, c) => acc + (c.uses_count || 0), 0)}</p>
         </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex gap-2 flex-wrap">
+        <Button 
+          variant={filter === 'all' ? 'default' : 'outline'} 
+          size="sm"
+          onClick={() => setFilter('all')}
+        >
+          Toate ({coupons.length})
+        </Button>
+        <Button 
+          variant={filter === 'review' ? 'default' : 'outline'} 
+          size="sm"
+          onClick={() => setFilter('review')}
+          className={filter === 'review' ? '' : 'border-purple-200 text-purple-600 hover:bg-purple-50'}
+        >
+          Cupoane review ({coupons.filter(c => c.review_id !== null).length})
+        </Button>
+        <Button 
+          variant={filter === 'general' ? 'default' : 'outline'} 
+          size="sm"
+          onClick={() => setFilter('general')}
+        >
+          Cupoane generale ({coupons.filter(c => c.review_id === null).length})
+        </Button>
       </div>
 
       {/* Info Box */}
@@ -357,12 +395,12 @@ const AdminCoupons = () => {
           <div className="p-8 text-center">
             <Loader2 className="w-6 h-6 animate-spin mx-auto" />
           </div>
-        ) : coupons.length === 0 ? (
+        ) : filteredCoupons.length === 0 ? (
           <div className="card-premium p-8 text-center text-muted-foreground">
-            Nu există cupoane
+            {filter === 'all' ? 'Nu există cupoane' : filter === 'review' ? 'Nu există cupoane de review' : 'Nu există cupoane generale'}
           </div>
         ) : (
-          coupons.map((coupon) => (
+          filteredCoupons.map((coupon) => (
             <div key={coupon.id} className={`card-premium p-5 ${!coupon.is_active ? 'opacity-60' : ''}`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-start gap-4">
