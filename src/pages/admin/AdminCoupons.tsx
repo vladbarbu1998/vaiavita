@@ -67,6 +67,45 @@ const AdminCoupons = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredCoupons.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredCoupons.map(c => c.id)));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const bulkDelete = async () => {
+    if (!confirm(`Sigur vrei să ștergi ${selectedIds.size} cupoane?`)) return;
+    
+    setBulkDeleting(true);
+    let successCount = 0;
+    
+    for (const id of selectedIds) {
+      try {
+        await supabase.from('coupons').delete().eq('id', id);
+        successCount++;
+      } catch (err) {
+        console.error('Error deleting coupon:', id, err);
+      }
+    }
+    
+    toast.success(`${successCount} cupoane șterse`);
+    setSelectedIds(new Set());
+    fetchCoupons();
+    setBulkDeleting(false);
+  };
+
   // Filter coupons based on selected filter
   const filteredCoupons = coupons.filter(coupon => {
     if (filter === 'review') return coupon.review_id !== null;
@@ -391,6 +430,26 @@ const AdminCoupons = () => {
         </ul>
       </div>
 
+      {/* Bulk Delete Button */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-4 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
+          <Checkbox
+            checked={selectedIds.size === filteredCoupons.length}
+            onCheckedChange={toggleSelectAll}
+          />
+          <span className="text-sm font-medium">{selectedIds.size} cupoane selectate</span>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={bulkDelete}
+            disabled={bulkDeleting}
+          >
+            {bulkDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+            Șterge ({selectedIds.size})
+          </Button>
+        </div>
+      )}
+
       {/* Coupons List */}
       <div className="space-y-4">
         {loading ? (
@@ -406,6 +465,11 @@ const AdminCoupons = () => {
             <div key={coupon.id} className={`card-premium p-5 ${!coupon.is_active ? 'opacity-60' : ''}`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-start gap-4">
+                  <Checkbox
+                    checked={selectedIds.has(coupon.id)}
+                    onCheckedChange={() => toggleSelectOne(coupon.id)}
+                    className="mt-3"
+                  />
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${coupon.discount_type === 'percentage' ? 'bg-primary/10' : 'bg-green-500/10'}`}>
                     {coupon.discount_type === 'percentage' ? (
                       <Percent className="w-6 h-6 text-primary" />

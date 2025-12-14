@@ -47,6 +47,48 @@ const AdminCategories = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
+  const toggleSelectAll = () => {
+    const deletableCategories = categories.filter(c => (c.product_count || 0) === 0);
+    if (selectedIds.size === deletableCategories.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(deletableCategories.map(c => c.id)));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const bulkDelete = async () => {
+    if (!confirm(`Sigur vrei să ștergi ${selectedIds.size} categorii?`)) return;
+    
+    setBulkDeleting(true);
+    let successCount = 0;
+    
+    for (const id of selectedIds) {
+      try {
+        await supabase.from('product_categories').delete().eq('category_id', id);
+        await supabase.from('coupons').delete().eq('category_id', id);
+        await supabase.from('categories').delete().eq('id', id);
+        successCount++;
+      } catch (err) {
+        console.error('Error deleting category:', id, err);
+      }
+    }
+    
+    toast.success(`${successCount} categorii șterse`);
+    setSelectedIds(new Set());
+    fetchCategories();
+    setBulkDeleting(false);
+  };
+
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -230,6 +272,26 @@ const AdminCategories = () => {
         </div>
       </div>
 
+      {/* Bulk Delete Button */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-4 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
+          <Checkbox
+            checked={selectedIds.size === categories.filter(c => (c.product_count || 0) === 0).length}
+            onCheckedChange={toggleSelectAll}
+          />
+          <span className="text-sm font-medium">{selectedIds.size} categorii selectate</span>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={bulkDelete}
+            disabled={bulkDeleting}
+          >
+            {bulkDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+            Șterge ({selectedIds.size})
+          </Button>
+        </div>
+      )}
+
       {/* Categories List */}
       <div className="space-y-4">
         {loading ? (
@@ -245,6 +307,13 @@ const AdminCategories = () => {
             <div key={category.id} className="card-premium p-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-start gap-4">
+                  {(category.product_count || 0) === 0 && (
+                    <Checkbox
+                      checked={selectedIds.has(category.id)}
+                      onCheckedChange={() => toggleSelectOne(category.id)}
+                      className="mt-3"
+                    />
+                  )}
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                     <FolderOpen className="w-6 h-6 text-primary" />
                   </div>

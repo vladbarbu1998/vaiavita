@@ -106,6 +106,105 @@ const AdminProducts = () => {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredProducts.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredProducts.map(p => p.id)));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const bulkDelete = async () => {
+    if (!confirm(`Sigur vrei să ștergi ${selectedIds.size} produse? Această acțiune este ireversibilă.`)) return;
+    
+    setBulkDeleting(true);
+    let successCount = 0;
+    
+    for (const id of selectedIds) {
+      try {
+        const product = products.find(p => p.id === id);
+        
+        // Delete product_categories entries
+        await supabase.from('product_categories').delete().eq('product_id', id);
+        
+        // Delete related coupons
+        await supabase.from('coupons').delete().eq('product_id', id);
+        
+        // Delete reviews and their images
+        const { data: reviews } = await supabase.from('reviews').select('id, images').eq('product_id', id);
+        if (reviews) {
+          for (const review of reviews) {
+            if (review.images?.length) {
+              const paths = review.images.map((url: string) => {
+                const parts = url.split('/storage/v1/object/public/reviews/');
+                return parts[1] || '';
+              }).filter(Boolean);
+              if (paths.length) await supabase.storage.from('reviews').remove(paths);
+            }
+            await supabase.from('coupons').delete().eq('review_id', review.id);
+          }
+          await supabase.from('reviews').delete().eq('product_id', id);
+        }
+        
+        // Remove from related_products arrays in other products
+        const { data: productsWithRelated } = await supabase
+          .from('products')
+          .select('id, related_products')
+          .contains('related_products', [id]);
+        
+        if (productsWithRelated) {
+          for (const prod of productsWithRelated) {
+            const newRelated = (prod.related_products || []).filter((rid: string) => rid !== id);
+            await supabase.from('products').update({ related_products: newRelated }).eq('id', prod.id);
+          }
+        }
+        
+        // Delete product images from storage
+        if (product?.images?.length) {
+          const paths = product.images.map((url: string) => {
+            const parts = url.split('/storage/v1/object/public/products/');
+            return parts[1] || '';
+          }).filter(Boolean);
+          if (paths.length) await supabase.storage.from('products').remove(paths);
+        }
+        
+        // Delete the product
+        await supabase.from('products').delete().eq('id', id);
+        successCount++;
+      } catch (err) {
+        console.error('Error deleting product:', id, err);
+      }
+    }
+    
+    toast.success(`${successCount} produse șterse`);
+    setSelectedIds(new Set());
+    fetchProducts();
+    setBulkDeleting(false);
+  };
+
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name_ro.toLowerCase().includes(search.toLowerCase()) ||
+      product.name_en.toLowerCase().includes(search.toLowerCase()) ||
+      (product.sku && product.sku.toLowerCase().includes(search.toLowerCase()));
+    const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
+    const matchesCategory = categoryFilterState === 'all' || (product.category_ids && product.category_ids.includes(categoryFilterState));
+    const matchesStock = stockFilter === 'all' || 
+      (stockFilter === 'low' && product.stock > 0 && product.stock <= 5) ||
+      (stockFilter === 'out' && product.stock === 0) ||
+      (stockFilter === 'in' && product.stock > 5);
+    return matchesSearch && matchesStatus && matchesCategory && matchesStock;
+  });
+
   useEffect(() => {
     fetchProducts();
     fetchCategories();
@@ -620,17 +719,7 @@ const AdminProducts = () => {
     fetchProducts();
   };
 
-  const filteredProducts = products.filter(p => {
-    const matchesSearch = p.name_ro.toLowerCase().includes(search.toLowerCase()) ||
-      p.sku?.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
-    const matchesCategory = categoryFilterState === 'all' || p.category_id === categoryFilterState;
-    const matchesStock = stockFilter === 'all' || 
-      (stockFilter === 'low' && p.stock < 10) ||
-      (stockFilter === 'out' && p.stock === 0) ||
-      (stockFilter === 'in' && p.stock > 0);
-    return matchesSearch && matchesStatus && matchesCategory && matchesStock;
-  });
+  // filteredProducts is defined above in the bulk delete section
 
   const statusConfig: Record<string, { label: string; color: string }> = {
     active: { label: 'Activ', color: 'bg-green-500/10 text-green-600' },
@@ -733,12 +822,38 @@ const AdminProducts = () => {
         </Select>
       </div>
 
+      {/* Bulk Delete Button */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-4 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
+          <Checkbox
+            checked={selectedIds.size === filteredProducts.length}
+            onCheckedChange={toggleSelectAll}
+          />
+          <span className="text-sm font-medium">{selectedIds.size} produse selectate</span>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={bulkDelete}
+            disabled={bulkDeleting}
+          >
+            {bulkDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+            Șterge ({selectedIds.size})
+          </Button>
+        </div>
+      )}
+
       {/* Products Table */}
       <div className="card-premium overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-muted/50">
               <tr>
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground w-12">
+                  <Checkbox
+                    checked={filteredProducts.length > 0 && selectedIds.size === filteredProducts.length}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                </th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Produs</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Nr.</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Preț</th>
@@ -750,19 +865,25 @@ const AdminProducts = () => {
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center">
+                  <td colSpan={7} className="p-8 text-center">
                     <Loader2 className="w-6 h-6 animate-spin mx-auto" />
                   </td>
                 </tr>
               ) : filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
                     Nu există produse
                   </td>
                 </tr>
               ) : (
                 filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="p-4">
+                      <Checkbox
+                        checked={selectedIds.has(product.id)}
+                        onCheckedChange={() => toggleSelectOne(product.id)}
+                      />
+                    </td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
