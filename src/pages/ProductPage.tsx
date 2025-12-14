@@ -513,12 +513,11 @@ const ProductPage = () => {
         }
       }
       
-      // Refresh reviews to show the new one immediately
+      // Refresh reviews to show the new one immediately (use public_reviews view for unauthenticated users)
       const { data: reviewsData } = await supabase
-        .from('reviews')
+        .from('public_reviews')
         .select('id, customer_name, rating, content, title, content_ro, content_en, title_ro, title_en, created_at, is_verified_purchase, images')
         .eq('product_id', product.id)
-        .eq('is_approved', true)
         .order('created_at', { ascending: false });
 
       if (reviewsData && reviewsData.length > 0) {
