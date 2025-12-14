@@ -9,7 +9,7 @@ export function ContactTeaserSection() {
   return (
     <section className="section-padding">
       <div className="container-custom">
-        <div className="card-premium p-8 md:p-12 text-center max-w-3xl mx-auto opacity-0 animate-fade-up">
+        <div className="card-premium p-8 md:p-12 text-left max-w-3xl mx-auto opacity-0 animate-fade-up">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-6">
             <Mail className="w-8 h-8" />
           </div>
