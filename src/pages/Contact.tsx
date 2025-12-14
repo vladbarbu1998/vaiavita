@@ -194,10 +194,11 @@ const Contact = () => {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      {isRo ? 'Telefon' : 'Phone'}
+                      {isRo ? 'Telefon' : 'Phone'} *
                     </label>
                     <Input
                       type="tel"
+                      required
                       maxLength={20}
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
