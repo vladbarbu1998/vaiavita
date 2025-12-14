@@ -457,6 +457,13 @@ const Checkout = () => {
 
   const updateForm = (field: keyof CheckoutForm, value: string) => {
     setForm(prev => {
+      // If changing email and there's an applied coupon, remove it
+      if (field === 'email' && appliedCoupon) {
+        setAppliedCoupon(null);
+        setCouponCode('');
+        setCouponError('');
+      }
+      
       // If changing delivery method, reset payment method if needed
       if (field === 'deliveryMethod') {
         let newPaymentMethod = prev.paymentMethod;
