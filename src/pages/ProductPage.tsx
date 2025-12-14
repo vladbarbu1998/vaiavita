@@ -368,76 +368,44 @@ const ProductPage = () => {
     setReviewSubmitting(true);
     
     try {
-      const productName = language === 'ro' ? product.name_ro : product.name_en;
-      
-      // Check if email has a delivered order containing this specific product
-      // We check both product_id and product_name since product_id might be null
-      const { data: orderData } = await supabase
-        .from('orders')
-        .select(`
-          id,
-          status,
-          order_items!inner(product_id, product_name)
-        `)
-        .eq('customer_email', reviewForm.customer_email.trim().toLowerCase())
-        .eq('status', 'delivered');
-      
-      // Filter orders that contain this product (by product_id or product_name)
-      const validOrder = orderData?.find(order => {
-        const items = order.order_items as Array<{ product_id: string | null; product_name: string }>;
-        return items.some(item => 
-          item.product_id === product.id || 
-          item.product_name.trim().toLowerCase() === product.name_ro.trim().toLowerCase() ||
-          item.product_name.trim().toLowerCase() === product.name_en.trim().toLowerCase()
-        );
+      // Call edge function to verify purchase (bypasses RLS, works for unauthenticated users)
+      const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-purchase', {
+        body: {
+          email: reviewForm.customer_email.trim().toLowerCase(),
+          product_id: product.id,
+          product_name_ro: product.name_ro,
+          product_name_en: product.name_en,
+        }
       });
       
-      const isVerifiedPurchase = !!validOrder;
-      
-      // Only verified purchases with delivered orders can submit reviews
-      if (!isVerifiedPurchase) {
-        // Check if they have an order but it's not delivered yet
-        const { data: pendingOrderData } = await supabase
-          .from('orders')
-          .select(`
-            id,
-            status,
-            order_items!inner(product_id, product_name)
-          `)
-          .eq('customer_email', reviewForm.customer_email.trim().toLowerCase())
-          .neq('status', 'delivered');
-        
-        const hasPendingOrder = pendingOrderData?.some(order => {
-          const items = order.order_items as Array<{ product_id: string | null; product_name: string }>;
-          return items.some(item => 
-            item.product_id === product.id || 
-            item.product_name.trim().toLowerCase() === product.name_ro.trim().toLowerCase() ||
-            item.product_name.trim().toLowerCase() === product.name_en.trim().toLowerCase()
-          );
+      if (verifyError) {
+        console.error('Verification error:', verifyError);
+        toast({
+          title: language === 'ro' ? 'Eroare' : 'Error',
+          description: language === 'ro' ? 'A apărut o eroare. Încearcă din nou.' : 'An error occurred. Please try again.',
+          variant: 'destructive',
         });
-        
-        if (hasPendingOrder) {
-          toast({
-            title: language === 'ro' ? 'Comanda nu este finalizată' : 'Order not completed',
-            description: language === 'ro' 
-              ? 'Poți lăsa o recenzie doar după ce comanda a fost livrată.' 
-              : 'You can leave a review only after your order has been delivered.',
-            variant: 'destructive',
-          });
-        } else {
-          toast({
-            title: language === 'ro' ? 'Nu poți lăsa o recenzie' : 'Cannot submit review',
-            description: language === 'ro' 
-              ? 'Doar clienții care au cumpărat acest produs pot lăsa o recenzie. Verifică adresa de email folosită la comandă.' 
-              : 'Only customers who have purchased this product can leave a review. Please check the email address used for your order.',
-            variant: 'destructive',
-          });
-        }
         setReviewSubmitting(false);
         return;
       }
       
-      const orderId = validOrder.id;
+      if (!verifyData?.verified) {
+        const title = verifyData?.reason === 'already_reviewed' 
+          ? (language === 'ro' ? 'Recenzie existentă' : 'Review exists')
+          : verifyData?.reason === 'order_not_delivered'
+          ? (language === 'ro' ? 'Comanda nu este finalizată' : 'Order not completed')
+          : (language === 'ro' ? 'Nu poți lăsa o recenzie' : 'Cannot submit review');
+        
+        toast({
+          title,
+          description: language === 'ro' ? verifyData?.message_ro : verifyData?.message_en,
+          variant: 'destructive',
+        });
+        setReviewSubmitting(false);
+        return;
+      }
+      
+      const orderId = verifyData.order_id;
       
       // Upload images if any
       let uploadedImageUrls: string[] = [];
