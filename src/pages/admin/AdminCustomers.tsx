@@ -40,6 +40,47 @@ const AdminCustomers = () => {
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
+  const toggleSelectAll = () => {
+    if (selectedEmails.size === filteredCustomers.length) {
+      setSelectedEmails(new Set());
+    } else {
+      setSelectedEmails(new Set(filteredCustomers.map(c => c.email)));
+    }
+  };
+
+  const toggleSelectOne = (email: string) => {
+    const newSet = new Set(selectedEmails);
+    if (newSet.has(email)) {
+      newSet.delete(email);
+    } else {
+      newSet.add(email);
+    }
+    setSelectedEmails(newSet);
+  };
+
+  const bulkDelete = async () => {
+    if (!confirm(`Sigur vrei să ștergi ${selectedEmails.size} clienți și toate comenzile lor asociate?`)) return;
+    
+    setBulkDeleting(true);
+    let successCount = 0;
+    
+    for (const email of selectedEmails) {
+      try {
+        await supabase.from('reviews').delete().eq('customer_email', email);
+        await supabase.from('coupons').delete().eq('allowed_email', email);
+        await supabase.from('orders').delete().eq('customer_email', email);
+        successCount++;
+      } catch (err) {
+        console.error('Error deleting customer:', email, err);
+      }
+    }
+    
+    toast.success(`${successCount} clienți șterși`);
+    setSelectedEmails(new Set());
+    fetchCustomers();
+    setBulkDeleting(false);
+  };
+
   useEffect(() => {
     fetchCustomers();
   }, []);
@@ -217,12 +258,38 @@ const AdminCustomers = () => {
         </div>
       </div>
 
+      {/* Bulk Delete Button */}
+      {selectedEmails.size > 0 && (
+        <div className="flex items-center gap-4 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
+          <Checkbox
+            checked={selectedEmails.size === filteredCustomers.length}
+            onCheckedChange={toggleSelectAll}
+          />
+          <span className="text-sm font-medium">{selectedEmails.size} clienți selectați</span>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={bulkDelete}
+            disabled={bulkDeleting}
+          >
+            {bulkDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+            Șterge ({selectedEmails.size})
+          </Button>
+        </div>
+      )}
+
       {/* Customers Table */}
       <div className="card-premium overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-muted/50">
               <tr>
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground w-12">
+                  <Checkbox
+                    checked={filteredCustomers.length > 0 && selectedEmails.size === filteredCustomers.length}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                </th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Client</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Contact</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Comenzi</th>
@@ -234,19 +301,25 @@ const AdminCustomers = () => {
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center">
+                  <td colSpan={7} className="p-8 text-center">
                     <Loader2 className="w-6 h-6 animate-spin mx-auto" />
                   </td>
                 </tr>
               ) : filteredCustomers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
                     Nu există clienți
                   </td>
                 </tr>
               ) : (
                 filteredCustomers.map((customer) => (
                   <tr key={customer.email} className="hover:bg-muted/30 transition-colors">
+                    <td className="p-4">
+                      <Checkbox
+                        checked={selectedEmails.has(customer.email)}
+                        onCheckedChange={() => toggleSelectOne(customer.email)}
+                      />
+                    </td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">

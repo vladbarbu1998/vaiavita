@@ -61,6 +61,7 @@ import {
   Globe,
   Monitor
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Order {
   id: string;
@@ -181,7 +182,51 @@ const AdminOrders = () => {
   const [sendCancelEmail, setSendCancelEmail] = useState(true);
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredOrders.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredOrders.map(o => o.id)));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const bulkDelete = async () => {
+    if (!confirm(`Sigur vrei să ștergi ${selectedIds.size} comenzi? Această acțiune este ireversibilă.`)) return;
+    
+    setBulkDeleting(true);
+    let successCount = 0;
+    
+    for (const id of selectedIds) {
+      try {
+        // Delete order items first
+        await supabase.from('order_items').delete().eq('order_id', id);
+        // Delete order
+        await supabase.from('orders').delete().eq('id', id);
+        successCount++;
+      } catch (err) {
+        console.error('Error deleting order:', id, err);
+      }
+    }
+    
+    toast.success(`${successCount} comenzi șterse`);
+    setSelectedIds(new Set());
+    fetchData();
+    setBulkDeleting(false);
+  };
 
   // Initialize audio context on first user interaction
   const getAudioContext = () => {
@@ -1005,12 +1050,38 @@ const AdminOrders = () => {
         </div>
       )}
 
+      {/* Bulk Delete Button */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-4 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
+          <Checkbox
+            checked={selectedIds.size === filteredOrders.length}
+            onCheckedChange={toggleSelectAll}
+          />
+          <span className="text-sm font-medium">{selectedIds.size} comenzi selectate</span>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={bulkDelete}
+            disabled={bulkDeleting}
+          >
+            {bulkDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+            Șterge ({selectedIds.size})
+          </Button>
+        </div>
+      )}
+
       {/* Orders Table */}
       <div className="card-premium overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-muted/50">
               <tr>
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground w-12">
+                  <Checkbox
+                    checked={filteredOrders.length > 0 && selectedIds.size === filteredOrders.length}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                </th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Comandă</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Client</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Total</th>
@@ -1024,13 +1095,13 @@ const AdminOrders = () => {
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center">
+                  <td colSpan={9} className="p-8 text-center">
                     <Loader2 className="w-6 h-6 animate-spin mx-auto" />
                   </td>
                 </tr>
               ) : filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={9} className="p-8 text-center text-muted-foreground">
                     Nu există comenzi
                   </td>
                 </tr>
@@ -1040,6 +1111,12 @@ const AdminOrders = () => {
                   const DeliveryIcon = deliveryLabels[order.delivery_method]?.icon || Truck;
                   return (
                     <tr key={order.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="p-4">
+                        <Checkbox
+                          checked={selectedIds.has(order.id)}
+                          onCheckedChange={() => toggleSelectOne(order.id)}
+                        />
+                      </td>
                       <td className="p-4">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
