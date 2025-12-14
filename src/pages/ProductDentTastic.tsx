@@ -153,6 +153,8 @@ const ProductDentTastic = () => {
       }
 
       // Insert review into database - auto-approved since email is verified
+      const userAgent = navigator.userAgent;
+      
       const { error: reviewError } = await supabase
         .from('reviews')
         .insert({
@@ -164,6 +166,7 @@ const ProductDentTastic = () => {
           is_verified_purchase: true,
           is_approved: true, // Auto-approve verified purchase reviews
           order_id: orderExists[0].id,
+          user_agent: userAgent,
         });
 
       if (reviewError) {
