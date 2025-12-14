@@ -265,7 +265,7 @@ serve(async (req) => {
     // Send notification to admin
     const adminEmailResult = await resend.emails.send({
       from: "VAIAVITA Chatbot <noreply@vaiavita.ro>",
-      to: ["stanoiloren20@gmail.com"],
+      to: ["office@vaiavita.com"],
       subject: `🔔 Cerere Suport Live: ${data.name}`,
       html: getAdminEmailTemplate(data),
     });
