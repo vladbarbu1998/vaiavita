@@ -647,7 +647,7 @@ const Checkout = () => {
         supabase.functions.invoke('send-order-email', {
           body: {
             orderId: orderId,
-            type: 'confirmation',
+            emailType: 'confirmation',
             language: emailLanguage,
           }
         }).then(result => {
