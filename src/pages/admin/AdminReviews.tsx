@@ -342,6 +342,8 @@ const AdminReviews = () => {
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                     <span>{review.customer_name}</span>
                     <span>•</span>
+                    <span className="text-xs">{review.customer_email}</span>
+                    <span>•</span>
                     <span>{formatDate(review.created_at)}</span>
                     <span>•</span>
                     <span className="text-primary">{getProductName(review.product_id)}</span>
