@@ -7,4 +7,3 @@ export { default as AdminCustomers } from './AdminCustomers';
 export { default as AdminReviews } from './AdminReviews';
 export { default as AdminCoupons } from './AdminCoupons';
 export { default as AdminInbox } from './AdminInbox';
-export { default as AdminSettings } from './AdminSettings';
