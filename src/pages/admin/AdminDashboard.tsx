@@ -9,6 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { 
@@ -32,13 +33,17 @@ import {
   Home,
   Info,
   Phone,
-  Mail
+  Mail,
+  Volume2,
+  VolumeX,
+  Bell
 } from 'lucide-react';
 import logoLight from '@/assets/logo-light.png';
 import logoDark from '@/assets/logo-dark.png';
 import { useTheme } from '@/context/ThemeContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency, currencies } from '@/context/CurrencyContext';
+import { useGlobalOrdersSubscription } from '@/hooks/useGlobalOrderNotifications';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -50,6 +55,9 @@ const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Global real-time order notifications - works across all admin pages
+  const { isConnected, soundEnabled, setSoundEnabled, testSound } = useGlobalOrdersSubscription();
   
   // Login form state
   const [email, setEmail] = useState('');
@@ -391,6 +399,36 @@ const AdminDashboard = () => {
                   <Moon className="h-4 w-4" />
                 )}
               </Button>
+
+              {/* Live Indicator & Sound Controls */}
+              <div className="flex items-center gap-2">
+                {isConnected && (
+                  <span className="flex items-center gap-1.5 text-xs text-green-600">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    Live
+                  </span>
+                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10">
+                      <Bell className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setSoundEnabled(!soundEnabled)}>
+                      {soundEnabled ? <Volume2 className="w-4 h-4 mr-2" /> : <VolumeX className="w-4 h-4 mr-2" />}
+                      {soundEnabled ? 'Dezactivează sunet' : 'Activează sunet'}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => testSound('new_order')}>
+                      🔔 Test comandă nouă
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => testSound('payment_confirmed')}>
+                      💳 Test plată confirmată
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
 
               {/* Admin Role & Logout */}
               <div className="hidden sm:flex items-center gap-2 ml-4 pl-4 border-l border-border">
