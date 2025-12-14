@@ -216,13 +216,12 @@ const ProductPage = () => {
           if (relatedData) {
             setRelatedProducts(relatedData);
             
-            // Fetch ratings for related products
+            // Fetch ratings for related products using public_reviews view
             const relatedIds = relatedData.map(p => p.id);
             const { data: relatedReviewsData } = await supabase
-              .from('reviews')
+              .from('public_reviews')
               .select('product_id, rating')
-              .in('product_id', relatedIds)
-              .eq('is_approved', true);
+              .in('product_id', relatedIds);
 
             if (relatedReviewsData) {
               const ratingsMap = new Map<string, RelatedProductRating>();
@@ -266,12 +265,11 @@ const ProductPage = () => {
           }
         }
 
-        // Fetch reviews
+        // Fetch reviews using public_reviews view (excludes customer_email)
         const { data: reviewsData } = await supabase
-          .from('reviews')
+          .from('public_reviews')
           .select('id, customer_name, rating, content, title, content_ro, content_en, title_ro, title_en, created_at, is_verified_purchase, images')
           .eq('product_id', data.id)
-          .eq('is_approved', true)
           .order('created_at', { ascending: false });
 
         if (reviewsData && reviewsData.length > 0) {

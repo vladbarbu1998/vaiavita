@@ -78,11 +78,11 @@ const Produse = () => {
         // Fetch ratings for all products
         if (data && data.length > 0) {
           const productIds = data.map(p => p.id);
+          // Use public_reviews view to avoid exposing customer_email
           const { data: reviewsData } = await supabase
-            .from('reviews')
+            .from('public_reviews')
             .select('product_id, rating')
-            .in('product_id', productIds)
-            .eq('is_approved', true);
+            .in('product_id', productIds);
 
           if (reviewsData) {
             const ratingsMap = new Map<string, ProductRating>();
