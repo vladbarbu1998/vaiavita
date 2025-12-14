@@ -228,7 +228,8 @@ const handler = async (req: Request): Promise<Response> => {
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
               <p style="font-size: 12px; color: #888; margin: 0;">VAIAVITA S.R.L. | CUI 49945945 | J8/1310/2024</p>
-              <p style="font-size: 11px; color: #666; margin: 10px 0 0 0;">© 2024 VAIAVITA. Toate drepturile rezervate.</p>
+              <p style="font-size: 11px; color: #666; margin: 10px 0 0 0;">© 2025 VAIAVITA. Toate drepturile rezervate.</p>
+              <p style="font-size: 11px; margin: 10px 0 0 0;"><a href="https://vaiavita.ro" style="color: #888; text-decoration: underline;">vaiavita.ro</a></p>
             </td>
           </tr>
         </table>
@@ -319,7 +320,8 @@ const handler = async (req: Request): Promise<Response> => {
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
               <p style="font-size: 12px; color: #888; margin: 0;">VAIAVITA S.R.L. | CUI 49945945 | J8/1310/2024</p>
-              <p style="font-size: 11px; color: #666; margin: 10px 0 0 0;">© 2024 VAIAVITA. All rights reserved.</p>
+              <p style="font-size: 11px; color: #666; margin: 10px 0 0 0;">© 2025 VAIAVITA. All rights reserved.</p>
+              <p style="font-size: 11px; margin: 10px 0 0 0;"><a href="https://vaiavita.ro" style="color: #888; text-decoration: underline;">vaiavita.ro</a></p>
             </td>
           </tr>
         </table>
