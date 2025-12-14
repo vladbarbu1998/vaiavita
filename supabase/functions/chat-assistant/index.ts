@@ -15,7 +15,7 @@ INFORMAȚII DESPRE COMPANIE:
 - Email: office@vaiavita.com
 - Telefon: 0732 111 117
 - Locație: Brașov, România
-- Adresa ridicare personală: Strada Iuliu Maniu 60, Brașov, 500091
+- Adresa ridicare personală: Se comunică după comandă.
 - Program ridicare: Luni - Vineri, 10:00 - 18:00
 
 PRODUSE DISPONIBILE:
@@ -100,20 +100,24 @@ serve(async (req) => {
     const contents = [
       {
         role: "user",
-        parts: [{ text: SITE_CONTEXT }]
+        parts: [{ text: SITE_CONTEXT }],
       },
       {
         role: "model",
-        parts: [{ text: "Înțeleg. Sunt asistentul virtual VAIAVITA și voi răspunde doar la întrebări despre companie, produse, livrare și plăți. Cum te pot ajuta?" }]
-      }
+        parts: [
+          {
+            text: "Înțeleg. Sunt asistentul virtual VAIAVITA și voi răspunde doar la întrebări despre companie, produse, livrare și plăți. Cum te pot ajuta?",
+          },
+        ],
+      },
     ];
 
     // Add conversation history
     if (conversationHistory && conversationHistory.length > 0) {
       for (const msg of conversationHistory) {
         contents.push({
-          role: msg.role === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.content }]
+          role: msg.role === "user" ? "user" : "model",
+          parts: [{ text: msg.content }],
         });
       }
     }
@@ -121,7 +125,7 @@ serve(async (req) => {
     // Add current message
     contents.push({
       role: "user",
-      parts: [{ text: message }]
+      parts: [{ text: message }],
     });
 
     console.log("Sending request to Gemini API...");
@@ -140,48 +144,45 @@ serve(async (req) => {
             maxOutputTokens: 500,
           },
         }),
-      }
+      },
     );
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Gemini API error:", response.status, errorText);
-      
+
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             error: "Rate limit exceeded",
-            reply: "Sistemul este momentan ocupat. Te rog să încerci din nou în câteva momente."
+            reply: "Sistemul este momentan ocupat. Te rog să încerci din nou în câteva momente.",
           }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
-      
+
       throw new Error(`Gemini API error: ${response.status}`);
     }
 
     const data = await response.json();
     console.log("Gemini response received");
 
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 
-      (language === 'ro' 
-        ? 'Îmi pare rău, nu am putut procesa cererea. Te rog să încerci din nou.'
-        : 'Sorry, I could not process the request. Please try again.');
+    const reply =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      (language === "ro"
+        ? "Îmi pare rău, nu am putut procesa cererea. Te rog să încerci din nou."
+        : "Sorry, I could not process the request. Please try again.");
 
-    return new Response(
-      JSON.stringify({ reply }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-
+    return new Response(JSON.stringify({ reply }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error: unknown) {
     console.error("Error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: errorMessage,
-        reply: "Îmi pare rău, a apărut o eroare. Te rog să încerci din nou sau contactează-ne la office@vaiavita.com."
+        reply: "Îmi pare rău, a apărut o eroare. Te rog să încerci din nou sau contactează-ne la office@vaiavita.com.",
       }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
