@@ -45,19 +45,42 @@ const handler = async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Check if a coupon already exists for this review
-    const { data: existingCoupon } = await supabase
+    const { data: existingCouponForReview } = await supabase
       .from('coupons')
       .select('id, code')
       .eq('review_id', review_id)
       .maybeSingle();
 
-    if (existingCoupon) {
-      console.log('Coupon already exists for this review:', existingCoupon.code);
+    if (existingCouponForReview) {
+      console.log('Coupon already exists for this review:', existingCouponForReview.code);
       return new Response(
-        JSON.stringify({ success: true, coupon_code: existingCoupon.code, message: 'Coupon already created' }),
+        JSON.stringify({ success: true, coupon_code: existingCouponForReview.code, message: 'Coupon already created for this review' }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
+
+    // Check if this email already has ANY review coupon (one coupon per email lifetime)
+    const { data: existingCouponForEmail } = await supabase
+      .from('coupons')
+      .select('id, code')
+      .eq('allowed_email', customer_email.toLowerCase())
+      .not('review_id', 'is', null)
+      .maybeSingle();
+
+    if (existingCouponForEmail) {
+      console.log('Customer already received a review coupon before:', existingCouponForEmail.code);
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          coupon_code: null, 
+          message: 'Customer already has a review coupon - no new coupon created',
+          existing_coupon: existingCouponForEmail.code
+        }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    console.log('No existing coupon found, creating new one for:', customer_email);
 
     // Generate unique coupon code
     const timestamp = Date.now().toString(36).toUpperCase();
@@ -288,7 +311,7 @@ const handler = async (req: Request): Promise<Response> => {
       try {
         console.log('Sending email via Resend to:', customer_email);
         const emailResponse = await resend.emails.send({
-          from: "VAIAVITA <noreply@vaiavita.com>",
+          from: "VAIAVITA <comenzi@vaiavita.ro>",
           to: [customer_email],
           subject: language === 'ro' 
             ? "🎁 Cuponul tău de 15% reducere - Mulțumim pentru recenzie!" 
