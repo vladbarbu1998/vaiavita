@@ -64,6 +64,48 @@ export type Database = {
           },
         ]
       }
+      contact_submissions: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          email: string
+          id: string
+          is_read: boolean | null
+          language: string
+          message: string
+          name: string
+          phone: string | null
+          replied_at: string | null
+          subject: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          is_read?: boolean | null
+          language?: string
+          message: string
+          name: string
+          phone?: string | null
+          replied_at?: string | null
+          subject?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          is_read?: boolean | null
+          language?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          replied_at?: string | null
+          subject?: string | null
+        }
+        Relationships: []
+      }
       coupons: {
         Row: {
           allowed_email: string | null
