@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -15,6 +16,8 @@ interface SupportRequest {
   message: string;
   transcript: string;
   language: string;
+  ip_address?: string;
+  user_agent?: string;
 }
 
 const getAdminEmailTemplate = (data: SupportRequest): string => {
@@ -219,6 +222,35 @@ serve(async (req) => {
   try {
     const data: SupportRequest = await req.json();
     console.log("Received support request from:", data.name, data.email);
+
+    // Get IP address from request headers
+    const ip_address = data.ip_address || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
+                       req.headers.get("cf-connecting-ip") || 
+                       req.headers.get("x-real-ip") || null;
+
+    // Save to database
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { error: dbError } = await supabase.from("contact_submissions").insert({
+      name: data.name,
+      email: data.email,
+      phone: data.phone || null,
+      subject: "Cerere suport live (Chatbot)",
+      message: data.message,
+      language: data.language,
+      source: "chatbot",
+      ip_address: ip_address,
+      user_agent: data.user_agent || null,
+      admin_notes: `--- Transcript conversație ---\n${data.transcript}`,
+    });
+
+    if (dbError) {
+      console.error("Database error:", dbError);
+    } else {
+      console.log("Support request saved to database");
+    }
 
     // Send notification to admin
     const adminEmailResult = await resend.emails.send({

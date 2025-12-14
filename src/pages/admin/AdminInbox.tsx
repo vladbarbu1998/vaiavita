@@ -49,6 +49,7 @@ interface ContactSubmission {
   admin_notes: string | null;
   ip_address: string | null;
   user_agent: string | null;
+  source: string | null;
 }
 
 const AdminInbox = () => {
@@ -58,6 +59,7 @@ const AdminInbox = () => {
   const [adminNotes, setAdminNotes] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterSource, setFilterSource] = useState<string>("all");
 
   const { data: submissions, isLoading } = useQuery({
     queryKey: ["contact-submissions"],
@@ -170,11 +172,16 @@ const AdminInbox = () => {
       s.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (s.subject?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
     
-    if (filterStatus === "all") return matchesSearch;
-    if (filterStatus === "unread") return matchesSearch && !s.is_read;
-    if (filterStatus === "unreplied") return matchesSearch && !s.replied_at;
-    if (filterStatus === "replied") return matchesSearch && !!s.replied_at;
-    return matchesSearch;
+    let matchesStatus = true;
+    if (filterStatus === "unread") matchesStatus = !s.is_read;
+    else if (filterStatus === "unreplied") matchesStatus = !s.replied_at;
+    else if (filterStatus === "replied") matchesStatus = !!s.replied_at;
+
+    let matchesSource = true;
+    if (filterSource === "contact_form") matchesSource = s.source === 'contact_form' || !s.source;
+    else if (filterSource === "chatbot") matchesSource = s.source === 'chatbot';
+
+    return matchesSearch && matchesStatus && matchesSource;
   });
 
   const unreadCount = submissions?.filter(s => !s.is_read).length || 0;
@@ -220,6 +227,16 @@ const AdminInbox = () => {
             <SelectItem value="unread">Necitite</SelectItem>
             <SelectItem value="unreplied">Fără răspuns</SelectItem>
             <SelectItem value="replied">Cu răspuns</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterSource} onValueChange={setFilterSource}>
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="Sursă" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toate sursele</SelectItem>
+            <SelectItem value="contact_form">Formular contact</SelectItem>
+            <SelectItem value="chatbot">Chatbot</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -413,8 +430,8 @@ const AdminInbox = () => {
                     </h3>
                     <div className="grid grid-cols-1 gap-2 text-sm">
                       {selectedMessage.ip_address && (
-                        <div className="flex items-start gap-2">
-                          <span className="text-muted-foreground min-w-[80px]">IP:</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">IP:</span>
                           <span className="font-mono text-xs bg-muted px-2 py-1 rounded">{selectedMessage.ip_address}</span>
                         </div>
                       )}
