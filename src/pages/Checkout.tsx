@@ -525,6 +525,9 @@ const Checkout = () => {
       const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
       const orderNumber = `VV-${dateStr}-${randomNum}`;
 
+      // Capture user agent for tracking
+      const userAgent = navigator.userAgent;
+
       const { error: orderError } = await supabase
         .from('orders')
         .insert([{
@@ -562,6 +565,7 @@ const Checkout = () => {
           customer_notes: form.paymentMethod === 'card_at_locker' 
             ? `${form.notes ? form.notes + '\n' : ''}[Plată cu cardul la locker]`
             : (form.notes || null),
+          user_agent: userAgent,
         }]);
 
       if (orderError) throw orderError;

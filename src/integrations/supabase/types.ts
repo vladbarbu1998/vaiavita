@@ -70,6 +70,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          ip_address: string | null
           is_read: boolean | null
           language: string
           message: string
@@ -77,12 +78,14 @@ export type Database = {
           phone: string | null
           replied_at: string | null
           subject: string | null
+          user_agent: string | null
         }
         Insert: {
           admin_notes?: string | null
           created_at?: string
           email: string
           id?: string
+          ip_address?: string | null
           is_read?: boolean | null
           language?: string
           message: string
@@ -90,12 +93,14 @@ export type Database = {
           phone?: string | null
           replied_at?: string | null
           subject?: string | null
+          user_agent?: string | null
         }
         Update: {
           admin_notes?: string | null
           created_at?: string
           email?: string
           id?: string
+          ip_address?: string | null
           is_read?: boolean | null
           language?: string
           message?: string
@@ -103,6 +108,7 @@ export type Database = {
           phone?: string | null
           replied_at?: string | null
           subject?: string | null
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -306,6 +312,7 @@ export type Database = {
           ecolet_sync_error: string | null
           ecolet_synced: boolean | null
           id: string
+          ip_address: string | null
           locker_address: string | null
           locker_city: string | null
           locker_id: string | null
@@ -334,6 +341,7 @@ export type Database = {
           total: number
           tracking_url: string | null
           updated_at: string
+          user_agent: string | null
         }
         Insert: {
           admin_notes?: string | null
@@ -355,6 +363,7 @@ export type Database = {
           ecolet_sync_error?: string | null
           ecolet_synced?: boolean | null
           id?: string
+          ip_address?: string | null
           locker_address?: string | null
           locker_city?: string | null
           locker_id?: string | null
@@ -383,6 +392,7 @@ export type Database = {
           total: number
           tracking_url?: string | null
           updated_at?: string
+          user_agent?: string | null
         }
         Update: {
           admin_notes?: string | null
@@ -404,6 +414,7 @@ export type Database = {
           ecolet_sync_error?: string | null
           ecolet_synced?: boolean | null
           id?: string
+          ip_address?: string | null
           locker_address?: string | null
           locker_city?: string | null
           locker_id?: string | null
@@ -432,6 +443,7 @@ export type Database = {
           total?: number
           tracking_url?: string | null
           updated_at?: string
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -582,6 +594,7 @@ export type Database = {
           customer_name: string
           id: string
           images: string[] | null
+          ip_address: string | null
           is_approved: boolean | null
           is_verified_purchase: boolean | null
           order_id: string | null
@@ -591,6 +604,7 @@ export type Database = {
           title: string | null
           title_en: string | null
           title_ro: string | null
+          user_agent: string | null
         }
         Insert: {
           content?: string | null
@@ -601,6 +615,7 @@ export type Database = {
           customer_name: string
           id?: string
           images?: string[] | null
+          ip_address?: string | null
           is_approved?: boolean | null
           is_verified_purchase?: boolean | null
           order_id?: string | null
@@ -610,6 +625,7 @@ export type Database = {
           title?: string | null
           title_en?: string | null
           title_ro?: string | null
+          user_agent?: string | null
         }
         Update: {
           content?: string | null
@@ -620,6 +636,7 @@ export type Database = {
           customer_name?: string
           id?: string
           images?: string[] | null
+          ip_address?: string | null
           is_approved?: boolean | null
           is_verified_purchase?: boolean | null
           order_id?: string | null
@@ -629,6 +646,7 @@ export type Database = {
           title?: string | null
           title_en?: string | null
           title_ro?: string | null
+          user_agent?: string | null
         }
         Relationships: [
           {

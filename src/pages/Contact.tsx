@@ -52,6 +52,9 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
+      // Capture IP and user agent
+      const userAgent = navigator.userAgent;
+      
       // Save to database
       const { error: dbError } = await supabase
         .from('contact_submissions')
@@ -62,6 +65,7 @@ const Contact = () => {
           subject: formData.subject.trim() || null,
           message: formData.message.trim(),
           language: language,
+          user_agent: userAgent,
         });
 
       if (dbError) {

@@ -56,7 +56,8 @@ import {
   FileDown,
   Volume2,
   VolumeX,
-  Bell
+  Bell,
+  Copy
 } from 'lucide-react';
 
 interface Order {
@@ -1098,7 +1099,23 @@ const AdminOrders = () => {
                       <td className="p-4">
                         {order.awb_number ? (
                           <div className="space-y-0.5">
-                            <p className="font-mono text-sm font-medium">{order.awb_number}</p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="font-mono text-sm font-medium truncate max-w-[120px]" title={order.awb_number}>
+                                {order.awb_number}
+                              </p>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 shrink-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(order.awb_number || '');
+                                  toast.success('AWB copiat!');
+                                }}
+                              >
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                            </div>
                             {order.courier_name && (
                               <p className="text-xs text-muted-foreground">{order.courier_name}</p>
                             )}
