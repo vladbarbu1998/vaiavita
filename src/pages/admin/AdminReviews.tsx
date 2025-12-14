@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Search, Loader2, Star, Check, X, Trash2, Eye, ShieldCheck, Download } from 'lucide-react';
+import { Search, Loader2, Star, Check, X, Trash2, Eye, ShieldCheck, Download, CheckSquare, Square } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -46,6 +47,8 @@ const AdminReviews = () => {
   const [productFilter, setProductFilter] = useState<string>('all');
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   useEffect(() => {
     fetchReviews();
@@ -149,6 +152,66 @@ const AdminReviews = () => {
     toast.success('Recenzie ștearsă');
     fetchReviews();
     setDialogOpen(false);
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(id);
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredReviews.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredReviews.map(r => r.id)));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const bulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Sigur vrei să ștergi ${selectedIds.size} recenzii selectate?`)) return;
+    
+    setBulkDeleting(true);
+    let deletedCount = 0;
+    
+    for (const id of selectedIds) {
+      const reviewToDelete = reviews.find(r => r.id === id);
+      
+      // Delete from database
+      const { error } = await supabase.from('reviews').delete().eq('id', id);
+      if (error) continue;
+      
+      // Delete images from storage
+      if (reviewToDelete?.images?.length) {
+        const pathsToDelete = reviewToDelete.images
+          .map(url => getStoragePathFromUrl(url, 'reviews'))
+          .filter((path): path is string => path !== null);
+        if (pathsToDelete.length > 0) {
+          await supabase.storage.from('reviews').remove(pathsToDelete);
+        }
+      }
+      
+      // Delete associated coupons
+      await supabase.from('coupons').delete().eq('review_id', id);
+      deletedCount++;
+    }
+    
+    toast.success(`${deletedCount} recenzii șterse`);
+    setSelectedIds(new Set());
+    setBulkDeleting(false);
+    fetchReviews();
   };
 
   const getProductName = (productId: string) => {
@@ -214,10 +277,26 @@ const AdminReviews = () => {
           <h1 className="font-display text-2xl md:text-3xl tracking-wide">Recenzii</h1>
           <p className="text-muted-foreground mt-1">Gestionează recenziile produselor</p>
         </div>
-        <Button variant="outline" onClick={exportReviews}>
-          <Download className="w-4 h-4 mr-2" />
-          Export CSV
-        </Button>
+        <div className="flex gap-2">
+          {selectedIds.size > 0 && (
+            <Button 
+              variant="destructive" 
+              onClick={bulkDelete}
+              disabled={bulkDeleting}
+            >
+              {bulkDeleting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4 mr-2" />
+              )}
+              Șterge ({selectedIds.size})
+            </Button>
+          )}
+          <Button variant="outline" onClick={exportReviews}>
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -305,9 +384,27 @@ const AdminReviews = () => {
             Nu există recenzii
           </div>
         ) : (
-          filteredReviews.map((review) => (
-            <div key={review.id} className="card-premium p-5">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <>
+            {/* Select All */}
+            <div className="flex items-center gap-3 px-2">
+              <Checkbox
+                checked={selectedIds.size === filteredReviews.length && filteredReviews.length > 0}
+                onCheckedChange={toggleSelectAll}
+                id="select-all"
+              />
+              <label htmlFor="select-all" className="text-sm text-muted-foreground cursor-pointer">
+                Selectează toate ({filteredReviews.length})
+              </label>
+            </div>
+            
+            {filteredReviews.map((review) => (
+            <div key={review.id} className="card-premium p-5 flex gap-4">
+              <Checkbox
+                checked={selectedIds.has(review.id)}
+                onCheckedChange={() => toggleSelectOne(review.id)}
+                className="mt-1"
+              />
+              <div className="flex-1 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div className="flex-1 space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="flex gap-0.5">
@@ -385,7 +482,8 @@ const AdminReviews = () => {
                 </div>
               </div>
             </div>
-          ))
+          ))}
+          </>
         )}
       </div>
 
