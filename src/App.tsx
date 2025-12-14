@@ -24,7 +24,7 @@ import PoliticaConfidentialitate from "./pages/PoliticaConfidentialitate";
 import TermeniConditii from "./pages/TermeniConditii";
 import PoliticaCookies from "./pages/PoliticaCookies";
 import NotFound from "./pages/NotFound";
-import { AdminDashboard, AdminOverview, AdminProducts, AdminCategories, AdminOrders, AdminCustomers, AdminReviews, AdminCoupons, AdminSettings, AdminInbox } from "./pages/admin";
+import { AdminDashboard, AdminOverview, AdminProducts, AdminCategories, AdminOrders, AdminCustomers, AdminReviews, AdminCoupons, AdminInbox } from "./pages/admin";
 
 const queryClient = new QueryClient();
 
@@ -62,7 +62,6 @@ const App = () => (
                     <Route path="reviews" element={<AdminReviews />} />
                     <Route path="coupons" element={<AdminCoupons />} />
                     <Route path="inbox" element={<AdminInbox />} />
-                    <Route path="settings" element={<AdminSettings />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>

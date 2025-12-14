@@ -18,7 +18,6 @@ import {
   ShoppingCart, 
   Users, 
   Star, 
-  Settings, 
   LogOut,
   Menu,
   X,
@@ -156,7 +155,6 @@ const AdminDashboard = () => {
     { path: '/admin/reviews', icon: Star, label: 'Recenzii' },
     { path: '/admin/coupons', icon: Tag, label: 'Cupoane' },
     { path: '/admin/inbox', icon: Mail, label: 'Inbox' },
-    { path: '/admin/settings', icon: Settings, label: 'Setări' },
   ];
 
   const isActive = (path: string, exact?: boolean) => {
