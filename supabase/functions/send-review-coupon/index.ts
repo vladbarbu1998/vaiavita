@@ -28,14 +28,13 @@ const handler = async (req: Request): Promise<Response> => {
     const body = await req.json();
     console.log('Request body received:', JSON.stringify(body));
     
-    const { review_id, customer_email, customer_name, product_name, language }: ReviewCouponRequest = body;
+    const { review_id, customer_email, customer_name, product_name }: ReviewCouponRequest = body;
 
     console.log('Processing review coupon request:', {
       review_id,
       customer_email,
       customer_name,
-      product_name,
-      language
+      product_name
     });
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -80,7 +79,33 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log('No existing coupon found, creating new one for:', customer_email);
+    // Determine email language based on customer's order country
+    // Check the most recent delivered order for this customer to get their country
+    const { data: customerOrder } = await supabase
+      .from('orders')
+      .select('shipping_address')
+      .eq('customer_email', customer_email.toLowerCase())
+      .eq('status', 'delivered')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let emailLanguage: 'ro' | 'en' = 'ro'; // Default to Romanian
+    
+    if (customerOrder?.shipping_address) {
+      const shippingAddress = customerOrder.shipping_address as { countryCode?: string };
+      const countryCode = shippingAddress.countryCode?.toUpperCase();
+      
+      // If country is NOT Romania, use English
+      if (countryCode && countryCode !== 'RO') {
+        emailLanguage = 'en';
+        console.log('Customer is from abroad (country:', countryCode, '), using English email');
+      } else {
+        console.log('Customer is from Romania, using Romanian email');
+      }
+    }
+
+    console.log('No existing coupon found, creating new one for:', customer_email, 'Language:', emailLanguage);
 
     // Generate unique coupon code
     const timestamp = Date.now().toString(36).toUpperCase();
@@ -92,7 +117,7 @@ const handler = async (req: Request): Promise<Response> => {
       .from('coupons')
       .insert({
         code: couponCode,
-        description: language === 'ro' 
+        description: emailLanguage === 'ro' 
           ? `Cupon 15% pentru recenzie - ${customer_name}` 
           : `15% Review discount - ${customer_name}`,
         discount_type: 'percentage',
@@ -202,9 +227,8 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="${logoUrl}" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;" />
-              <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945 | J8/1310/2024</p>
-              <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA. Toate drepturile rezervate.</p>
+              <p style="font-size: 12px; color: #888; margin: 0;">VAIAVITA S.R.L. | CUI 49945945 | J8/1310/2024</p>
+              <p style="font-size: 11px; color: #666; margin: 10px 0 0 0;">© 2024 VAIAVITA. Toate drepturile rezervate.</p>
             </td>
           </tr>
         </table>
@@ -294,9 +318,8 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="${logoUrl}" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;" />
-              <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945 | J8/1310/2024</p>
-              <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA. All rights reserved.</p>
+              <p style="font-size: 12px; color: #888; margin: 0;">VAIAVITA S.R.L. | CUI 49945945 | J8/1310/2024</p>
+              <p style="font-size: 11px; color: #666; margin: 10px 0 0 0;">© 2024 VAIAVITA. All rights reserved.</p>
             </td>
           </tr>
         </table>
@@ -306,14 +329,14 @@ const handler = async (req: Request): Promise<Response> => {
 </body>
 </html>`;
 
-      const emailHtml = language === 'ro' ? emailHtmlRo : emailHtmlEn;
+      const emailHtml = emailLanguage === 'ro' ? emailHtmlRo : emailHtmlEn;
 
       try {
-        console.log('Sending email via Resend to:', customer_email);
+        console.log('Sending email via Resend to:', customer_email, 'Language:', emailLanguage);
         const emailResponse = await resend.emails.send({
           from: "VAIAVITA <comenzi@vaiavita.ro>",
           to: [customer_email],
-          subject: language === 'ro' 
+          subject: emailLanguage === 'ro' 
             ? "🎁 Cuponul tău de 15% reducere - Mulțumim pentru recenzie!" 
             : "🎁 Your 15% discount coupon - Thank you for your review!",
           html: emailHtml,

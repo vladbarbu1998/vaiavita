@@ -1282,7 +1282,7 @@ const ProductPage = () => {
           </div>
 
           {/* Desktop: Tabs Section */}
-          <div className="hidden md:block mt-16 opacity-0 animate-fade-up animation-delay-400">
+          <div ref={tabsRef} className="hidden md:block mt-16 opacity-0 animate-fade-up animation-delay-400">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="w-full justify-start border-b border-border rounded-none bg-transparent h-auto p-0 mb-8 overflow-x-auto">
                 <TabsTrigger
