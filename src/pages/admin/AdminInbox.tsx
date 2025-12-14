@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ro } from "date-fns/locale";
 import { toast } from "sonner";
-import { Mail, MailOpen, Trash2, Clock, User, MessageSquare, Phone, Tag, CheckCircle2, Circle, Search, Filter, Download } from "lucide-react";
+import { Mail, MailOpen, Trash2, Clock, User, MessageSquare, Phone, Tag, CheckCircle2, Circle, Search, Download, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -178,12 +178,12 @@ const AdminInbox = () => {
   const unreadCount = submissions?.filter(s => !s.is_read).length || 0;
 
   return (
-    <div className="space-y-6">
-      {/* Header - matching AdminProducts/AdminCoupons style */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+    <div className="p-6 lg:p-8 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-display font-bold uppercase tracking-wide">Inbox</h1>
+            <h1 className="font-display text-2xl md:text-3xl tracking-wide">Inbox</h1>
             {unreadCount > 0 && (
               <Badge variant="destructive" className="rounded-full">
                 {unreadCount} {unreadCount === 1 ? "necitit" : "necitite"}
@@ -199,9 +199,9 @@ const AdminInbox = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
             placeholder="Caută după nume, email, mesaj..."
             value={searchQuery}
@@ -210,9 +210,8 @@ const AdminInbox = () => {
           />
         </div>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-full sm:w-48">
-            <Filter className="w-4 h-4 mr-2" />
-            <SelectValue />
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toate mesajele</SelectItem>
@@ -223,113 +222,127 @@ const AdminInbox = () => {
         </Select>
       </div>
 
-      {/* Loading */}
-      {isLoading && (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => (
-            <Skeleton key={i} className="h-24 w-full rounded-xl" />
-          ))}
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!isLoading && filteredSubmissions?.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 bg-muted/30 rounded-2xl border border-border/50">
-          <Mail className="w-12 h-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">
-            {searchQuery || filterStatus !== "all" ? "Nu s-au găsit mesaje" : "Nu există mesaje încă"}
-          </p>
-        </div>
-      )}
-
-      {/* Messages List */}
-      {!isLoading && filteredSubmissions && filteredSubmissions.length > 0 && (
-        <div className="space-y-3">
-          {filteredSubmissions.map((submission) => (
-            <div
-              key={submission.id}
-              className={`group relative bg-card border rounded-xl p-4 cursor-pointer transition-all hover:shadow-md hover:border-primary/30 ${
-                !submission.is_read ? "border-primary/50 bg-primary/5" : "border-border"
-              }`}
-              onClick={() => openMessage(submission)}
-            >
-              <div className="flex items-start gap-4">
-                {/* Icon */}
-                <div className={`mt-1 flex-shrink-0 ${!submission.is_read ? "text-primary" : "text-muted-foreground"}`}>
-                  {submission.is_read ? <MailOpen className="w-5 h-5" /> : <Mail className="w-5 h-5" />}
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className={`font-medium ${!submission.is_read ? "text-foreground" : "text-muted-foreground"}`}>
-                      {submission.name}
-                    </span>
-                    <span className="text-sm text-muted-foreground">•</span>
-                    <span className="text-sm text-muted-foreground truncate">
-                      {submission.email}
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      {submission.language.toUpperCase()}
-                    </Badge>
-                    {submission.replied_at && (
-                      <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
-                        <CheckCircle2 className="w-3 h-3 mr-1" />
-                        Răspuns
-                      </Badge>
-                    )}
-                  </div>
-                  {submission.subject && (
-                    <p className="text-sm font-medium text-foreground mb-1 truncate">
-                      {submission.subject}
-                    </p>
-                  )}
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {submission.message}
-                  </p>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {format(new Date(submission.created_at), "dd MMM, HH:mm", { locale: ro })}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    {/* Replied checkbox */}
-                    <div 
-                      className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleRepliedMutation.mutate({ 
-                          id: submission.id, 
-                          replied: !submission.replied_at 
-                        });
-                      }}
-                    >
-                      <Checkbox
-                        checked={!!submission.replied_at}
-                        className="pointer-events-none"
-                      />
-                      <span className="text-xs text-muted-foreground">Răspuns</span>
+      {/* Messages Table */}
+      <div className="card-premium overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-muted/50">
+              <tr>
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Expeditor</th>
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Subiect / Mesaj</th>
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Data</th>
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
+                <th className="text-right p-4 text-sm font-medium text-muted-foreground">Acțiuni</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {isLoading ? (
+                <tr>
+                  <td colSpan={5} className="p-8 text-center">
+                    <div className="flex justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteId(submission.id);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+                  </td>
+                </tr>
+              ) : filteredSubmissions?.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                    <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>{searchQuery || filterStatus !== "all" ? "Nu s-au găsit mesaje" : "Nu există mesaje încă"}</p>
+                  </td>
+                </tr>
+              ) : (
+                filteredSubmissions?.map((submission) => (
+                  <tr 
+                    key={submission.id} 
+                    className={`hover:bg-muted/30 transition-colors ${!submission.is_read ? "bg-primary/5" : ""}`}
+                  >
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex-shrink-0 ${!submission.is_read ? "text-primary" : "text-muted-foreground"}`}>
+                          {submission.is_read ? <MailOpen className="w-5 h-5" /> : <Mail className="w-5 h-5" />}
+                        </div>
+                        <div className="min-w-0">
+                          <p className={`font-medium truncate ${!submission.is_read ? "text-foreground" : "text-muted-foreground"}`}>
+                            {submission.name}
+                          </p>
+                          <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                            {submission.email}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="max-w-[300px]">
+                        {submission.subject && (
+                          <p className="font-medium truncate mb-0.5">{submission.subject}</p>
+                        )}
+                        <p className="text-sm text-muted-foreground truncate">{submission.message}</p>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-sm text-muted-foreground whitespace-nowrap">
+                        {format(new Date(submission.created_at), "dd MMM yyyy, HH:mm", { locale: ro })}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          {submission.language.toUpperCase()}
+                        </Badge>
+                        {submission.replied_at ? (
+                          <Badge className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            Răspuns
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-xs">
+                            Neaserăspuns
+                          </Badge>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center justify-end gap-1">
+                        <div 
+                          className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted transition-colors cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleRepliedMutation.mutate({ 
+                              id: submission.id, 
+                              replied: !submission.replied_at 
+                            });
+                          }}
+                        >
+                          <Checkbox
+                            checked={!!submission.replied_at}
+                            className="pointer-events-none"
+                          />
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openMessage(submission)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => setDeleteId(submission.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
 
       {/* Message Detail Dialog */}
       <Dialog open={!!selectedMessage} onOpenChange={() => setSelectedMessage(null)}>
@@ -443,7 +456,7 @@ const AdminInbox = () => {
                     </a>
                   </Button>
                   {selectedMessage.phone && (
-                    <Button asChild variant="outline">
+                    <Button asChild variant="outline" className="flex-1">
                       <a href={`tel:${selectedMessage.phone}`}>
                         <Phone className="w-4 h-4 mr-2" />
                         Sună
@@ -463,14 +476,14 @@ const AdminInbox = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Șterge mesajul?</AlertDialogTitle>
             <AlertDialogDescription>
-              Această acțiune nu poate fi anulată. Mesajul va fi șters permanent.
+              Această acțiune nu poate fi anulată. Mesajul va fi șters definitiv.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Anulează</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteId && deleteMutation.mutate(deleteId)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteId && deleteMutation.mutate(deleteId)}
             >
               Șterge
             </AlertDialogAction>
