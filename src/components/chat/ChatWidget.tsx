@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/context/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import chatbotAvatar from '@/assets/chatbot-avatar.jpg';
 
 interface Message {
   id: string;
@@ -231,9 +232,9 @@ export function ChatWidget() {
           <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               <img 
-                src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" 
+                src={chatbotAvatar} 
                 alt="VAIAVITA" 
-                className="h-10 w-10 rounded-full object-contain bg-white/10 p-1"
+                className="h-10 w-10 rounded-full object-cover"
               />
               <div>
                 <h3 className="font-display font-semibold">VAIAVITA</h3>
@@ -255,9 +256,9 @@ export function ChatWidget() {
                   </div>
                 ) : (
                   <img 
-                    src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" 
+                    src={chatbotAvatar} 
                     alt="Bot" 
-                    className="w-8 h-8 rounded-full shrink-0 object-contain bg-muted p-1"
+                    className="w-8 h-8 rounded-full shrink-0 object-cover"
                   />
                 )}
                 <div 
@@ -352,9 +353,9 @@ export function ChatWidget() {
             {isLoading && (
               <div className="flex gap-2">
                 <img 
-                  src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" 
+                  src={chatbotAvatar} 
                   alt="Bot" 
-                  className="w-8 h-8 rounded-full shrink-0 object-contain bg-muted p-1"
+                  className="w-8 h-8 rounded-full shrink-0 object-cover"
                 />
                 <div className="max-w-[75%] p-3 rounded-2xl text-sm bg-muted rounded-bl-md flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
