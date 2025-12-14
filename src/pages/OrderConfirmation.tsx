@@ -29,14 +29,17 @@ const OrderConfirmation = () => {
         return;
       }
 
-      const { data, error } = await supabase
-        .from('orders')
-        .select('order_number, customer_email, customer_first_name, delivery_method, payment_method, total')
-        .eq('order_number', orderNumber)
-        .maybeSingle();
+      try {
+        // Use edge function to securely fetch order data
+        const { data, error } = await supabase.functions.invoke('get-order-confirmation', {
+          body: { orderNumber }
+        });
 
-      if (!error && data) {
-        setOrder(data);
+        if (!error && data && !data.error) {
+          setOrder(data);
+        }
+      } catch (err) {
+        console.error('Error fetching order:', err);
       }
       setLoading(false);
     };
