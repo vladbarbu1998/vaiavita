@@ -27,95 +27,98 @@ serve(async (req) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Check if customer already left a review for this product
-    const { data: existingReview } = await supabase
-      .from("reviews")
-      .select("id")
-      .eq("customer_email", normalizedEmail)
-      .eq("product_id", product_id)
-      .limit(1);
-
-    if (existingReview && existingReview.length > 0) {
-      return new Response(
-        JSON.stringify({ 
-          verified: false, 
-          reason: "already_reviewed",
-          message_ro: "Ai lăsat deja o recenzie pentru acest produs.",
-          message_en: "You have already left a review for this product."
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Check for delivered orders containing this product
-    const { data: orderData } = await supabase
+    // Count delivered orders containing this product
+    const { data: deliveredOrders } = await supabase
       .from("orders")
       .select(`
         id,
-        status,
         order_items!inner(product_id, product_name)
       `)
       .eq("customer_email", normalizedEmail)
       .eq("status", "delivered");
 
-    // Filter orders that contain this product
-    const validOrder = orderData?.find((order: any) => {
+    const deliveredOrdersWithProduct = deliveredOrders?.filter((order: any) => {
       const items = order.order_items as Array<{ product_id: string | null; product_name: string }>;
       return items.some(item => 
         item.product_id === product_id || 
         (product_name_ro && item.product_name.trim().toLowerCase() === product_name_ro.trim().toLowerCase()) ||
         (product_name_en && item.product_name.trim().toLowerCase() === product_name_en.trim().toLowerCase())
       );
-    });
+    }) || [];
 
-    if (validOrder) {
-      return new Response(
-        JSON.stringify({ 
-          verified: true, 
-          order_id: validOrder.id 
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Check if they have a pending (non-delivered) order
-    const { data: pendingOrderData } = await supabase
-      .from("orders")
-      .select(`
-        id,
-        status,
-        order_items!inner(product_id, product_name)
-      `)
+    // Count existing reviews for this product from this customer
+    const { data: existingReviews } = await supabase
+      .from("reviews")
+      .select("id")
       .eq("customer_email", normalizedEmail)
-      .neq("status", "delivered");
+      .eq("product_id", product_id);
 
-    const hasPendingOrder = pendingOrderData?.some((order: any) => {
-      const items = order.order_items as Array<{ product_id: string | null; product_name: string }>;
-      return items.some(item => 
-        item.product_id === product_id || 
-        (product_name_ro && item.product_name.trim().toLowerCase() === product_name_ro.trim().toLowerCase()) ||
-        (product_name_en && item.product_name.trim().toLowerCase() === product_name_en.trim().toLowerCase())
-      );
-    });
+    const reviewCount = existingReviews?.length || 0;
+    const deliveredCount = deliveredOrdersWithProduct.length;
 
-    if (hasPendingOrder) {
+    // Allow review only if they have more delivered orders than reviews
+    if (reviewCount >= deliveredCount) {
+      if (deliveredCount === 0) {
+        // No delivered orders at all - check if they have pending orders
+        const { data: pendingOrderData } = await supabase
+          .from("orders")
+          .select(`
+            id,
+            status,
+            order_items!inner(product_id, product_name)
+          `)
+          .eq("customer_email", normalizedEmail)
+          .neq("status", "delivered");
+
+        const hasPendingOrder = pendingOrderData?.some((order: any) => {
+          const items = order.order_items as Array<{ product_id: string | null; product_name: string }>;
+          return items.some(item => 
+            item.product_id === product_id || 
+            (product_name_ro && item.product_name.trim().toLowerCase() === product_name_ro.trim().toLowerCase()) ||
+            (product_name_en && item.product_name.trim().toLowerCase() === product_name_en.trim().toLowerCase())
+          );
+        });
+
+        if (hasPendingOrder) {
+          return new Response(
+            JSON.stringify({ 
+              verified: false, 
+              reason: "order_not_delivered",
+              message_ro: "Poți lăsa o recenzie doar după ce comanda a fost livrată.",
+              message_en: "You can leave a review only after your order has been delivered."
+            }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        return new Response(
+          JSON.stringify({ 
+            verified: false, 
+            reason: "no_purchase",
+            message_ro: "Doar clienții care au cumpărat acest produs pot lăsa o recenzie. Verifică adresa de email folosită la comandă.",
+            message_en: "Only customers who have purchased this product can leave a review. Please check the email address used for your order."
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // They have reviews equal to delivered orders - already reviewed all
       return new Response(
         JSON.stringify({ 
           verified: false, 
-          reason: "order_not_delivered",
-          message_ro: "Poți lăsa o recenzie doar după ce comanda a fost livrată.",
-          message_en: "You can leave a review only after your order has been delivered."
+          reason: "already_reviewed",
+          message_ro: "Ai lăsat deja o recenzie pentru fiecare comandă livrată cu acest produs.",
+          message_en: "You have already left a review for each delivered order with this product."
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    // They can leave a review - return the first order without a review
     return new Response(
       JSON.stringify({ 
-        verified: false, 
-        reason: "no_purchase",
-        message_ro: "Doar clienții care au cumpărat acest produs pot lăsa o recenzie. Verifică adresa de email folosită la comandă.",
-        message_en: "Only customers who have purchased this product can leave a review. Please check the email address used for your order."
+        verified: true, 
+        order_id: deliveredOrdersWithProduct[reviewCount]?.id 
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
