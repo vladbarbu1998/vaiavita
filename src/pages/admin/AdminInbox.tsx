@@ -178,46 +178,48 @@ const AdminInbox = () => {
   const unreadCount = submissions?.filter(s => !s.is_read).length || 0;
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-display font-bold">Inbox</h1>
-          {unreadCount > 0 && (
-            <Badge variant="destructive" className="rounded-full">
-              {unreadCount} {unreadCount === 1 ? "necitit" : "necitite"}
-            </Badge>
-          )}
+    <div className="space-y-6">
+      {/* Header - matching AdminOrders style */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-display font-bold">Inbox</h1>
+            {unreadCount > 0 && (
+              <Badge variant="destructive" className="rounded-full">
+                {unreadCount} {unreadCount === 1 ? "necitit" : "necitite"}
+              </Badge>
+            )}
+          </div>
+          <Button variant="outline" size="sm" onClick={exportCSV} disabled={!submissions?.length}>
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={exportCSV} disabled={!submissions?.length}>
-          <Download className="w-4 h-4 mr-2" />
-          Export CSV
-        </Button>
-      </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Caută după nume, email, mesaj..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
+        {/* Filters - matching AdminOrders style */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Caută după nume, email, mesaj..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-full sm:w-48">
+              <Filter className="w-4 h-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toate mesajele</SelectItem>
+              <SelectItem value="unread">Necitite</SelectItem>
+              <SelectItem value="unreplied">Fără răspuns</SelectItem>
+              <SelectItem value="replied">Cu răspuns</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-full sm:w-48">
-            <Filter className="w-4 h-4 mr-2" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Toate mesajele</SelectItem>
-            <SelectItem value="unread">Necitite</SelectItem>
-            <SelectItem value="unreplied">Fără răspuns</SelectItem>
-            <SelectItem value="replied">Cu răspuns</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       {/* Loading */}
