@@ -11,6 +11,30 @@ interface Message {
   timestamp: Date;
 }
 
+// Parse markdown-like formatting to HTML
+const formatMessage = (text: string): string => {
+  let formatted = text
+    // Bold: **text** or __text__
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.*?)__/g, '<strong>$1</strong>')
+    // Italic: *text* or _text_
+    .replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>')
+    // Links: [text](url) - make them clickable
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:no-underline">$1</a>')
+    // Line breaks
+    .replace(/\n\n/g, '</p><p class="mt-2">')
+    .replace(/\n/g, '<br/>')
+    // Bullet lists: lines starting with - or *
+    .replace(/^[-*]\s+(.+)$/gm, '<li class="ml-4">• $1</li>');
+  
+  // Wrap in paragraph if not already
+  if (!formatted.startsWith('<')) {
+    formatted = `<p>${formatted}</p>`;
+  }
+  
+  return formatted;
+};
+
 export function ChatWidget() {
   const { language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
@@ -130,9 +154,10 @@ export function ChatWidget() {
                 <div className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center ${msg.role === 'user' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
                   {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                 </div>
-                <div className={`max-w-[75%] p-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-br-md' : 'bg-muted rounded-bl-md'}`}>
-                  {msg.content}
-                </div>
+                <div 
+                  className={`max-w-[75%] p-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-br-md' : 'bg-muted rounded-bl-md'}`}
+                  dangerouslySetInnerHTML={{ __html: msg.role === 'bot' ? formatMessage(msg.content) : msg.content }}
+                />
               </div>
             ))}
             {isLoading && (
