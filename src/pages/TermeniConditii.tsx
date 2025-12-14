@@ -11,7 +11,7 @@ const TermeniConditii = () => {
   ];
 
   return (
-    <MainLayout customBreadcrumbs={breadcrumbItems}>
+    <MainLayout breadcrumbItems={breadcrumbItems}>
       <Helmet>
         <title>{isRo ? "Termeni și Condiții | VAIAVITA" : "Terms and Conditions | VAIAVITA"}</title>
         <meta name="description" content={isRo 

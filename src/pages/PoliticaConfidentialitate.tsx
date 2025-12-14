@@ -11,7 +11,7 @@ const PoliticaConfidentialitate = () => {
   ];
 
   return (
-    <MainLayout customBreadcrumbs={breadcrumbItems}>
+    <MainLayout breadcrumbItems={breadcrumbItems}>
       <Helmet>
         <title>{isRo ? "Politica de Confidențialitate | VAIAVITA" : "Privacy Policy | VAIAVITA"}</title>
         <meta name="description" content={isRo 
