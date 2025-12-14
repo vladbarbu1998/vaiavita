@@ -127,6 +127,7 @@ const ProductPage = () => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [couponSentWithReview, setCouponSentWithReview] = useState(false);
   const [reviewImages, setReviewImages] = useState<File[]>([]);
   const [reviewImagePreviews, setReviewImagePreviews] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
@@ -495,10 +496,11 @@ const ProductPage = () => {
       
       if (error) throw error;
       
-      // Send review coupon email
+      // Send review coupon email and check if coupon was sent
+      let couponWasSent = false;
       if (newReview?.id) {
         try {
-          await supabase.functions.invoke('send-review-coupon', {
+          const couponResponse = await supabase.functions.invoke('send-review-coupon', {
             body: {
               review_id: newReview.id,
               customer_email: reviewForm.customer_email.trim().toLowerCase(),
@@ -507,11 +509,17 @@ const ProductPage = () => {
               language: language,
             }
           });
+          // Check if a new coupon was generated (coupon_code will be null if email already had one)
+          if (couponResponse?.data?.coupon_code) {
+            couponWasSent = true;
+          }
         } catch (couponError) {
           console.error('Error sending review coupon:', couponError);
           // Don't block review submission if coupon fails
         }
       }
+      
+      setCouponSentWithReview(couponWasSent);
       
       // Refresh reviews to show the new one immediately (use public_reviews view for unauthenticated users)
       const { data: reviewsData } = await supabase
@@ -1376,7 +1384,7 @@ const ProductPage = () => {
                     {/* Review Submitted Message */}
                     {reviewSubmitted && (
                       <div className="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className="flex items-center gap-3">
                           <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
                           <p className="text-green-700 dark:text-green-400 font-medium">
                             {language === 'ro' 
@@ -1384,11 +1392,13 @@ const ProductPage = () => {
                               : 'Thank you for your review! It has been published successfully.'}
                           </p>
                         </div>
-                        <p className="text-sm text-green-600/90 dark:text-green-400/90 ml-8">
-                          {language === 'ro'
-                            ? '🎁 Ai primit un cupon de 15% reducere pe email! Verifică inbox-ul.'
-                            : '🎁 You received a 15% discount coupon via email! Check your inbox.'}
-                        </p>
+                        {couponSentWithReview && (
+                          <p className="text-sm text-green-600/90 dark:text-green-400/90 ml-8 mt-2">
+                            {language === 'ro'
+                              ? '🎁 Ai primit un cupon de 15% reducere pe email! Verifică inbox-ul.'
+                              : '🎁 You received a 15% discount coupon via email! Check your inbox.'}
+                          </p>
+                        )}
                       </div>
                     )}
 
