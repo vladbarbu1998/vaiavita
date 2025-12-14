@@ -518,10 +518,18 @@ const Checkout = () => {
     setIsSubmitting(true);
 
     try {
-      const { data: order, error: orderError } = await supabase
+      // Generate order ID and order number client-side to avoid .select() which requires SELECT permission
+      const orderId = crypto.randomUUID();
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+      const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+      const orderNumber = `VV-${dateStr}-${randomNum}`;
+
+      const { error: orderError } = await supabase
         .from('orders')
         .insert([{
-          order_number: `VV-${Date.now()}`,
+          id: orderId,
+          order_number: orderNumber,
           customer_email: form.email,
           customer_phone: form.phone,
           customer_first_name: form.firstName,
@@ -554,9 +562,7 @@ const Checkout = () => {
           customer_notes: form.paymentMethod === 'card_at_locker' 
             ? `${form.notes ? form.notes + '\n' : ''}[Plată cu cardul la locker]`
             : (form.notes || null),
-        }])
-        .select()
-        .single();
+        }]);
 
       if (orderError) throw orderError;
 
@@ -568,7 +574,7 @@ const Checkout = () => {
       }
 
       const orderItems = items.map(item => ({
-        order_id: order.id,
+        order_id: orderId,
         product_id: item.id,
         product_name: language === 'ro' ? item.name : item.nameEn,
         quantity: item.quantity,
@@ -591,8 +597,8 @@ const Checkout = () => {
       if (shouldSyncToEcolet) {
         try {
           const ecoletPayload = {
-            orderId: order.id,
-            orderNumber: order.order_number,
+            orderId: orderId,
+            orderNumber: orderNumber,
             customerFirstName: form.firstName,
             customerLastName: form.lastName,
             customerEmail: form.email,
@@ -637,7 +643,7 @@ const Checkout = () => {
 
       if (form.paymentMethod === 'cash_on_delivery' || form.paymentMethod === 'card_at_locker') {
         clearCart();
-        navigate(`/comanda-confirmata?order=${order.order_number}`);
+        navigate(`/comanda-confirmata?order=${orderNumber}`);
       } else if (form.paymentMethod === 'stripe') {
         // Create Stripe checkout session
         const stripeItems = items
@@ -667,9 +673,9 @@ const Checkout = () => {
             items: stripeItems,
             customerEmail: form.email,
             customerName: `${form.firstName} ${form.lastName}`,
-            orderId: order.id,
-            orderNumber: order.order_number,
-            successUrl: `${window.location.origin}/comanda-confirmata?order=${order.order_number}&payment=success`,
+            orderId: orderId,
+            orderNumber: orderNumber,
+            successUrl: `${window.location.origin}/comanda-confirmata?order=${orderNumber}&payment=success`,
             cancelUrl: `${window.location.origin}/checkout?payment=cancelled`,
           },
         });
