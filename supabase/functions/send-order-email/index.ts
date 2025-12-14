@@ -11,36 +11,44 @@ const corsHeaders = {
 
 interface OrderEmailRequest {
   orderId: string;
-  emailType: 'confirmation' | 'processing' | 'ready_pickup' | 'shipped' | 'delivered' | 'cancelled' | 'payment_failed' | 'payment_reminder';
+  emailType:
+    | "confirmation"
+    | "processing"
+    | "ready_pickup"
+    | "shipped"
+    | "delivered"
+    | "cancelled"
+    | "payment_failed"
+    | "payment_reminder";
   awbNumber?: string;
   courierName?: string;
   cancellationReason?: string;
-  language?: 'ro' | 'en';
+  language?: "ro" | "en";
 }
 
-type Language = 'ro' | 'en';
+type Language = "ro" | "en";
 
 const EMAIL_SUBJECTS = {
   ro: {
-    confirmation: 'Comanda ta a fost plasată cu succes!',
-    processing: 'Comanda ta este în procesare',
-    ready_pickup: 'Comanda ta este pregătită pentru ridicare',
-    shipped: 'Comanda ta a fost expediată!',
-    delivered: 'Comanda ta a fost finalizată - Lasă o recenzie și primești 15% reducere!',
-    cancelled: 'Comanda ta a fost anulată',
-    payment_failed: 'Plata pentru comanda ta nu a putut fi procesată',
-    payment_reminder: 'Reminder: Finalizează plata pentru comanda ta',
+    confirmation: "Comanda ta a fost plasată cu succes!",
+    processing: "Comanda ta este în procesare",
+    ready_pickup: "Comanda ta este pregătită pentru ridicare",
+    shipped: "Comanda ta a fost expediată!",
+    delivered: "Comanda ta a fost finalizată - Lasă o recenzie și primești 15% reducere!",
+    cancelled: "Comanda ta a fost anulată",
+    payment_failed: "Plata pentru comanda ta nu a putut fi procesată",
+    payment_reminder: "Reminder: Finalizează plata pentru comanda ta",
   },
   en: {
-    confirmation: 'Your order has been placed successfully!',
-    processing: 'Your order is being processed',
-    ready_pickup: 'Your order is ready for pickup',
-    shipped: 'Your order has been shipped!',
-    delivered: 'Your order has been delivered - Leave a review and get 15% off!',
-    cancelled: 'Your order has been cancelled',
-    payment_failed: 'Payment for your order could not be processed',
-    payment_reminder: 'Reminder: Complete payment for your order',
-  }
+    confirmation: "Your order has been placed successfully!",
+    processing: "Your order is being processed",
+    ready_pickup: "Your order is ready for pickup",
+    shipped: "Your order has been shipped!",
+    delivered: "Your order has been delivered - Leave a review and get 15% off!",
+    cancelled: "Your order has been cancelled",
+    payment_failed: "Payment for your order could not be processed",
+    payment_reminder: "Reminder: Complete payment for your order",
+  },
 };
 
 // HTML Templates embedded as template strings
@@ -61,7 +69,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -203,7 +211,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
                 <tr>
                   <td><a href="https://vaiavita.ro" style="color: #999; font-size: 13px; text-decoration: none; padding: 0 12px;">Website</a></td>
@@ -239,7 +247,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -334,7 +342,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -361,7 +369,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -438,7 +446,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -465,7 +473,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -558,7 +566,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -585,7 +593,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -682,7 +690,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -709,7 +717,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -780,7 +788,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -807,7 +815,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -872,7 +880,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -899,7 +907,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -966,7 +974,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -976,7 +984,7 @@ const TEMPLATES = {
     </tr>
   </table>
 </body>
-</html>`
+</html>`,
   },
 
   en: {
@@ -995,7 +1003,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1137,7 +1145,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
                 <tr>
                   <td><a href="https://vaiavita.ro" style="color: #999; font-size: 13px; text-decoration: none; padding: 0 12px;">Website</a></td>
@@ -1173,7 +1181,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1268,7 +1276,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1295,7 +1303,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1372,7 +1380,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1399,7 +1407,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1492,7 +1500,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1519,7 +1527,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1616,7 +1624,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1643,7 +1651,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1714,7 +1722,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1741,7 +1749,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1806,7 +1814,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1833,7 +1841,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1900,7 +1908,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://vaiavita.ro/logo-white.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1910,8 +1918,8 @@ const TEMPLATES = {
     </tr>
   </table>
 </body>
-</html>`
-  }
+</html>`,
+  },
 };
 
 function formatPrice(price: number): string {
@@ -1920,29 +1928,29 @@ function formatPrice(price: number): string {
 
 function formatDate(dateString: string, lang: Language): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString(lang === 'ro' ? 'ro-RO' : 'en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  return date.toLocaleDateString(lang === "ro" ? "ro-RO" : "en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 function getDeliveryMethodText(method: string, lang: Language): string {
   const methods = {
     ro: {
-      shipping: 'Curier la adresă',
-      pickup: 'Ridicare personală din Brașov',
-      locker: 'EasyBox',
-      postal: 'Poșta Română'
+      shipping: "Curier la adresă",
+      pickup: "Ridicare personală din Brașov",
+      locker: "EasyBox",
+      postal: "Poșta Română",
     },
     en: {
-      shipping: 'Courier delivery',
-      pickup: 'Personal pickup in Brașov',
-      locker: 'EasyBox',
-      postal: 'Romanian Post'
-    }
+      shipping: "Courier delivery",
+      pickup: "Personal pickup in Brașov",
+      locker: "EasyBox",
+      postal: "Romanian Post",
+    },
   };
   return methods[lang][method as keyof typeof methods.ro] || method;
 }
@@ -1950,25 +1958,27 @@ function getDeliveryMethodText(method: string, lang: Language): string {
 function getPaymentMethodText(method: string, lang: Language): string {
   const methods = {
     ro: {
-      stripe: 'Card online',
-      cash_on_delivery: 'Ramburs la livrare'
+      stripe: "Card online",
+      cash_on_delivery: "Ramburs la livrare",
     },
     en: {
-      stripe: 'Online card',
-      cash_on_delivery: 'Cash on delivery'
-    }
+      stripe: "Online card",
+      cash_on_delivery: "Cash on delivery",
+    },
   };
   return methods[lang][method as keyof typeof methods.ro] || method;
 }
 
 function getPaymentStatusText(status: string, lang: Language): string {
-  if (status === 'paid') return lang === 'ro' ? 'Plătită' : 'Paid';
-  if (status === 'pending') return lang === 'ro' ? 'În așteptare' : 'Pending';
+  if (status === "paid") return lang === "ro" ? "Plătită" : "Paid";
+  if (status === "pending") return lang === "ro" ? "În așteptare" : "Pending";
   return status;
 }
 
 function generateProductsHtml(orderItems: any[], lang: Language): string {
-  return orderItems.map(item => `
+  return orderItems
+    .map(
+      (item) => `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8faf9; border-radius: 12px; margin-bottom: 12px;">
       <tr>
         <td style="padding: 18px;">
@@ -1976,7 +1986,7 @@ function generateProductsHtml(orderItems: any[], lang: Language): string {
             <tr>
               <td style="vertical-align: middle;">
                 <span style="font-size: 15px; font-weight: 600; color: #222; display: block;">${item.product_name}</span>
-                <span style="font-size: 13px; color: #888;">${lang === 'ro' ? 'Cantitate' : 'Quantity'}: ${item.quantity}</span>
+                <span style="font-size: 13px; color: #888;">${lang === "ro" ? "Cantitate" : "Quantity"}: ${item.quantity}</span>
               </td>
               <td align="right" style="vertical-align: middle;">
                 <span style="font-size: 17px; font-weight: 700; color: #025951;">${formatPrice(item.total_price)} lei</span>
@@ -1986,11 +1996,15 @@ function generateProductsHtml(orderItems: any[], lang: Language): string {
         </td>
       </tr>
     </table>
-  `).join('');
+  `,
+    )
+    .join("");
 }
 
 function generateDeliveredProductsHtml(orderItems: any[]): string {
-  return orderItems.map(item => `
+  return orderItems
+    .map(
+      (item) => `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 16px;">
       <tr>
         <td style="padding-left: 14px;">
@@ -2002,13 +2016,15 @@ function generateDeliveredProductsHtml(orderItems: any[]): string {
         </td>
       </tr>
     </table>
-  `).join('');
+  `,
+    )
+    .join("");
 }
 
 function getDeliveryAddress(order: any): string {
-  if (!order.shipping_address) return '';
+  if (!order.shipping_address) return "";
   const addr = order.shipping_address;
-  return `${addr.address || ''}${addr.apartment ? ', ' + addr.apartment : ''}, ${addr.city || ''}, ${addr.county || ''} ${addr.postalCode || ''}, ${addr.country || 'România'}`;
+  return `${addr.address || ""}${addr.apartment ? ", " + addr.apartment : ""}, ${addr.city || ""}, ${addr.county || ""} ${addr.postalCode || ""}, ${addr.country || "România"}`;
 }
 
 function replaceTemplatePlaceholders(
@@ -2020,20 +2036,20 @@ function replaceTemplatePlaceholders(
     awbNumber?: string;
     courierName?: string;
     cancellationReason?: string;
-  } = {}
+  } = {},
 ): string {
   const customerName = `${order.customer_first_name} ${order.customer_last_name}`;
   const deliveryAddress = getDeliveryAddress(order);
-  const shippingCost = order.shipping_cost === 0 
-    ? (lang === 'ro' ? 'GRATUIT' : 'FREE') 
-    : `${formatPrice(order.shipping_cost || 0)} lei`;
-  
-  const discountRow = order.discount > 0 
-    ? `<tr>
-        <td style="font-size: 14px; color: #16a34a; padding: 6px 0;">${lang === 'ro' ? 'Discount' : 'Discount'}</td>
+  const shippingCost =
+    order.shipping_cost === 0 ? (lang === "ro" ? "GRATUIT" : "FREE") : `${formatPrice(order.shipping_cost || 0)} lei`;
+
+  const discountRow =
+    order.discount > 0
+      ? `<tr>
+        <td style="font-size: 14px; color: #16a34a; padding: 6px 0;">${lang === "ro" ? "Discount" : "Discount"}</td>
         <td align="right" style="font-size: 14px; color: #16a34a; padding: 6px 0;">-${formatPrice(order.discount)} lei</td>
       </tr>`
-    : '';
+      : "";
 
   let html = template
     .replace(/\{\{customer_name\}\}/g, customerName)
@@ -2046,23 +2062,30 @@ function replaceTemplatePlaceholders(
     .replace(/\{\{delivery_method\}\}/g, getDeliveryMethodText(order.delivery_method, lang))
     .replace(/\{\{delivery_address\}\}/g, deliveryAddress)
     .replace(/\{\{payment_method\}\}/g, getPaymentMethodText(order.payment_method, lang))
-    .replace(/\{\{payment_status\}\}/g, getPaymentStatusText(order.payment_status || 'pending', lang))
+    .replace(/\{\{payment_status\}\}/g, getPaymentStatusText(order.payment_status || "pending", lang))
     .replace(/\{\{customer_email\}\}/g, order.customer_email)
     .replace(/\{\{customer_phone\}\}/g, order.customer_phone)
-    .replace(/\{\{pickup_location\}\}/g, 'VAIAVITA')
-    .replace(/\{\{pickup_address\}\}/g, 'Strada Iuliu Maniu 60, Brașov, 500091')
-    .replace(/\{\{awb_number\}\}/g, options.awbNumber || '')
-    .replace(/\{\{courier_name\}\}/g, options.courierName || '')
-    .replace(/\{\{tracking_url\}\}/g, order.tracking_url || '#')
-    .replace(/\{\{cancellation_reason\}\}/g, options.cancellationReason || (lang === 'ro' ? 'Motiv nespecificat' : 'Reason not specified'))
+    .replace(/\{\{pickup_location\}\}/g, "VAIAVITA")
+    .replace(/\{\{pickup_address\}\}/g, "Strada Iuliu Maniu 60, Brașov, 500091")
+    .replace(/\{\{awb_number\}\}/g, options.awbNumber || "")
+    .replace(/\{\{courier_name\}\}/g, options.courierName || "")
+    .replace(/\{\{tracking_url\}\}/g, order.tracking_url || "#")
+    .replace(
+      /\{\{cancellation_reason\}\}/g,
+      options.cancellationReason || (lang === "ro" ? "Motiv nespecificat" : "Reason not specified"),
+    )
     .replace(/\{\{retry_url\}\}/g, `https://vaiavita.ro/checkout?order=${order.id}`)
-    .replace(/\{\{review_url\}\}/g, `https://vaiavita.ro/produse/${orderItems[0]?.product_id ? 'pasta-dent-tastic' : ''}#reviews`);
+    .replace(
+      /\{\{review_url\}\}/g,
+      `https://vaiavita.ro/produse/${orderItems[0]?.product_id ? "pasta-dent-tastic" : ""}#reviews`,
+    );
 
   // Replace products HTML
-  if (template.includes('{{products_html}}')) {
-    const productsHtml = template.includes('Rezumat comandă') || template.includes('Order Summary')
-      ? generateDeliveredProductsHtml(orderItems)
-      : generateProductsHtml(orderItems, lang);
+  if (template.includes("{{products_html}}")) {
+    const productsHtml =
+      template.includes("Rezumat comandă") || template.includes("Order Summary")
+        ? generateDeliveredProductsHtml(orderItems)
+        : generateProductsHtml(orderItems, lang);
     html = html.replace(/\{\{products_html\}\}/g, productsHtml);
   }
 
@@ -2078,11 +2101,11 @@ function generateEmail(
     awbNumber?: string;
     courierName?: string;
     cancellationReason?: string;
-  } = {}
+  } = {},
 ): string {
   const templates = TEMPLATES[lang];
   const template = templates[emailType as keyof typeof templates];
-  
+
   if (!template) {
     console.error(`Template not found for type: ${emailType}, lang: ${lang}`);
     throw new Error(`Template not found for type: ${emailType}`);
@@ -2099,20 +2122,17 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { orderId, emailType, awbNumber, courierName, cancellationReason, language } = await req.json() as OrderEmailRequest;
+    const { orderId, emailType, awbNumber, courierName, cancellationReason, language } =
+      (await req.json()) as OrderEmailRequest;
 
-    console.log(`Processing ${emailType} email for order ${orderId}, language: ${language || 'auto'}`);
+    console.log(`Processing ${emailType} email for order ${orderId}, language: ${language || "auto"}`);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Fetch order details
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("id", orderId)
-      .single();
+    const { data: order, error: orderError } = await supabase.from("orders").select("*").eq("id", orderId).single();
 
     if (orderError || !order) {
       console.error("Order not found:", orderError);
@@ -2131,18 +2151,18 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Determine language: use provided language, or detect from country
-    let lang: Language = language || 'ro';
+    let lang: Language = language || "ro";
     if (!language && order.shipping_address?.countryCode) {
-      lang = order.shipping_address.countryCode === 'RO' ? 'ro' : 'en';
+      lang = order.shipping_address.countryCode === "RO" ? "ro" : "en";
     }
 
-    console.log(`Using language: ${lang} for order to ${order.shipping_address?.countryCode || 'RO'}`);
+    console.log(`Using language: ${lang} for order to ${order.shipping_address?.countryCode || "RO"}`);
 
     // Generate email HTML
     const emailHtml = generateEmail(emailType, order, orderItems || [], lang, {
       awbNumber,
       courierName,
-      cancellationReason
+      cancellationReason,
     });
 
     // Get subject
@@ -2161,44 +2181,29 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Email sent successfully:", emailResponse);
 
     // Update order with email sent timestamp for certain types
-    if (emailType === 'shipped') {
-      await supabase
-        .from("orders")
-        .update({ shipped_email_sent_at: new Date().toISOString() })
-        .eq("id", orderId);
-    } else if (emailType === 'cancelled') {
-      await supabase
-        .from("orders")
-        .update({ cancelled_email_sent_at: new Date().toISOString() })
-        .eq("id", orderId);
-    } else if (emailType === 'payment_failed') {
+    if (emailType === "shipped") {
+      await supabase.from("orders").update({ shipped_email_sent_at: new Date().toISOString() }).eq("id", orderId);
+    } else if (emailType === "cancelled") {
+      await supabase.from("orders").update({ cancelled_email_sent_at: new Date().toISOString() }).eq("id", orderId);
+    } else if (emailType === "payment_failed") {
       await supabase
         .from("orders")
         .update({ payment_failed_email_sent_at: new Date().toISOString() })
         .eq("id", orderId);
-    } else if (emailType === 'payment_reminder') {
-      await supabase
-        .from("orders")
-        .update({ payment_reminder_sent_at: new Date().toISOString() })
-        .eq("id", orderId);
+    } else if (emailType === "payment_reminder") {
+      await supabase.from("orders").update({ payment_reminder_sent_at: new Date().toISOString() }).eq("id", orderId);
     }
 
-    return new Response(
-      JSON.stringify({ success: true, emailId: (emailResponse as any).id || 'sent' }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
+    return new Response(JSON.stringify({ success: true, emailId: (emailResponse as any).id || "sent" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   } catch (error: any) {
     console.error("Error in send-order-email function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   }
 };
 
