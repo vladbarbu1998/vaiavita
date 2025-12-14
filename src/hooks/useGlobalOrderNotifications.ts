@@ -91,6 +91,11 @@ export const useGlobalOrderNotifications = () => {
 // Global singleton subscription for entire admin dashboard
 let globalSubscription: ReturnType<typeof supabase.channel> | null = null;
 let subscriptionCount = 0;
+let globalCallbacks: Array<{
+  onNewOrder?: (order: Order) => void;
+  onOrderUpdate?: (order: Order, oldOrder: Partial<Order>) => void;
+  onOrderDelete?: (orderId: string) => void;
+}> = [];
 
 export const useGlobalOrdersSubscription = (
   onNewOrder?: (order: Order) => void,
@@ -100,19 +105,34 @@ export const useGlobalOrdersSubscription = (
   const [isConnected, setIsConnected] = useState(false);
   const { soundEnabled, setSoundEnabled, playNotificationSound, testSound } = useGlobalOrderNotifications();
   const callbacksRef = useRef({ onNewOrder, onOrderUpdate, onOrderDelete });
+  const callbackIndexRef = useRef<number>(-1);
+  
+  // Keep ref for sound function to avoid subscription recreation
+  const playNotificationSoundRef = useRef(playNotificationSound);
+  playNotificationSoundRef.current = playNotificationSound;
 
   // Update callbacks ref
   useEffect(() => {
     callbacksRef.current = { onNewOrder, onOrderUpdate, onOrderDelete };
+    // Update in global array too
+    if (callbackIndexRef.current >= 0) {
+      globalCallbacks[callbackIndexRef.current] = callbacksRef.current;
+    }
   }, [onNewOrder, onOrderUpdate, onOrderDelete]);
 
   useEffect(() => {
     subscriptionCount++;
+    
+    // Register callbacks
+    callbackIndexRef.current = globalCallbacks.length;
+    globalCallbacks.push(callbacksRef.current);
+    
+    console.log('[GlobalOrdersSubscription] Component mounted, count:', subscriptionCount);
 
     if (!globalSubscription) {
-      console.log('Creating global orders subscription');
+      console.log('[GlobalOrdersSubscription] Creating new global subscription');
       globalSubscription = supabase
-        .channel('global-orders-realtime')
+        .channel('global-orders-realtime-singleton')
         .on(
           'postgres_changes',
           {
@@ -121,12 +141,16 @@ export const useGlobalOrdersSubscription = (
             table: 'orders'
           },
           (payload) => {
-            console.log('Global realtime order update:', payload);
+            console.log('[GlobalOrdersSubscription] Received event:', payload.eventType, payload);
             
             if (payload.eventType === 'INSERT') {
               const newOrder = payload.new as Order;
-              // Always show toast for new orders, even if not on orders page
-              playNotificationSound('new_order');
+              
+              // Notify all registered callbacks
+              globalCallbacks.forEach(cb => cb.onNewOrder?.(newOrder));
+              
+              // Always show toast for new orders
+              playNotificationSoundRef.current('new_order');
               toast.success(`🔔 Comandă nouă: ${newOrder.order_number}`, {
                 duration: 8000,
                 description: `${newOrder.customer_first_name} ${newOrder.customer_last_name} - ${Number(newOrder.total).toFixed(2)} lei`
@@ -135,36 +159,65 @@ export const useGlobalOrdersSubscription = (
               const updatedOrder = payload.new as Order;
               const oldOrder = payload.old as Partial<Order>;
               
+              // Notify all registered callbacks
+              globalCallbacks.forEach(cb => cb.onOrderUpdate?.(updatedOrder, oldOrder));
+              
               // Check if payment was just confirmed
               if (oldOrder.payment_status === 'pending' && updatedOrder.payment_status === 'paid') {
-                playNotificationSound('payment_confirmed');
+                playNotificationSoundRef.current('payment_confirmed');
                 toast.success(`💳 Plată confirmată: ${updatedOrder.order_number}`, {
                   duration: 8000,
                   description: `${updatedOrder.customer_first_name} ${updatedOrder.customer_last_name} - ${Number(updatedOrder.total).toFixed(2)} lei`
                 });
               }
+            } else if (payload.eventType === 'DELETE') {
+              const deletedId = payload.old?.id as string;
+              // Notify all registered callbacks
+              globalCallbacks.forEach(cb => cb.onOrderDelete?.(deletedId));
             }
           }
         )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'order_items'
+          },
+          (payload) => {
+            console.log('[GlobalOrdersSubscription] Order items insert:', payload);
+          }
+        )
         .subscribe((status) => {
-          console.log('Global subscription status:', status);
+          console.log('[GlobalOrdersSubscription] Status:', status);
           setIsConnected(status === 'SUBSCRIBED');
         });
     } else {
       // Already subscribed
+      console.log('[GlobalOrdersSubscription] Reusing existing subscription');
       setIsConnected(true);
     }
 
     return () => {
       subscriptionCount--;
+      
+      // Remove from callbacks array
+      if (callbackIndexRef.current >= 0) {
+        globalCallbacks.splice(callbackIndexRef.current, 1);
+        callbackIndexRef.current = -1;
+      }
+      
+      console.log('[GlobalOrdersSubscription] Component unmounting, remaining count:', subscriptionCount);
+      
       if (subscriptionCount === 0 && globalSubscription) {
-        console.log('Removing global orders subscription');
+        console.log('[GlobalOrdersSubscription] Removing global subscription');
         supabase.removeChannel(globalSubscription);
         globalSubscription = null;
+        globalCallbacks = [];
         setIsConnected(false);
       }
     };
-  }, [playNotificationSound]);
+  }, []);
 
   return {
     isConnected,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,6 +62,7 @@ import {
   Monitor
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useGlobalOrdersSubscription } from '@/hooks/useGlobalOrderNotifications';
 
 interface Order {
   id: string;
@@ -180,11 +181,35 @@ const AdminOrders = () => {
   const [awbFetchError, setAwbFetchError] = useState<string | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
   const [sendCancelEmail, setSendCancelEmail] = useState(true);
-  const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
-  const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Callbacks for realtime updates
+  const handleNewOrder = useCallback((newOrder: Order) => {
+    console.log('[AdminOrders] New order received via global subscription:', newOrder.order_number);
+    setOrders(prev => {
+      // Avoid duplicates
+      if (prev.some(o => o.id === newOrder.id)) return prev;
+      return [newOrder, ...prev];
+    });
+  }, []);
+
+  const handleOrderUpdate = useCallback((updatedOrder: Order) => {
+    console.log('[AdminOrders] Order updated via global subscription:', updatedOrder.order_number);
+    setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
+  }, []);
+
+  const handleOrderDelete = useCallback((orderId: string) => {
+    console.log('[AdminOrders] Order deleted via global subscription:', orderId);
+    setOrders(prev => prev.filter(o => o.id !== orderId));
+  }, []);
+
+  // Use global realtime subscription with callbacks
+  const { isConnected: isRealtimeConnected, soundEnabled, setSoundEnabled, testSound } = useGlobalOrdersSubscription(
+    handleNewOrder,
+    handleOrderUpdate,
+    handleOrderDelete
+  );
 
   const toggleSelectAll = () => {
     if (selectedIds.size === filteredOrders.length) {
@@ -228,126 +253,10 @@ const AdminOrders = () => {
     setBulkDeleting(false);
   };
 
-  // Initialize audio context on first user interaction
-  const getAudioContext = () => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    return audioContextRef.current;
-  };
-
-  // Play notification sound
-  const playNotificationSound = (type: 'new_order' | 'payment_confirmed') => {
-    if (!soundEnabled) return;
-    
-    try {
-      const audioContext = getAudioContext();
-      
-      if (type === 'new_order') {
-        // Play 3 ascending tones for new order
-        [800, 1000, 1200].forEach((freq, i) => {
-          const osc = audioContext.createOscillator();
-          const gain = audioContext.createGain();
-          osc.connect(gain);
-          gain.connect(audioContext.destination);
-          osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.12);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.12 + 0.15);
-          osc.start(audioContext.currentTime + i * 0.12);
-          osc.stop(audioContext.currentTime + i * 0.12 + 0.15);
-        });
-      } else {
-        // Play chord for payment confirmed
-        [523, 659, 784].forEach((freq, i) => {
-          const osc = audioContext.createOscillator();
-          const gain = audioContext.createGain();
-          osc.connect(gain);
-          gain.connect(audioContext.destination);
-          osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0.2, audioContext.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-          osc.start(audioContext.currentTime);
-          osc.stop(audioContext.currentTime + 0.5);
-        });
-      }
-    } catch (error) {
-      console.log('Could not play notification sound:', error);
-    }
-  };
-
-  // Test sound button handler
-  const testSound = (type: 'new_order' | 'payment_confirmed') => {
-    playNotificationSound(type);
-    toast.info(type === 'new_order' ? '🔔 Test: Comandă nouă' : '💳 Test: Plată confirmată');
-  };
-
+  // Fetch initial data
   useEffect(() => {
+    console.log('[AdminOrders] Fetching initial data...');
     fetchData();
-
-    // Setup realtime subscription for orders
-    const ordersChannel = supabase
-      .channel('admin-orders-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'orders'
-        },
-        (payload) => {
-          console.log('Realtime order update:', payload);
-          if (payload.eventType === 'INSERT') {
-            const newOrder = payload.new as Order;
-            setOrders(prev => [newOrder, ...prev]);
-            playNotificationSound('new_order');
-            toast.success(`🔔 Comandă nouă: ${newOrder.order_number}`, {
-              duration: 8000,
-              description: `${newOrder.customer_first_name} ${newOrder.customer_last_name} - ${Number(newOrder.total).toFixed(2)} lei`
-            });
-          } else if (payload.eventType === 'UPDATE') {
-            const updatedOrder = payload.new as Order;
-            const oldOrder = payload.old as Partial<Order>;
-            
-            setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
-            
-            // Check if payment was just confirmed (Stripe webhook updated the order)
-            if (oldOrder.payment_status === 'pending' && updatedOrder.payment_status === 'paid') {
-              playNotificationSound('payment_confirmed');
-              toast.success(`💳 Plată confirmată: ${updatedOrder.order_number}`, {
-                duration: 8000,
-                description: `${updatedOrder.customer_first_name} ${updatedOrder.customer_last_name} - ${Number(updatedOrder.total).toFixed(2)} lei`
-              });
-            }
-          } else if (payload.eventType === 'DELETE') {
-            setOrders(prev => prev.filter(o => o.id !== payload.old.id));
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'order_items'
-        },
-        (payload) => {
-          console.log('Realtime order_items update:', payload);
-          const newItem = payload.new as OrderItem & { order_id: string };
-          setOrderItemsMap(prev => ({
-            ...prev,
-            [newItem.order_id]: [...(prev[newItem.order_id] || []), newItem]
-          }));
-        }
-      )
-      .subscribe((status) => {
-        console.log('Realtime subscription status:', status);
-        setIsRealtimeConnected(status === 'SUBSCRIBED');
-      });
-
-    return () => {
-      supabase.removeChannel(ordersChannel);
-      setIsRealtimeConnected(false);
-    };
   }, []);
 
   const fetchData = async () => {
