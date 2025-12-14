@@ -393,7 +393,7 @@ const AdminCoupons = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap items-center">
         <Button 
           variant={filter === 'all' ? 'default' : 'outline'} 
           size="sm"
@@ -416,6 +416,18 @@ const AdminCoupons = () => {
         >
           Cupoane generale ({coupons.filter(c => c.review_id === null).length})
         </Button>
+        {selectedIds.size > 0 && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={bulkDelete}
+            disabled={bulkDeleting}
+            className="gap-2 ml-auto"
+          >
+            {bulkDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            Șterge ({selectedIds.size})
+          </Button>
+        )}
       </div>
 
       {/* Info Box */}
@@ -429,26 +441,6 @@ const AdminCoupons = () => {
           <li>• <strong>Nr. max utilizări</strong> - Câte ori poate fi folosit cuponul în total (nelimitat dacă e gol)</li>
         </ul>
       </div>
-
-      {/* Bulk Delete Button */}
-      {selectedIds.size > 0 && (
-        <div className="flex items-center gap-4 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
-          <Checkbox
-            checked={selectedIds.size === filteredCoupons.length}
-            onCheckedChange={toggleSelectAll}
-          />
-          <span className="text-sm font-medium">{selectedIds.size} cupoane selectate</span>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={bulkDelete}
-            disabled={bulkDeleting}
-          >
-            {bulkDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
-            Șterge ({selectedIds.size})
-          </Button>
-        </div>
-      )}
 
       {/* Coupons List */}
       <div className="space-y-4">

@@ -230,9 +230,15 @@ export function ChatWidget() {
           {/* Header */}
           <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-                <Bot className="w-5 h-5" />
-              </div>
+              <img 
+                src="/lovable-uploads/logo-light.png" 
+                alt="VAIAVITA" 
+                className="h-8 w-auto"
+                onError={(e) => {
+                  // Fallback to text if logo fails to load
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
               <div>
                 <h3 className="font-display font-semibold">VAIAVITA</h3>
                 <p className="text-xs opacity-80">{language === 'ro' ? 'Asistent virtual' : 'Virtual assistant'}</p>
