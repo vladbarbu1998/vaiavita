@@ -69,7 +69,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -211,7 +211,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
                 <tr>
                   <td><a href="https://vaiavita.ro" style="color: #999; font-size: 13px; text-decoration: none; padding: 0 12px;">Website</a></td>
@@ -247,7 +247,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -342,7 +342,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -369,7 +369,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -446,7 +446,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -473,7 +473,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -566,7 +566,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -593,7 +593,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -690,7 +690,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -717,7 +717,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -788,7 +788,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -815,7 +815,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -880,7 +880,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -907,7 +907,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -974,7 +974,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1003,7 +1003,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1145,7 +1145,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 20px auto;">
                 <tr>
                   <td><a href="https://vaiavita.ro" style="color: #999; font-size: 13px; text-decoration: none; padding: 0 12px;">Website</a></td>
@@ -1181,7 +1181,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1276,7 +1276,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1303,7 +1303,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1380,7 +1380,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1407,7 +1407,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1500,7 +1500,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1527,7 +1527,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1624,7 +1624,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1651,7 +1651,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1722,7 +1722,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1749,7 +1749,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1814,7 +1814,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
@@ -1841,7 +1841,7 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1908,7 +1908,7 @@ const TEMPLATES = {
           <!-- FOOTER -->
           <tr>
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2024 VAIAVITA</p>
             </td>
