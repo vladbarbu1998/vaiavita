@@ -5,46 +5,110 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useLanguage } from '@/context/LanguageContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
 
 const Contact = () => {
   const { language } = useLanguage();
+  const isRo = language === 'ro';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     email: '',
+    subject: '',
     message: '',
     gdprConsent: false,
   });
 
+  const breadcrumbItems = [
+    { label: isRo ? 'Contact' : 'Contact', labelEn: 'Contact', href: '/contact' }
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!formData.gdprConsent) {
-      toast({
-        title: language === 'ro' ? 'Eroare' : 'Error',
-        description: language === 'ro' ? 'Trebuie să acceptați politica de confidențialitate.' : 'You must accept the privacy policy.',
-        variant: 'destructive',
-      });
+      toast.error(isRo ? 'Trebuie să acceptați politica de confidențialitate.' : 'You must accept the privacy policy.');
+      return;
+    }
+
+    // Basic validation
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      toast.error(isRo ? 'Completați toate câmpurile obligatorii.' : 'Please fill in all required fields.');
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error(isRo ? 'Adresa de email nu este validă.' : 'Invalid email address.');
       return;
     }
 
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast({
-      title: language === 'ro' ? 'Mesaj trimis!' : 'Message sent!',
-      description: language === 'ro' ? 'Vă vom contacta în cel mai scurt timp.' : 'We will contact you shortly.',
-    });
-    
-    setFormData({ name: '', phone: '', email: '', message: '', gdprConsent: false });
-    setIsSubmitting(false);
+
+    try {
+      // Save to database
+      const { error: dbError } = await supabase
+        .from('contact_submissions')
+        .insert({
+          name: formData.name.trim(),
+          email: formData.email.trim().toLowerCase(),
+          phone: formData.phone.trim() || null,
+          subject: formData.subject.trim() || null,
+          message: formData.message.trim(),
+          language: language,
+        });
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error('Failed to save submission');
+      }
+
+      // Send emails via edge function
+      const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
+        body: {
+          name: formData.name.trim(),
+          email: formData.email.trim().toLowerCase(),
+          phone: formData.phone.trim() || null,
+          subject: formData.subject.trim() || null,
+          message: formData.message.trim(),
+          language: language,
+        }
+      });
+
+      if (emailError) {
+        console.error('Email error:', emailError);
+        // Don't fail the submission if email fails - the data is already saved
+      }
+
+      toast.success(isRo ? 'Mesaj trimis cu succes!' : 'Message sent successfully!', {
+        description: isRo ? 'Vă vom contacta în cel mai scurt timp.' : 'We will contact you shortly.'
+      });
+      
+      setFormData({ name: '', phone: '', email: '', subject: '', message: '', gdprConsent: false });
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast.error(isRo ? 'A apărut o eroare. Încercați din nou.' : 'An error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <MainLayout>
+    <MainLayout breadcrumbItems={breadcrumbItems}>
+      <Helmet>
+        <title>{isRo ? 'Contact | VAIAVITA' : 'Contact | VAIAVITA'}</title>
+        <meta name="description" content={isRo 
+          ? 'Contactează-ne pentru întrebări, sugestii sau colaborări. VAIAVITA - Vitalitate, Energie și Echilibru.' 
+          : 'Contact us for questions, suggestions or collaborations. VAIAVITA - Vitality, Energy and Balance.'
+        } />
+      </Helmet>
+
       {/* Hero Banner */}
       <section className="gradient-animated py-16 md:py-24">
         <div className="container-custom">
@@ -61,10 +125,10 @@ const Contact = () => {
             <div className="space-y-8 opacity-0 animate-fade-up">
               <div>
                 <h2 className="font-display text-3xl tracking-wide mb-4">
-                  {language === 'ro' ? 'Contactează-ne' : 'Contact us'}
+                  {isRo ? 'Contactează-ne' : 'Contact us'}
                 </h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  {language === 'ro' 
+                  {isRo 
                     ? 'Dacă ai întrebări, sugestii sau vrei să colaborezi cu noi, nu ezita să ne contactezi! Suntem aici să îți oferim suport și să răspundem rapid la orice solicitare. Fie că ai nevoie de informații suplimentare sau vrei să descoperi mai multe despre serviciile noastre, te așteptăm să ne scrii.'
                     : 'If you have questions, suggestions or want to collaborate with us, don\'t hesitate to contact us! We are here to offer you support and respond quickly to any request. Whether you need additional information or want to discover more about our services, we are waiting for you to write to us.'}
                 </p>
@@ -76,7 +140,7 @@ const Contact = () => {
                     <Phone className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-medium mb-1">{language === 'ro' ? 'Telefon' : 'Phone'}</h3>
+                    <h3 className="font-medium mb-1">{isRo ? 'Telefon' : 'Phone'}</h3>
                     <a href="tel:0732111117" className="text-primary hover:underline">
                       0732 111 117
                     </a>
@@ -88,7 +152,7 @@ const Contact = () => {
                     <Mail className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-medium mb-1">{language === 'ro' ? 'Adresă de mail' : 'Email address'}</h3>
+                    <h3 className="font-medium mb-1">{isRo ? 'Adresă de mail' : 'Email address'}</h3>
                     <a href="mailto:office@vaiavita.com" className="text-primary hover:underline">
                       office@vaiavita.com
                     </a>
@@ -100,7 +164,7 @@ const Contact = () => {
                     <MapPin className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-medium mb-1">{language === 'ro' ? 'Informații companie' : 'Company information'}</h3>
+                    <h3 className="font-medium mb-1">{isRo ? 'Informații companie' : 'Company information'}</h3>
                     <div className="text-muted-foreground text-sm space-y-1">
                       <p>VAIAVITA S.R.L.</p>
                       <p>CUI 49945945</p>
@@ -117,50 +181,66 @@ const Contact = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      {language === 'ro' ? 'Nume' : 'Name'} *
+                      {isRo ? 'Nume' : 'Name'} *
                     </label>
                     <Input
                       required
+                      maxLength={100}
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder={language === 'ro' ? 'Numele dumneavoastră' : 'Your name'}
+                      placeholder={isRo ? 'Numele dumneavoastră' : 'Your name'}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      {language === 'ro' ? 'Telefon' : 'Phone'}
+                      {isRo ? 'Telefon' : 'Phone'}
                     </label>
                     <Input
                       type="tel"
+                      maxLength={20}
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder={language === 'ro' ? 'Numărul de telefon' : 'Phone number'}
+                      placeholder={isRo ? 'Numărul de telefon' : 'Phone number'}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      {language === 'ro' ? 'Adresă de mail' : 'Email address'} *
+                      {isRo ? 'Adresă de mail' : 'Email address'} *
                     </label>
                     <Input
                       type="email"
                       required
+                      maxLength={255}
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder={language === 'ro' ? 'email@exemplu.com' : 'email@example.com'}
+                      placeholder={isRo ? 'email@exemplu.com' : 'email@example.com'}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      {language === 'ro' ? 'Mesaj' : 'Message'} *
+                      {isRo ? 'Subiect' : 'Subject'}
+                    </label>
+                    <Input
+                      maxLength={200}
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      placeholder={isRo ? 'Subiectul mesajului' : 'Message subject'}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      {isRo ? 'Mesaj' : 'Message'} *
                     </label>
                     <Textarea
                       required
+                      maxLength={2000}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder={language === 'ro' ? 'Scrieți mesajul dumneavoastră aici...' : 'Write your message here...'}
+                      placeholder={isRo ? 'Scrieți mesajul dumneavoastră aici...' : 'Write your message here...'}
                       rows={5}
                     />
                   </div>
@@ -173,9 +253,10 @@ const Contact = () => {
                     onCheckedChange={(checked) => setFormData({ ...formData, gdprConsent: checked as boolean })}
                   />
                   <label htmlFor="gdpr" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
-                    {language === 'ro' 
-                      ? 'Am citit și sunt de acord cu Politica de confidențialitate. Datele personale vor fi prelucrate conform GDPR.'
-                      : 'I have read and agree to the Privacy Policy. Personal data will be processed in accordance with GDPR.'}
+                    {isRo 
+                      ? <>Am citit și sunt de acord cu <Link to="/politica-confidentialitate" className="text-primary hover:underline">Politica de confidențialitate</Link>. Datele personale vor fi prelucrate conform GDPR.</>
+                      : <>I have read and agree to the <Link to="/politica-confidentialitate" className="text-primary hover:underline">Privacy Policy</Link>. Personal data will be processed in accordance with GDPR.</>
+                    }
                   </label>
                 </div>
 
@@ -183,12 +264,12 @@ const Contact = () => {
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
                       <span className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                      {language === 'ro' ? 'Se trimite...' : 'Sending...'}
+                      {isRo ? 'Se trimite...' : 'Sending...'}
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
                       <Send className="w-4 h-4" />
-                      {language === 'ro' ? 'Trimite' : 'Send'}
+                      {isRo ? 'Trimite' : 'Send'}
                     </span>
                   )}
                 </Button>

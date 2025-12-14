@@ -31,7 +31,8 @@ import {
   Coins,
   Home,
   Info,
-  Phone
+  Phone,
+  Mail
 } from 'lucide-react';
 import logoLight from '@/assets/logo-light.png';
 import logoDark from '@/assets/logo-dark.png';
@@ -146,6 +147,7 @@ const AdminDashboard = () => {
     { path: '/admin/customers', icon: Users, label: 'Clienți' },
     { path: '/admin/reviews', icon: Star, label: 'Recenzii' },
     { path: '/admin/coupons', icon: Tag, label: 'Cupoane' },
+    { path: '/admin/inbox', icon: Mail, label: 'Inbox' },
     { path: '/admin/settings', icon: Settings, label: 'Setări' },
   ];
 
