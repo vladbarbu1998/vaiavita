@@ -59,8 +59,14 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="${logoUrl}" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 20px auto;" />
-              <h1 style="color: #fff; font-size: 24px; font-weight: 700; margin: 0;">📬 Mesaj nou de contact</h1>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                <tr>
+                  <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
+                    <span style="color: #fff; font-size: 30px; line-height: 60px;">📬</span>
+                  </td>
+                </tr>
+              </table>
+              <h1 style="color: #fff; font-size: 24px; font-weight: 700; margin: 20px 0 0 0;">Mesaj nou de contact</h1>
             </td>
           </tr>
 
@@ -99,7 +105,9 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- FOOTER -->
           <tr>
             <td style="background: #1a1a1a; border-radius: 0 0 24px 24px; padding: 24px 40px; text-align: center;">
+              <img src="${logoUrl}" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 16px auto; opacity: 0.9;" />
               <p style="font-size: 12px; color: #888; margin: 0;">Acest email a fost generat automat de sistemul VAIAVITA</p>
+              <p style="font-size: 11px; color: #666; margin: 10px 0 0 0;">© 2025 VAIAVITA</p>
             </td>
           </tr>
         </table>
@@ -126,8 +134,14 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="${logoUrl}" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 20px auto;" />
-              <h1 style="color: #fff; font-size: 24px; font-weight: 700; margin: 0;">✉️ Am primit mesajul tău!</h1>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                <tr>
+                  <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
+                    <span style="color: #fff; font-size: 30px; line-height: 60px;">✉️</span>
+                  </td>
+                </tr>
+              </table>
+              <h1 style="color: #fff; font-size: 24px; font-weight: 700; margin: 20px 0 0 0;">Am primit mesajul tău!</h1>
             </td>
           </tr>
 
@@ -159,8 +173,9 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- FOOTER -->
           <tr>
             <td style="background: #1a1a1a; border-radius: 0 0 24px 24px; padding: 24px 40px; text-align: center;">
+              <img src="${logoUrl}" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 16px auto; opacity: 0.9;" />
               <p style="font-size: 12px; color: #888; margin: 0;">VAIAVITA S.R.L. | CUI 49945945 | J8/1310/2024</p>
-              <p style="font-size: 11px; color: #666; margin: 10px 0 0 0;">© 2024 VAIAVITA. Toate drepturile rezervate.</p>
+              <p style="font-size: 11px; color: #666; margin: 10px 0 0 0;">© 2025 VAIAVITA. Toate drepturile rezervate.</p>
             </td>
           </tr>
         </table>
@@ -187,8 +202,14 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="${logoUrl}" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 20px auto;" />
-              <h1 style="color: #fff; font-size: 24px; font-weight: 700; margin: 0;">✉️ We received your message!</h1>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                <tr>
+                  <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
+                    <span style="color: #fff; font-size: 30px; line-height: 60px;">✉️</span>
+                  </td>
+                </tr>
+              </table>
+              <h1 style="color: #fff; font-size: 24px; font-weight: 700; margin: 20px 0 0 0;">We received your message!</h1>
             </td>
           </tr>
 
@@ -220,8 +241,9 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- FOOTER -->
           <tr>
             <td style="background: #1a1a1a; border-radius: 0 0 24px 24px; padding: 24px 40px; text-align: center;">
+              <img src="${logoUrl}" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 16px auto; opacity: 0.9;" />
               <p style="font-size: 12px; color: #888; margin: 0;">VAIAVITA S.R.L. | CUI 49945945 | J8/1310/2024</p>
-              <p style="font-size: 11px; color: #666; margin: 10px 0 0 0;">© 2024 VAIAVITA. All rights reserved.</p>
+              <p style="font-size: 11px; color: #666; margin: 10px 0 0 0;">© 2025 VAIAVITA. All rights reserved.</p>
             </td>
           </tr>
         </table>

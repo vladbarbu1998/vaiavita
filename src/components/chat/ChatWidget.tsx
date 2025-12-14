@@ -231,13 +231,9 @@ export function ChatWidget() {
           <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               <img 
-                src="/lovable-uploads/logo-light.png" 
+                src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" 
                 alt="VAIAVITA" 
-                className="h-8 w-auto"
-                onError={(e) => {
-                  // Fallback to text if logo fails to load
-                  e.currentTarget.style.display = 'none';
-                }}
+                className="h-10 w-10 rounded-full object-contain bg-white/10 p-1"
               />
               <div>
                 <h3 className="font-display font-semibold">VAIAVITA</h3>
@@ -253,9 +249,17 @@ export function ChatWidget() {
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg) => (
               <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center ${msg.role === 'user' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                  {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                </div>
+                {msg.role === 'user' ? (
+                  <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-primary/10 text-primary">
+                    <User className="w-4 h-4" />
+                  </div>
+                ) : (
+                  <img 
+                    src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" 
+                    alt="Bot" 
+                    className="w-8 h-8 rounded-full shrink-0 object-contain bg-muted p-1"
+                  />
+                )}
                 <div 
                   className={`max-w-[75%] p-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-br-md' : 'bg-muted rounded-bl-md'}`}
                   dangerouslySetInnerHTML={{ __html: msg.role === 'bot' ? formatMessage(msg.content) : msg.content }}
@@ -347,9 +351,11 @@ export function ChatWidget() {
 
             {isLoading && (
               <div className="flex gap-2">
-                <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-muted text-muted-foreground">
-                  <Bot className="w-4 h-4" />
-                </div>
+                <img 
+                  src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" 
+                  alt="Bot" 
+                  className="w-8 h-8 rounded-full shrink-0 object-contain bg-muted p-1"
+                />
                 <div className="max-w-[75%] p-3 rounded-2xl text-sm bg-muted rounded-bl-md flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span className="text-muted-foreground">
