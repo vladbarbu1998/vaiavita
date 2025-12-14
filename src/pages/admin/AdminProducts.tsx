@@ -101,6 +101,8 @@ const AdminProducts = () => {
   const [skuError, setSkuError] = useState<string | null>(null);
   const [checkingSlug, setCheckingSlug] = useState(false);
   const [checkingSku, setCheckingSku] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 

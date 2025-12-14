@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Loader2, FolderOpen, Package } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Category {
   id: string;
@@ -43,6 +44,8 @@ const AdminCategories = () => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [form, setForm] = useState(emptyCategory);
   const [saving, setSaving] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   useEffect(() => {
     fetchCategories();
