@@ -27,7 +27,7 @@ interface OrderEmailRequest {
   language?: "ro" | "en";
 }
 
-const ADMIN_EMAIL = "stanoiloren20@gmail.com";
+const ADMIN_EMAIL = "office@vaiavita.com";
 
 type Language = "ro" | "en";
 
