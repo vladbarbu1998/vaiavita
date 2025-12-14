@@ -307,14 +307,16 @@ const ProductPage = () => {
     
     if (isMobile) {
       setMobileAccordionValue('reviews');
+      // Wait for accordion to expand before scrolling
       setTimeout(() => {
         mobileAccordionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+      }, 300);
     } else {
       setActiveTab('reviews');
+      // Wait for tab change animation before scrolling
       setTimeout(() => {
         tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+      }, 150);
     }
   };
 
