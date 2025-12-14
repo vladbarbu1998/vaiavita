@@ -11,7 +11,7 @@ const PoliticaCookies = () => {
   ];
 
   return (
-    <MainLayout customBreadcrumbs={breadcrumbItems}>
+    <MainLayout breadcrumbItems={breadcrumbItems}>
       <Helmet>
         <title>{isRo ? "Politica de Cookie-uri | VAIAVITA" : "Cookie Policy | VAIAVITA"}</title>
         <meta name="description" content={isRo 
