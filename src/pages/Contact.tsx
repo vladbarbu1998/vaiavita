@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getTrackingInfo } from '@/hooks/useIpTracking';
 import { MainLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,7 @@ const Contact = () => {
   const { language } = useLanguage();
   const isRo = language === 'ro';
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ipAddress, setIpAddress] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -23,6 +25,13 @@ const Contact = () => {
     message: '',
     gdprConsent: false,
   });
+
+  // Fetch IP address on mount
+  useEffect(() => {
+    getTrackingInfo().then(info => {
+      setIpAddress(info.ip_address);
+    });
+  }, []);
 
   const breadcrumbItems = [
     { label: isRo ? 'Contact' : 'Contact', labelEn: 'Contact', href: '/contact' }
@@ -55,7 +64,7 @@ const Contact = () => {
       // Capture IP and user agent
       const userAgent = navigator.userAgent;
       
-      // Save to database
+      // Save to database with IP tracking
       const { error: dbError } = await supabase
         .from('contact_submissions')
         .insert({
@@ -66,6 +75,7 @@ const Contact = () => {
           message: formData.message.trim(),
           language: language,
           user_agent: userAgent,
+          ip_address: ipAddress,
         });
 
       if (dbError) {

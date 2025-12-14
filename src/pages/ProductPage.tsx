@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, TouchEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { getTrackingInfo } from '@/hooks/useIpTracking';
 import { MainLayout } from '@/components/layout';
 import { BreadcrumbItem } from '@/components/layout/Breadcrumbs';
 import { Button } from '@/components/ui/button';
@@ -129,6 +130,7 @@ const ProductPage = () => {
   const [reviewImages, setReviewImages] = useState<File[]>([]);
   const [reviewImagePreviews, setReviewImagePreviews] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [ipAddress, setIpAddress] = useState<string | null>(null);
   const reviewImageInputRef = useRef<HTMLInputElement>(null);
   const [reviewForm, setReviewForm] = useState<ReviewFormData>({
     customer_name: '',
@@ -137,6 +139,13 @@ const ProductPage = () => {
     title: '',
     content: '',
   });
+
+  // Fetch IP address on mount
+  useEffect(() => {
+    getTrackingInfo().then(info => {
+      setIpAddress(info.ip_address);
+    });
+  }, []);
 
   const handleRelatedTouchStart = (e: TouchEvent) => {
     relatedTouchStartX.current = e.touches[0].clientX;
@@ -474,6 +483,8 @@ const ProductPage = () => {
           title_en: titleEn,
           content_ro: contentRo,
           content_en: contentEn,
+          ip_address: ipAddress,
+          user_agent: navigator.userAgent,
           is_verified_purchase: true,
           order_id: orderId,
           is_approved: true,

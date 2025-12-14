@@ -57,7 +57,9 @@ import {
   Volume2,
   VolumeX,
   Bell,
-  Copy
+  Copy,
+  Globe,
+  Monitor
 } from 'lucide-react';
 
 interface Order {
@@ -96,6 +98,8 @@ interface Order {
   tracking_url: string | null;
   cancel_reason: string | null;
   cancel_source: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
   created_at: string;
 }
 
@@ -1463,7 +1467,30 @@ const AdminOrders = () => {
                 </div>
               )}
 
-              {/* Invoice Section */}
+              {/* IP & Device Info */}
+              {(selectedOrder.ip_address || selectedOrder.user_agent) && (
+                <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                  <h3 className="font-medium text-sm flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-muted-foreground" />
+                    Informații dispozitiv
+                  </h3>
+                  <div className="grid grid-cols-1 gap-2 text-sm">
+                    {selectedOrder.ip_address && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-muted-foreground min-w-[80px]">IP:</span>
+                        <span className="font-mono text-xs bg-muted px-2 py-1 rounded">{selectedOrder.ip_address}</span>
+                      </div>
+                    )}
+                    {selectedOrder.user_agent && (
+                      <div className="flex items-start gap-2">
+                        <Monitor className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <span className="text-xs text-muted-foreground break-all">{selectedOrder.user_agent}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-3 pt-4 border-t border-border">
                 <h3 className="font-medium flex items-center gap-2">
                   <FileText className="w-4 h-4 text-primary" />

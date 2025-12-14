@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { getTrackingInfo } from '@/hooks/useIpTracking';
 import { Link, useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -135,6 +136,7 @@ const Checkout = () => {
   const [countyOpen, setCountyOpen] = useState(false);
   const [postalCodeError, setPostalCodeError] = useState('');
   const [lockerSelectorOpen, setLockerSelectorOpen] = useState(false);
+  const [ipAddress, setIpAddress] = useState<string | null>(null);
   const [selectedLocker, setSelectedLocker] = useState<{ 
     id: string; 
     name: string; 
@@ -161,6 +163,13 @@ const Checkout = () => {
     postalCode: '',
     notes: '',
   });
+
+  // Fetch IP address on mount
+  useEffect(() => {
+    getTrackingInfo().then(info => {
+      setIpAddress(info.ip_address);
+    });
+  }, []);
 
   // Determine available delivery methods based on country and county
   const isRomania = form.country === 'RO';
@@ -566,6 +575,7 @@ const Checkout = () => {
             ? `${form.notes ? form.notes + '\n' : ''}[Plată cu cardul la locker]`
             : (form.notes || null),
           user_agent: userAgent,
+          ip_address: ipAddress,
         }]);
 
       if (orderError) throw orderError;

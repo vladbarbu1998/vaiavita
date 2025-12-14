@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ro } from "date-fns/locale";
 import { toast } from "sonner";
-import { Mail, MailOpen, Trash2, Clock, User, MessageSquare, Phone, Tag, CheckCircle2, Circle, Search, Download, Eye } from "lucide-react";
+import { Mail, MailOpen, Trash2, Clock, User, MessageSquare, Phone, Tag, CheckCircle2, Circle, Search, Download, Eye, Globe, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -47,6 +47,8 @@ interface ContactSubmission {
   created_at: string;
   replied_at: string | null;
   admin_notes: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
 }
 
 const AdminInbox = () => {
@@ -401,6 +403,30 @@ const AdminInbox = () => {
                     </span>
                   </div>
                 </div>
+
+                {/* IP & Device Info */}
+                {(selectedMessage.ip_address || selectedMessage.user_agent) && (
+                  <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                    <h3 className="font-medium text-sm flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-muted-foreground" />
+                      Informații dispozitiv
+                    </h3>
+                    <div className="grid grid-cols-1 gap-2 text-sm">
+                      {selectedMessage.ip_address && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-muted-foreground min-w-[80px]">IP:</span>
+                          <span className="font-mono text-xs bg-muted px-2 py-1 rounded">{selectedMessage.ip_address}</span>
+                        </div>
+                      )}
+                      {selectedMessage.user_agent && (
+                        <div className="flex items-start gap-2">
+                          <Monitor className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <span className="text-xs text-muted-foreground break-all">{selectedMessage.user_agent}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Replied Toggle */}
                 <div 
