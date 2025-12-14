@@ -10,7 +10,7 @@ const googleReviews = [
     textEn: 'Good toothpaste for the price. Cleans well, leaves mouth fresh and not too spicy. I tried more expensive pastes and I can\'t say there are major differences. I use it daily and have had no problems with my teeth or gums. Recommend.',
     date: '4 ore în urmă',
     dateEn: '4 hours ago',
-    reviewLink: 'https://share.google/Ke5iTVWqryoEsqGIJ',
+    reviewLink: 'https://share.google?q=Ke5iTVWqryoEsqGIJ',
   },
   {
     name: 'Udrea Mihaela',
@@ -19,7 +19,7 @@ const googleReviews = [
     textEn: 'I recommend, excellent professional solution at a fair cost. It was recommended to me by my dentist for reducing gum inflammation.',
     date: 'acum o zi',
     dateEn: 'a day ago',
-    reviewLink: 'https://share.google/FlpDB5Ps83XxJJN7f',
+    reviewLink: 'https://share.google?q=FlpDB5Ps83XxJJN7f',
   },
 ];
 
