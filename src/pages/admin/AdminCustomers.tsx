@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Search, Loader2, User, Mail, Phone, Package, Eye, Trash2, Download } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Customer {
   email: string;
@@ -36,6 +37,8 @@ const AdminCustomers = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerOrders, setCustomerOrders] = useState<CustomerOrder[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   useEffect(() => {
     fetchCustomers();

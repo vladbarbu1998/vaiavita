@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ro } from "date-fns/locale";
 import { toast } from "sonner";
-import { Mail, MailOpen, Trash2, Clock, User, MessageSquare, Phone, Tag, CheckCircle2, Circle, Search, Download, Eye, Globe, Monitor } from "lucide-react";
+import { Mail, MailOpen, Trash2, Clock, User, MessageSquare, Phone, Tag, CheckCircle2, Circle, Search, Download, Eye, Globe, Monitor, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -60,6 +60,8 @@ const AdminInbox = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterSource, setFilterSource] = useState<string>("all");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const { data: submissions, isLoading } = useQuery({
     queryKey: ["contact-submissions"],
@@ -128,6 +130,44 @@ const AdminInbox = () => {
       setDeleteId(null);
     },
   });
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === (filteredSubmissions?.length || 0)) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredSubmissions?.map(s => s.id) || []));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const bulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Sigur vrei să ștergi ${selectedIds.size} mesaje selectate?`)) return;
+    
+    setBulkDeleting(true);
+    let deletedCount = 0;
+    
+    for (const id of selectedIds) {
+      const { error } = await supabase.from("contact_submissions").delete().eq("id", id);
+      if (!error) deletedCount++;
+    }
+    
+    toast.success(`${deletedCount} mesaje șterse`);
+    setSelectedIds(new Set());
+    setBulkDeleting(false);
+    queryClient.invalidateQueries({ queryKey: ["contact-submissions"] });
+  };
 
   const openMessage = (submission: ContactSubmission) => {
     setSelectedMessage(submission);
@@ -201,10 +241,26 @@ const AdminInbox = () => {
           </div>
           <p className="text-muted-foreground mt-1">Gestionează mesajele de contact</p>
         </div>
-        <Button variant="outline" onClick={exportCSV} disabled={!submissions?.length}>
-          <Download className="w-4 h-4 mr-2" />
-          Export CSV
-        </Button>
+        <div className="flex gap-2">
+          {selectedIds.size > 0 && (
+            <Button 
+              variant="destructive" 
+              onClick={bulkDelete}
+              disabled={bulkDeleting}
+            >
+              {bulkDeleting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4 mr-2" />
+              )}
+              Șterge ({selectedIds.size})
+            </Button>
+          )}
+          <Button variant="outline" onClick={exportCSV} disabled={!submissions?.length}>
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -247,6 +303,12 @@ const AdminInbox = () => {
           <table className="w-full">
             <thead className="bg-muted/50">
               <tr>
+                <th className="w-12 p-4">
+                  <Checkbox
+                    checked={selectedIds.size === (filteredSubmissions?.length || 0) && (filteredSubmissions?.length || 0) > 0}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                </th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Expeditor</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Subiect / Mesaj</th>
                 <th className="text-left p-4 text-sm font-medium text-muted-foreground">Data</th>
@@ -257,7 +319,7 @@ const AdminInbox = () => {
             <tbody className="divide-y divide-border">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center">
+                  <td colSpan={6} className="p-8 text-center">
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
@@ -265,7 +327,7 @@ const AdminInbox = () => {
                 </tr>
               ) : filteredSubmissions?.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
                     <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>{searchQuery || filterStatus !== "all" ? "Nu s-au găsit mesaje" : "Nu există mesaje încă"}</p>
                   </td>
@@ -276,6 +338,12 @@ const AdminInbox = () => {
                     key={submission.id} 
                     className={`hover:bg-muted/30 transition-colors ${!submission.is_read ? "bg-primary/5" : ""}`}
                   >
+                    <td className="p-4">
+                      <Checkbox
+                        checked={selectedIds.has(submission.id)}
+                        onCheckedChange={() => toggleSelectOne(submission.id)}
+                      />
+                    </td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className={`flex-shrink-0 ${!submission.is_read ? "text-primary" : "text-muted-foreground"}`}>

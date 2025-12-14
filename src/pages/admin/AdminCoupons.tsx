@@ -64,6 +64,8 @@ const AdminCoupons = () => {
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState<'all' | 'review' | 'general'>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   // Filter coupons based on selected filter
   const filteredCoupons = coupons.filter(coupon => {

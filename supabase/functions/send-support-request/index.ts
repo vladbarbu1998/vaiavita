@@ -33,9 +33,16 @@ const getAdminEmailTemplate = (data: SupportRequest): string => {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <!-- Logo Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #025951 0%, #013d38 100%); padding: 25px; text-align: center;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/public-assets1/logo-light.png" alt="VAIAVITA" style="height: 50px; width: auto;" />
+            </td>
+          </tr>
+          
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #025951 0%, #013d38 100%); padding: 30px; text-align: center;">
+            <td style="background: linear-gradient(135deg, #025951 0%, #013d38 100%); padding: 0 30px 30px 30px; text-align: center;">
               <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: bold;">🔔 Cerere Suport Live</h1>
               <p style="color: rgba(255,255,255,0.8); margin: 10px 0 0 0; font-size: 14px;">Un client solicită asistență umană</p>
             </td>
@@ -110,7 +117,10 @@ const getAdminEmailTemplate = (data: SupportRequest): string => {
           <!-- Footer -->
           <tr>
             <td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-              <p style="color: #999; margin: 0; font-size: 12px;">VAIAVITA S.R.L. | Chatbot Support System</p>
+              <p style="color: #999; margin: 0; font-size: 12px;">
+                <a href="https://vaiavita.ro" style="color: #025951; text-decoration: none;">vaiavita.ro</a>
+              </p>
+              <p style="color: #999; margin: 5px 0 0 0; font-size: 12px;">© 2025 VAIAVITA S.R.L. Toate drepturile rezervate.</p>
             </td>
           </tr>
         </table>
@@ -137,11 +147,17 @@ const getCustomerEmailTemplate = (data: SupportRequest): string => {
     <tr>
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-          <!-- Header -->
+          <!-- Logo Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #025951 0%, #013d38 100%); padding: 30px; text-align: center;">
-              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: bold;">VAIAVITA</h1>
-              <p style="color: rgba(255,255,255,0.8); margin: 10px 0 0 0; font-size: 14px;">${isRomanian ? 'Vitalitate, Energie și Echilibru' : 'Vitality, Energy and Balance'}</p>
+            <td style="background: linear-gradient(135deg, #025951 0%, #013d38 100%); padding: 25px; text-align: center;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/public-assets1/logo-light.png" alt="VAIAVITA" style="height: 50px; width: auto;" />
+            </td>
+          </tr>
+          
+          <!-- Tagline -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #025951 0%, #013d38 100%); padding: 0 30px 30px 30px; text-align: center;">
+              <p style="color: rgba(255,255,255,0.8); margin: 0; font-size: 14px;">${isRomanian ? 'Vitalitate, Energie și Echilibru' : 'Vitality, Energy and Balance'}</p>
             </td>
           </tr>
           
@@ -201,8 +217,10 @@ const getCustomerEmailTemplate = (data: SupportRequest): string => {
           <!-- Footer -->
           <tr>
             <td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-              <p style="color: #999; margin: 0; font-size: 12px;">VAIAVITA S.R.L. | CUI: 49945945</p>
-              <p style="color: #999; margin: 5px 0 0 0; font-size: 12px;">Brașov, România</p>
+              <p style="color: #999; margin: 0; font-size: 12px;">
+                <a href="https://vaiavita.ro" style="color: #025951; text-decoration: none;">vaiavita.ro</a>
+              </p>
+              <p style="color: #999; margin: 5px 0 0 0; font-size: 12px;">© 2025 VAIAVITA S.R.L. Toate drepturile rezervate.</p>
             </td>
           </tr>
         </table>
