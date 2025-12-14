@@ -8,18 +8,14 @@ const googleReviews = [
     rating: 5,
     text: 'Pasta de dinti buna pentru pret. curata bine, lasa gura fresh si nu e prea iute. Am incercat si paste mai scumpe si nu pot spune ca sunt mari diferente. O folosesc zilnic si nu am avut probleme cu dintii sau gingiile. Recomand.',
     textEn: 'Good toothpaste for the price. Cleans well, leaves mouth fresh and not too spicy. I tried more expensive pastes and I can\'t say there are major differences. I use it daily and have had no problems with my teeth or gums. Recommend.',
-    date: '4 ore în urmă',
-    dateEn: '4 hours ago',
-    reviewLink: 'https://share.google?q=Ke5iTVWqryoEsqGIJ',
+    reviewLink: 'https://maps.app.goo.gl/1d3E8S91YnFm8j5P9',
   },
   {
     name: 'Udrea Mihaela',
     rating: 5,
     text: 'Recomand, soluție excelentă profesională la un cost corect. Mi-a fost recomandată de medicul stomatolog pentru reducerea inflamației gingivale.',
     textEn: 'I recommend, excellent professional solution at a fair cost. It was recommended to me by my dentist for reducing gum inflammation.',
-    date: 'acum o zi',
-    dateEn: 'a day ago',
-    reviewLink: 'https://share.google?q=FlpDB5Ps83XxJJN7f',
+    reviewLink: 'https://maps.app.goo.gl/3kanmYZTgpdSbQm59',
   },
 ];
 
@@ -85,20 +81,15 @@ export function GoogleReviewsSection() {
                     </span>
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span className="text-muted-foreground text-xs">
-                    {language === 'ro' ? review.date : review.dateEn}
-                  </span>
-                  <a
-                    href={review.reviewLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline flex items-center gap-1"
-                  >
-                    {language === 'ro' ? 'Vezi recenzia' : 'View review'}
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
+                <a
+                  href={review.reviewLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-primary hover:underline flex items-center gap-1"
+                >
+                  {language === 'ro' ? 'Vezi recenzia' : 'View review'}
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
             </div>
           ))}
