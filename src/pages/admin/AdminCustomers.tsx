@@ -230,14 +230,27 @@ const AdminCustomers = () => {
       </div>
 
       {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-        <Input
-          placeholder="Caută clienți..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-10"
-        />
+      <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <Input
+            placeholder="Caută clienți..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        {selectedEmails.size > 0 && (
+          <Button
+            variant="destructive"
+            onClick={bulkDelete}
+            disabled={bulkDeleting}
+            className="gap-2"
+          >
+            {bulkDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            Șterge ({selectedEmails.size})
+          </Button>
+        )}
       </div>
 
       {/* Stats */}
@@ -257,26 +270,6 @@ const AdminCustomers = () => {
           </p>
         </div>
       </div>
-
-      {/* Bulk Delete Button */}
-      {selectedEmails.size > 0 && (
-        <div className="flex items-center gap-4 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
-          <Checkbox
-            checked={selectedEmails.size === filteredCustomers.length}
-            onCheckedChange={toggleSelectAll}
-          />
-          <span className="text-sm font-medium">{selectedEmails.size} clienți selectați</span>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={bulkDelete}
-            disabled={bulkDeleting}
-          >
-            {bulkDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
-            Șterge ({selectedEmails.size})
-          </Button>
-        </div>
-      )}
 
       {/* Customers Table */}
       <div className="card-premium overflow-hidden">

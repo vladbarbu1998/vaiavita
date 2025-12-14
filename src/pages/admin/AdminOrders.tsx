@@ -918,7 +918,7 @@ const AdminOrders = () => {
       </div>
 
       {/* Search and Filter Toggle */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
@@ -944,6 +944,17 @@ const AdminOrders = () => {
         {activeFiltersCount > 0 && (
           <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground">
             Resetează
+          </Button>
+        )}
+        {selectedIds.size > 0 && (
+          <Button
+            variant="destructive"
+            onClick={bulkDelete}
+            disabled={bulkDeleting}
+            className="gap-2"
+          >
+            {bulkDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            Șterge ({selectedIds.size})
           </Button>
         )}
       </div>
@@ -1047,26 +1058,6 @@ const AdminOrders = () => {
               />
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Bulk Delete Button */}
-      {selectedIds.size > 0 && (
-        <div className="flex items-center gap-4 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
-          <Checkbox
-            checked={selectedIds.size === filteredOrders.length}
-            onCheckedChange={toggleSelectAll}
-          />
-          <span className="text-sm font-medium">{selectedIds.size} comenzi selectate</span>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={bulkDelete}
-            disabled={bulkDeleting}
-          >
-            {bulkDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
-            Șterge ({selectedIds.size})
-          </Button>
         </div>
       )}
 

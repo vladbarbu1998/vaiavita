@@ -820,27 +820,18 @@ const AdminProducts = () => {
             <SelectItem value="out">Fără stoc</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-
-      {/* Bulk Delete Button */}
-      {selectedIds.size > 0 && (
-        <div className="flex items-center gap-4 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
-          <Checkbox
-            checked={selectedIds.size === filteredProducts.length}
-            onCheckedChange={toggleSelectAll}
-          />
-          <span className="text-sm font-medium">{selectedIds.size} produse selectate</span>
+        {selectedIds.size > 0 && (
           <Button
             variant="destructive"
-            size="sm"
             onClick={bulkDelete}
             disabled={bulkDeleting}
+            className="gap-2"
           >
-            {bulkDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+            {bulkDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
             Șterge ({selectedIds.size})
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Products Table */}
       <div className="card-premium overflow-hidden">

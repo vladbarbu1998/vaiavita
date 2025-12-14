@@ -252,10 +252,23 @@ const AdminCategories = () => {
           <h1 className="font-display text-2xl md:text-3xl tracking-wide">Categorii</h1>
           <p className="text-muted-foreground mt-1">Gestionează categoriile de produse</p>
         </div>
-        <Button variant="hero" onClick={openCreateDialog}>
-          <Plus className="w-5 h-5 mr-2" />
-          Adaugă categorie
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button
+              variant="destructive"
+              onClick={bulkDelete}
+              disabled={bulkDeleting}
+              className="gap-2"
+            >
+              {bulkDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              Șterge ({selectedIds.size})
+            </Button>
+          )}
+          <Button variant="hero" onClick={openCreateDialog}>
+            <Plus className="w-5 h-5 mr-2" />
+            Adaugă categorie
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -271,26 +284,6 @@ const AdminCategories = () => {
           </p>
         </div>
       </div>
-
-      {/* Bulk Delete Button */}
-      {selectedIds.size > 0 && (
-        <div className="flex items-center gap-4 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
-          <Checkbox
-            checked={selectedIds.size === categories.filter(c => (c.product_count || 0) === 0).length}
-            onCheckedChange={toggleSelectAll}
-          />
-          <span className="text-sm font-medium">{selectedIds.size} categorii selectate</span>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={bulkDelete}
-            disabled={bulkDeleting}
-          >
-            {bulkDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
-            Șterge ({selectedIds.size})
-          </Button>
-        </div>
-      )}
 
       {/* Categories List */}
       <div className="space-y-4">
