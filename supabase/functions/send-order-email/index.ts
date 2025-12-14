@@ -19,12 +19,15 @@ interface OrderEmailRequest {
     | "delivered"
     | "cancelled"
     | "payment_failed"
-    | "payment_reminder";
+    | "payment_reminder"
+    | "admin_notification";
   awbNumber?: string;
   courierName?: string;
   cancellationReason?: string;
   language?: "ro" | "en";
 }
+
+const ADMIN_EMAIL = "stanoiloren20@gmail.com";
 
 type Language = "ro" | "en";
 
@@ -38,6 +41,7 @@ const EMAIL_SUBJECTS = {
     cancelled: "Comanda ta a fost anulată",
     payment_failed: "Plata pentru comanda ta nu a putut fi procesată",
     payment_reminder: "Reminder: Finalizează plata pentru comanda ta",
+    admin_notification: "🎉 Comandă nouă cu succes!",
   },
   en: {
     confirmation: "Your order has been placed successfully!",
@@ -48,6 +52,7 @@ const EMAIL_SUBJECTS = {
     cancelled: "Your order has been cancelled",
     payment_failed: "Payment for your order could not be processed",
     payment_reminder: "Reminder: Complete payment for your order",
+    admin_notification: "🎉 New successful order!",
   },
 };
 
@@ -968,6 +973,104 @@ const TEMPLATES = {
             <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
               <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
+              <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2025 VAIAVITA</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+
+    admin_notification: `<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comandă nouă - VAIAVITA</title>
+</head>
+<body style="margin: 0; padding: 0; background: linear-gradient(180deg, #e8f4f2 0%, #dceeed 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+      <td align="center" style="padding: 40px 16px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%;">
+          <!-- HEADER -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #4ade80 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
+              <h1 style="color: #fff; font-size: 32px; font-weight: 700; margin: 0 0 10px 0;">🎉 Comandă nouă!</h1>
+              <p style="color: rgba(255,255,255,0.95); font-size: 18px; margin: 0; font-weight: 600;">#{{order_number}}</p>
+            </td>
+          </tr>
+          <!-- MAIN CONTENT -->
+          <tr>
+            <td style="background: #ffffff; padding: 36px 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: #f0fdf4; border-radius: 14px; margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 20px 24px; text-align: center;">
+                    <span style="font-size: 36px; font-weight: 800; color: #16a34a; display: block;">{{total}} lei</span>
+                    <span style="font-size: 13px; color: #666; margin-top: 4px; display: block;">Total comandă</span>
+                  </td>
+                </tr>
+              </table>
+              
+              <h3 style="font-size: 15px; color: #333; margin: 0 0 12px 0; border-bottom: 1px solid #eee; padding-bottom: 8px;">📦 Detalii Client</h3>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #666;">Nume:</td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #222; font-weight: 600;">{{customer_name}}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #666;">Email:</td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #222;">{{customer_email}}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #666;">Telefon:</td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #222;">{{customer_phone}}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #666;">Livrare:</td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #222;">{{delivery_method}}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #666;">Plată:</td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #222;">{{payment_method}} ({{payment_status}})</td>
+                </tr>
+              </table>
+              
+              <h3 style="font-size: 15px; color: #333; margin: 0 0 12px 0; border-bottom: 1px solid #eee; padding-bottom: 8px;">🛒 Produse</h3>
+              {{products_html}}
+              
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 24px; border-top: 2px solid #eee; padding-top: 16px;">
+                <tr>
+                  <td style="font-size: 14px; color: #666; padding: 4px 0;">Subtotal</td>
+                  <td align="right" style="font-size: 14px; color: #222; padding: 4px 0;">{{subtotal}} lei</td>
+                </tr>
+                {{discount_row}}
+                <tr>
+                  <td style="font-size: 14px; color: #666; padding: 4px 0;">Transport</td>
+                  <td align="right" style="font-size: 14px; color: #222; padding: 4px 0;">{{shipping_cost}}</td>
+                </tr>
+                <tr>
+                  <td style="font-size: 16px; font-weight: 700; color: #16a34a; padding: 12px 0 0 0;">TOTAL</td>
+                  <td align="right" style="font-size: 18px; font-weight: 800; color: #16a34a; padding: 12px 0 0 0;">{{total}} lei</td>
+                </tr>
+              </table>
+              
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 32px;">
+                <tr>
+                  <td align="center">
+                    <a href="https://vaiavita.ro/admin/orders" style="display: inline-block; background: #025951; color: #fff; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px; text-decoration: none;">Vezi în Admin</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- FOOTER -->
+          <tr>
+            <td style="background: #f8faf9; padding: 24px 40px; border-radius: 0 0 24px 24px; text-align: center;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="100" style="display: block; margin: 0 auto 12px auto;">
+              <p style="font-size: 12px; color: #666; margin: 0;">Notificare automată pentru comenzi noi</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2025 VAIAVITA</p>
             </td>
           </tr>
@@ -1904,6 +2007,104 @@ const TEMPLATES = {
   </table>
 </body>
 </html>`,
+
+    admin_notification: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Order - VAIAVITA</title>
+</head>
+<body style="margin: 0; padding: 0; background: linear-gradient(180deg, #e8f4f2 0%, #dceeed 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+      <td align="center" style="padding: 40px 16px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%;">
+          <!-- HEADER -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #4ade80 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
+              <h1 style="color: #fff; font-size: 32px; font-weight: 700; margin: 0 0 10px 0;">🎉 New Order!</h1>
+              <p style="color: rgba(255,255,255,0.95); font-size: 18px; margin: 0; font-weight: 600;">#{{order_number}}</p>
+            </td>
+          </tr>
+          <!-- MAIN CONTENT -->
+          <tr>
+            <td style="background: #ffffff; padding: 36px 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: #f0fdf4; border-radius: 14px; margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 20px 24px; text-align: center;">
+                    <span style="font-size: 36px; font-weight: 800; color: #16a34a; display: block;">{{total}} lei</span>
+                    <span style="font-size: 13px; color: #666; margin-top: 4px; display: block;">Order Total</span>
+                  </td>
+                </tr>
+              </table>
+              
+              <h3 style="font-size: 15px; color: #333; margin: 0 0 12px 0; border-bottom: 1px solid #eee; padding-bottom: 8px;">📦 Customer Details</h3>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #666;">Name:</td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #222; font-weight: 600;">{{customer_name}}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #666;">Email:</td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #222;">{{customer_email}}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #666;">Phone:</td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #222;">{{customer_phone}}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #666;">Delivery:</td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #222;">{{delivery_method}}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0; font-size: 14px; color: #666;">Payment:</td>
+                  <td style="padding: 6px 0; font-size: 14px; color: #222;">{{payment_method}} ({{payment_status}})</td>
+                </tr>
+              </table>
+              
+              <h3 style="font-size: 15px; color: #333; margin: 0 0 12px 0; border-bottom: 1px solid #eee; padding-bottom: 8px;">🛒 Products</h3>
+              {{products_html}}
+              
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 24px; border-top: 2px solid #eee; padding-top: 16px;">
+                <tr>
+                  <td style="font-size: 14px; color: #666; padding: 4px 0;">Subtotal</td>
+                  <td align="right" style="font-size: 14px; color: #222; padding: 4px 0;">{{subtotal}} lei</td>
+                </tr>
+                {{discount_row}}
+                <tr>
+                  <td style="font-size: 14px; color: #666; padding: 4px 0;">Shipping</td>
+                  <td align="right" style="font-size: 14px; color: #222; padding: 4px 0;">{{shipping_cost}}</td>
+                </tr>
+                <tr>
+                  <td style="font-size: 16px; font-weight: 700; color: #16a34a; padding: 12px 0 0 0;">TOTAL</td>
+                  <td align="right" style="font-size: 18px; font-weight: 800; color: #16a34a; padding: 12px 0 0 0;">{{total}} lei</td>
+                </tr>
+              </table>
+              
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 32px;">
+                <tr>
+                  <td align="center">
+                    <a href="https://vaiavita.ro/admin/orders" style="display: inline-block; background: #025951; color: #fff; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 12px; text-decoration: none;">View in Admin</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- FOOTER -->
+          <tr>
+            <td style="background: #f8faf9; padding: 24px 40px; border-radius: 0 0 24px 24px; text-align: center;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png" alt="VAIAVITA" width="100" style="display: block; margin: 0 auto 12px auto;">
+              <p style="font-size: 12px; color: #666; margin: 0;">Automatic notification for new orders</p>
+              <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2025 VAIAVITA</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
   },
 };
 
@@ -2153,12 +2354,15 @@ const handler = async (req: Request): Promise<Response> => {
     // Get subject
     const subject = EMAIL_SUBJECTS[lang][emailType as keyof typeof EMAIL_SUBJECTS.ro];
 
-    console.log(`Sending email to ${order.customer_email} with subject: ${subject}`);
+    // Determine recipient - admin email for admin_notification, customer email otherwise
+    const recipientEmail = emailType === "admin_notification" ? ADMIN_EMAIL : order.customer_email;
+
+    console.log(`Sending email to ${recipientEmail} with subject: ${subject}`);
 
     // Send email
     const emailResponse = await resend.emails.send({
       from: "VAIAVITA <comenzi@vaiavita.ro>",
-      to: [order.customer_email],
+      to: [recipientEmail],
       subject: subject,
       html: emailHtml,
     });

@@ -94,6 +94,33 @@ serve(async (req) => {
 
           logStep("Order updated successfully", { orderId, status: "paid" });
 
+          // Send admin notification email for successful payment
+          try {
+            const adminEmailResponse = await fetch(
+              `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-order-email`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                },
+                body: JSON.stringify({
+                  orderId,
+                  emailType: "admin_notification",
+                  language: "ro",
+                }),
+              }
+            );
+            
+            if (adminEmailResponse.ok) {
+              logStep("Admin notification email sent", { orderId });
+            } else {
+              logStep("Failed to send admin notification email", { orderId });
+            }
+          } catch (adminEmailError) {
+            logStep("Error sending admin notification email", { error: adminEmailError });
+          }
+
           // Now sync to Ecolet after successful payment
           // Fetch order details to get all required data
           const { data: orderData, error: orderError } = await supabaseClient

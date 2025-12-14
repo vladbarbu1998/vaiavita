@@ -672,6 +672,21 @@ const Checkout = () => {
           }
         }).catch(err => console.error('Email send failed:', err));
 
+        // Send admin notification email (fire and forget)
+        supabase.functions.invoke('send-order-email', {
+          body: {
+            orderId: orderId,
+            emailType: 'admin_notification',
+            language: 'ro',
+          }
+        }).then(result => {
+          if (result.error) {
+            console.error('Admin notification email error:', result.error);
+          } else {
+            console.log('Admin notification email sent');
+          }
+        }).catch(err => console.error('Admin notification failed:', err));
+
         clearCart();
         navigate(`/comanda-confirmata?order=${orderNumber}`);
       } else if (form.paymentMethod === 'stripe') {
