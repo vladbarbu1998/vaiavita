@@ -1,14 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, User, Bot, Loader2 } from 'lucide-react';
+import { MessageCircle, X, Send, User, Bot, Loader2, Phone, Mail, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/context/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Message {
   id: string;
   role: 'user' | 'bot';
   content: string;
   timestamp: Date;
+}
+
+interface SupportForm {
+  name: string;
+  phone: string;
+  email: string;
+  message: string;
 }
 
 // Parse markdown-like formatting to HTML
@@ -35,12 +43,31 @@ const formatMessage = (text: string): string => {
   return formatted;
 };
 
+// Detect if user wants live agent
+const wantsLiveAgent = (message: string): boolean => {
+  const triggers = [
+    'agent live', 'live agent', 'agent uman', 'om real', 'persoana reala',
+    'vreau să vorbesc cu cineva', 'vorbesc cu un om', 'suport live',
+    'human agent', 'real person', 'talk to someone', 'live support'
+  ];
+  const lowerMessage = message.toLowerCase().trim();
+  return triggers.some(trigger => lowerMessage.includes(trigger));
+};
+
 export function ChatWidget() {
   const { language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showSupportForm, setShowSupportForm] = useState(false);
+  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
+  const [supportForm, setSupportForm] = useState<SupportForm>({
+    name: '',
+    phone: '',
+    email: '',
+    message: ''
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,8 +76,8 @@ export function ChatWidget() {
         id: '1',
         role: 'bot',
         content: language === 'ro' 
-          ? 'Bună! 👋 Sunt asistentul virtual VAIAVITA. Cum te pot ajuta? Poți întreba despre produsele noastre, livrare, plată sau retururi.'
-          : 'Hello! 👋 I\'m the VAIAVITA virtual assistant. How can I help you? You can ask about our products, delivery, payment or returns.',
+          ? 'Bună! 👋 Sunt asistentul virtual VAIAVITA. Cum te pot ajuta?\n\nPoți întreba despre produsele noastre, livrare, plată sau retururi.\n\nDacă dorești să vorbești cu un coleg, scrie "Agent live".'
+          : 'Hello! 👋 I\'m the VAIAVITA virtual assistant. How can I help you?\n\nYou can ask about our products, delivery, payment or returns.\n\nIf you\'d like to speak with a team member, type "Live agent".',
         timestamp: new Date(),
       }]);
     }
@@ -58,7 +85,58 @@ export function ChatWidget() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, showSupportForm]);
+
+  const handleSupportFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!supportForm.name || !supportForm.email || !supportForm.message) {
+      toast.error(language === 'ro' ? 'Completează toate câmpurile obligatorii' : 'Please fill all required fields');
+      return;
+    }
+
+    setIsSubmittingForm(true);
+
+    try {
+      // Build conversation transcript
+      const transcript = messages
+        .map(msg => `${msg.role === 'user' ? 'Client' : 'Bot'}: ${msg.content}`)
+        .join('\n\n');
+
+      const { error } = await supabase.functions.invoke('send-support-request', {
+        body: {
+          name: supportForm.name,
+          phone: supportForm.phone,
+          email: supportForm.email,
+          message: supportForm.message,
+          transcript,
+          language
+        }
+      });
+
+      if (error) throw error;
+
+      setShowSupportForm(false);
+      setSupportForm({ name: '', phone: '', email: '', message: '' });
+
+      const confirmMessage: Message = {
+        id: Date.now().toString(),
+        role: 'bot',
+        content: language === 'ro'
+          ? '✅ Mulțumesc! Am primit cererea ta.\n\nUn coleg din echipa noastră te va contacta în cel mai scurt timp pe email sau telefon.\n\nÎntre timp, pot să te ajut cu altceva?'
+          : '✅ Thank you! We\'ve received your request.\n\nA team member will contact you shortly via email or phone.\n\nIn the meantime, can I help you with anything else?',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, confirmMessage]);
+
+      toast.success(language === 'ro' ? 'Cererea a fost trimisă!' : 'Request sent successfully!');
+    } catch (error) {
+      console.error('Support request error:', error);
+      toast.error(language === 'ro' ? 'A apărut o eroare. Încearcă din nou.' : 'An error occurred. Please try again.');
+    } finally {
+      setIsSubmittingForm(false);
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -71,7 +149,24 @@ export function ChatWidget() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
+
+    // Check if user wants live agent
+    if (wantsLiveAgent(currentInput)) {
+      const agentResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'bot',
+        content: language === 'ro'
+          ? 'Sigur! 😊 Te punem în legătură cu un coleg din echipa noastră.\n\nTe rog completează formularul de mai jos și te vom contacta cât de curând posibil.'
+          : 'Of course! 😊 We\'ll connect you with a team member.\n\nPlease fill out the form below and we\'ll contact you as soon as possible.',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, agentResponse]);
+      setShowSupportForm(true);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -85,7 +180,7 @@ export function ChatWidget() {
 
       const { data, error } = await supabase.functions.invoke('chat-assistant', {
         body: {
-          message: input,
+          message: currentInput,
           language,
           conversationHistory
         }
@@ -160,6 +255,89 @@ export function ChatWidget() {
                 />
               </div>
             ))}
+
+            {/* Support Form */}
+            {showSupportForm && (
+              <div className="bg-muted/50 border border-border rounded-xl p-4 space-y-3">
+                <h4 className="font-semibold text-sm flex items-center gap-2">
+                  <UserCircle className="w-4 h-4 text-primary" />
+                  {language === 'ro' ? 'Contactează echipa' : 'Contact the team'}
+                </h4>
+                <form onSubmit={handleSupportFormSubmit} className="space-y-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground">{language === 'ro' ? 'Nume *' : 'Name *'}</label>
+                    <input
+                      type="text"
+                      value={supportForm.name}
+                      onChange={(e) => setSupportForm(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      placeholder={language === 'ro' ? 'Numele tău' : 'Your name'}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Phone className="w-3 h-3" /> {language === 'ro' ? 'Telefon' : 'Phone'}
+                    </label>
+                    <input
+                      type="tel"
+                      value={supportForm.phone}
+                      onChange={(e) => setSupportForm(prev => ({ ...prev, phone: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      placeholder="07xx xxx xxx"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Mail className="w-3 h-3" /> Email *
+                    </label>
+                    <input
+                      type="email"
+                      value={supportForm.email}
+                      onChange={(e) => setSupportForm(prev => ({ ...prev, email: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      placeholder="email@exemplu.com"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">{language === 'ro' ? 'Mesaj *' : 'Message *'}</label>
+                    <textarea
+                      value={supportForm.message}
+                      onChange={(e) => setSupportForm(prev => ({ ...prev, message: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                      rows={2}
+                      placeholder={language === 'ro' ? 'Cu ce te putem ajuta?' : 'How can we help you?'}
+                      required
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setShowSupportForm(false)}
+                    >
+                      {language === 'ro' ? 'Anulează' : 'Cancel'}
+                    </Button>
+                    <Button
+                      type="submit"
+                      size="sm"
+                      className="flex-1"
+                      disabled={isSubmittingForm}
+                    >
+                      {isSubmittingForm ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        language === 'ro' ? 'Trimite' : 'Send'
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            )}
+
             {isLoading && (
               <div className="flex gap-2">
                 <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-muted text-muted-foreground">
@@ -185,9 +363,9 @@ export function ChatWidget() {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={language === 'ro' ? 'Scrie un mesaj...' : 'Type a message...'}
                 className="flex-1 px-4 py-2.5 rounded-full bg-muted border-0 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                disabled={isLoading}
+                disabled={isLoading || showSupportForm}
               />
-              <Button type="submit" size="icon" className="rounded-full shrink-0" disabled={isLoading || !input.trim()}>
+              <Button type="submit" size="icon" className="rounded-full shrink-0" disabled={isLoading || !input.trim() || showSupportForm}>
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </Button>
             </form>

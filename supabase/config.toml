@@ -38,3 +38,18 @@ verify_jwt = false
 
 [functions.payment-reminder-cron]
 verify_jwt = false
+
+[functions.send-support-request]
+verify_jwt = false
+
+[functions.get-ecolet-awb]
+verify_jwt = false
+
+[functions.get-order-confirmation]
+verify_jwt = false
+
+[functions.verify-purchase]
+verify_jwt = false
+
+[functions.send-contact-email]
+verify_jwt = false
