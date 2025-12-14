@@ -8,14 +8,14 @@ const googleReviews = [
     rating: 5,
     text: 'Pasta de dinti buna pentru pret. curata bine, lasa gura fresh si nu e prea iute. Am incercat si paste mai scumpe si nu pot spune ca sunt mari diferente. O folosesc zilnic si nu am avut probleme cu dintii sau gingiile. Recomand.',
     textEn: 'Good toothpaste for the price. Cleans well, leaves mouth fresh and not too spicy. I tried more expensive pastes and I can\'t say there are major differences. I use it daily and have had no problems with my teeth or gums. Recommend.',
-    reviewLink: 'https://maps.app.goo.gl/1d3E8S91YnFm8j5P9',
+    reviewLink: 'https://share.google/Ke5iTVWqryoEsqGIJ',
   },
   {
     name: 'Udrea Mihaela',
     rating: 5,
     text: 'Recomand, soluție excelentă profesională la un cost corect. Mi-a fost recomandată de medicul stomatolog pentru reducerea inflamației gingivale.',
     textEn: 'I recommend, excellent professional solution at a fair cost. It was recommended to me by my dentist for reducing gum inflammation.',
-    reviewLink: 'https://maps.app.goo.gl/3kanmYZTgpdSbQm59',
+    reviewLink: 'https://share.google/OaP8VG0lENmC3d24f',
   },
 ];
 
