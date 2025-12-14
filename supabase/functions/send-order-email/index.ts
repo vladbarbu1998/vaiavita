@@ -1173,7 +1173,6 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1295,7 +1294,6 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1399,7 +1397,6 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1519,7 +1516,6 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1643,7 +1639,6 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1741,7 +1736,6 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
@@ -1833,7 +1827,6 @@ const TEMPLATES = {
           <!-- HEADER -->
           <tr>
             <td style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
-              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="150" style="display: block; margin: 0 auto 28px auto;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
                 <tr>
                   <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
