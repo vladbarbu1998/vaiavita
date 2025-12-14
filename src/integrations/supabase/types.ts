@@ -147,6 +147,13 @@ export type Database = {
             foreignKeyName: "coupons_review_id_fkey"
             columns: ["review_id"]
             isOneToOne: false
+            referencedRelation: "public_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupons_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
             referencedRelation: "reviews"
             referencedColumns: ["id"]
           },
@@ -642,7 +649,78 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_reviews: {
+        Row: {
+          content: string | null
+          content_en: string | null
+          content_ro: string | null
+          created_at: string | null
+          customer_name: string | null
+          id: string | null
+          images: string[] | null
+          is_approved: boolean | null
+          is_verified_purchase: boolean | null
+          order_id: string | null
+          product_id: string | null
+          rating: number | null
+          review_token: string | null
+          title: string | null
+          title_en: string | null
+          title_ro: string | null
+        }
+        Insert: {
+          content?: string | null
+          content_en?: string | null
+          content_ro?: string | null
+          created_at?: string | null
+          customer_name?: string | null
+          id?: string | null
+          images?: string[] | null
+          is_approved?: boolean | null
+          is_verified_purchase?: boolean | null
+          order_id?: string | null
+          product_id?: string | null
+          rating?: number | null
+          review_token?: string | null
+          title?: string | null
+          title_en?: string | null
+          title_ro?: string | null
+        }
+        Update: {
+          content?: string | null
+          content_en?: string | null
+          content_ro?: string | null
+          created_at?: string | null
+          customer_name?: string | null
+          id?: string | null
+          images?: string[] | null
+          is_approved?: boolean | null
+          is_verified_purchase?: boolean | null
+          order_id?: string | null
+          product_id?: string | null
+          rating?: number | null
+          review_token?: string | null
+          title?: string | null
+          title_en?: string | null
+          title_ro?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
