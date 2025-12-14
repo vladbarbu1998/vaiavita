@@ -77,6 +77,7 @@ export type Database = {
           name: string
           phone: string | null
           replied_at: string | null
+          source: string | null
           subject: string | null
           user_agent: string | null
         }
@@ -92,6 +93,7 @@ export type Database = {
           name: string
           phone?: string | null
           replied_at?: string | null
+          source?: string | null
           subject?: string | null
           user_agent?: string | null
         }
@@ -107,6 +109,7 @@ export type Database = {
           name?: string
           phone?: string | null
           replied_at?: string | null
+          source?: string | null
           subject?: string | null
           user_agent?: string | null
         }

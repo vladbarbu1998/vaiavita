@@ -76,8 +76,8 @@ export function ChatWidget() {
         id: '1',
         role: 'bot',
         content: language === 'ro' 
-          ? 'Bună! 👋 Sunt asistentul virtual VAIAVITA. Cum te pot ajuta?\n\nPoți întreba despre produsele noastre, livrare, plată sau retururi.\n\nDacă dorești să vorbești cu un coleg, scrie "Agent live".'
-          : 'Hello! 👋 I\'m the VAIAVITA virtual assistant. How can I help you?\n\nYou can ask about our products, delivery, payment or returns.\n\nIf you\'d like to speak with a team member, type "Live agent".',
+          ? 'Bună! 👋 Sunt asistentul virtual VAIAVITA. Cum te pot ajuta?\n\nPoți întreba despre produsele noastre, livrare, plată sau retururi.'
+          : 'Hello! 👋 I\'m the VAIAVITA virtual assistant. How can I help you?\n\nYou can ask about our products, delivery, payment or returns.',
         timestamp: new Date(),
       }]);
     }
@@ -110,7 +110,8 @@ export function ChatWidget() {
           email: supportForm.email,
           message: supportForm.message,
           transcript,
-          language
+          language,
+          user_agent: navigator.userAgent
         }
       });
 
