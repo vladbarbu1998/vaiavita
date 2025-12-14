@@ -642,6 +642,22 @@ const Checkout = () => {
       }
 
       if (form.paymentMethod === 'cash_on_delivery' || form.paymentMethod === 'card_at_locker') {
+        // Send confirmation email (fire and forget)
+        const emailLanguage = form.country === 'RO' ? 'ro' : 'en';
+        supabase.functions.invoke('send-order-email', {
+          body: {
+            orderId: orderId,
+            type: 'confirmation',
+            language: emailLanguage,
+          }
+        }).then(result => {
+          if (result.error) {
+            console.error('Email send error:', result.error);
+          } else {
+            console.log('Confirmation email sent');
+          }
+        }).catch(err => console.error('Email send failed:', err));
+
         clearCart();
         navigate(`/comanda-confirmata?order=${orderNumber}`);
       } else if (form.paymentMethod === 'stripe') {
