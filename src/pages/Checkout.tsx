@@ -1356,24 +1356,37 @@ const Checkout = () => {
                       {language === 'ro' ? 'Cod cupon' : 'Coupon code'}
                     </Label>
                     {appliedCoupon ? (
-                      <div className="flex items-center justify-between gap-2 p-2 sm:p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                        <div className="min-w-0">
-                          <p className="font-medium text-green-600 text-sm truncate">{appliedCoupon.code}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {appliedCoupon.discount_type === 'percentage' 
-                              ? `-${appliedCoupon.discount_value}%` 
-                              : `-${formatPrice(appliedCoupon.discount_value)}`}
-                          </p>
+                      <div className="p-2 sm:p-3 bg-green-500/10 border border-green-500/20 rounded-lg space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="font-medium text-green-600 text-sm truncate">{appliedCoupon.code}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {appliedCoupon.discount_type === 'percentage' 
+                                ? `-${appliedCoupon.discount_value}%` 
+                                : `-${formatPrice(appliedCoupon.discount_value)}`}
+                            </p>
+                          </div>
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={removeCoupon}
+                            className="text-destructive hover:text-destructive shrink-0 h-8 px-2"
+                          >
+                            {language === 'ro' ? 'Elimină' : 'Remove'}
+                          </Button>
                         </div>
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={removeCoupon}
-                          className="text-destructive hover:text-destructive shrink-0 h-8 px-2"
-                        >
-                          {language === 'ro' ? 'Elimină' : 'Remove'}
-                        </Button>
+                        {/* Scope indicator */}
+                        <p className="text-[10px] text-muted-foreground bg-muted/50 px-2 py-1 rounded">
+                          {appliedCoupon.scope === 'order_total' 
+                            ? (language === 'ro' ? '✓ Se aplică pe total comandă (produse + transport)' : '✓ Applies to order total (products + shipping)')
+                            : appliedCoupon.scope === 'category'
+                              ? (language === 'ro' ? '✓ Se aplică pe produsele din categorie' : '✓ Applies to category products')
+                              : (appliedCoupon.scope === 'product' || appliedCoupon.scope === 'products')
+                                ? (language === 'ro' ? '✓ Se aplică pe produse specifice' : '✓ Applies to specific products')
+                                : (language === 'ro' ? '✓ Se aplică pe toate produsele' : '✓ Applies to all products')
+                          }
+                        </p>
                       </div>
                     ) : (
                       <div className="flex gap-2">
