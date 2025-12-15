@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Loader2, Tag, Percent, Trash2, Edit, Copy, Package, FolderOpen, Globe, Mail, Hash } from 'lucide-react';
+import { Plus, Loader2, Tag, Percent, Trash2, Edit, Copy, Package, FolderOpen, Globe, Mail, Hash, CreditCard, ShoppingCart } from 'lucide-react';
 
 interface Coupon {
   id: string;
@@ -322,6 +322,9 @@ const AdminCoupons = () => {
   };
 
   const getScopeLabel = (coupon: Coupon) => {
+    if (coupon.scope === 'order_total') {
+      return 'Total comandă';
+    }
     if (coupon.scope === 'products' || coupon.scope === 'product') {
       // Multiple products
       if (coupon.product_ids && coupon.product_ids.length > 1) {
@@ -345,6 +348,7 @@ const AdminCoupons = () => {
   };
 
   const getScopeIcon = (scope: string) => {
+    if (scope === 'order_total') return <CreditCard className="w-3 h-3" />;
     if (scope === 'product' || scope === 'products') return <Package className="w-3 h-3" />;
     if (scope === 'category') return <FolderOpen className="w-3 h-3" />;
     return <Globe className="w-3 h-3" />;
@@ -435,6 +439,7 @@ const AdminCoupons = () => {
         <h3 className="font-medium mb-2">Cum funcționează cupoanele:</h3>
         <ul className="text-sm text-muted-foreground space-y-1">
           <li>• <strong>Toate produsele</strong> - Cuponul se aplică la orice produs din coș</li>
+          <li>• <strong>Total comandă</strong> - Cuponul se aplică pe totalul comenzii (produse + transport)</li>
           <li>• <strong>Produse specifice</strong> - Selectezi unul sau mai multe produse pentru care se aplică reducerea</li>
           <li>• <strong>Categorie</strong> - Cuponul se aplică doar produselor din categoria selectată</li>
           <li>• <strong>Email restricționat</strong> - Cuponul funcționează doar pentru un anumit email (pentru cupoane de review)</li>
@@ -599,6 +604,12 @@ const AdminCoupons = () => {
                     <div className="flex items-center gap-2">
                       <Globe className="w-4 h-4" />
                       Toate produsele
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="order_total">
+                    <div className="flex items-center gap-2">
+                      <ShoppingCart className="w-4 h-4" />
+                      Total comandă (produse + transport)
                     </div>
                   </SelectItem>
                   <SelectItem value="products">
