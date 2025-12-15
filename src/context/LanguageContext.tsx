@@ -159,11 +159,69 @@ const translations: Record<Language, Record<string, string>> = {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+// Detect language based on browser preference
+const detectBrowserLanguage = (): Language => {
+  const browserLang = navigator.language || (navigator as any).userLanguage;
+  // If browser language starts with 'ro', use Romanian
+  if (browserLang?.toLowerCase().startsWith('ro')) {
+    return 'ro';
+  }
+  // Otherwise default to English for non-Romanian browsers
+  return 'en';
+};
+
+// Detect language based on IP location (country)
+const detectLanguageByIP = async (): Promise<Language> => {
+  try {
+    // Use ipapi.co for country detection (free, no API key needed)
+    const response = await fetch('https://ipapi.co/json/', { 
+      signal: AbortSignal.timeout(3000) // 3 second timeout
+    });
+    if (!response.ok) throw new Error('IP detection failed');
+    const data = await response.json();
+    
+    // If country is Romania, use Romanian
+    if (data.country_code === 'RO') {
+      return 'ro';
+    }
+    // Otherwise use English for international visitors
+    return 'en';
+  } catch (error) {
+    console.log('IP detection failed, falling back to browser language');
+    return detectBrowserLanguage();
+  }
+};
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>(() => {
-    const saved = localStorage.getItem('vaiavita-language');
-    return (saved as Language) || 'ro';
-  });
+  const [language, setLanguageState] = useState<Language>('ro');
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize language on first load
+  useEffect(() => {
+    const initLanguage = async () => {
+      const saved = localStorage.getItem('vaiavita-language');
+      const hasVisited = localStorage.getItem('vaiavita-visited');
+      
+      if (saved) {
+        // User has manually set a preference, use it
+        setLanguageState(saved as Language);
+      } else if (!hasVisited) {
+        // First visit - detect language by IP, fallback to browser preference
+        const detectedLang = await detectLanguageByIP();
+        setLanguageState(detectedLang);
+        localStorage.setItem('vaiavita-language', detectedLang);
+        localStorage.setItem('vaiavita-visited', 'true');
+      } else {
+        // Return visitor without preference - use browser language
+        const browserLang = detectBrowserLanguage();
+        setLanguageState(browserLang);
+      }
+      
+      setIsInitialized(true);
+    };
+    
+    initLanguage();
+  }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
@@ -175,8 +233,15 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    document.documentElement.lang = language;
-  }, [language]);
+    if (isInitialized) {
+      document.documentElement.lang = language;
+    }
+  }, [language, isInitialized]);
+
+  // Show nothing until language is determined to prevent flash
+  if (!isInitialized) {
+    return null;
+  }
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
