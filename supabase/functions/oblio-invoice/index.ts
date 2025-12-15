@@ -124,7 +124,7 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
       vatPercentage: 19,
       vatIncluded: true,
       quantity: item.quantity,
-      productType: "Marfa",
+      productType: "Serviciu",
       saveToDb: false,
     })),
     language: "RO",
