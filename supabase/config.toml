@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.update-user-password]
 verify_jwt = false
+
+[functions.force-logout-user]
+verify_jwt = false
