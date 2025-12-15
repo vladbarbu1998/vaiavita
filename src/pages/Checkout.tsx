@@ -265,18 +265,6 @@ const Checkout = () => {
     }
   };
 
-  // Calculate discount based on coupon
-  const calculateDiscount = () => {
-    if (!appliedCoupon) return 0;
-    
-    if (appliedCoupon.discount_type === 'percentage') {
-      return totalPrice * (appliedCoupon.discount_value / 100);
-    }
-    return Math.min(appliedCoupon.discount_value, totalPrice);
-  };
-
-  const discount = calculateDiscount();
-  
   // Shipping cost calculation based on delivery method
   const getDeliveryCost = (method: DeliveryMethod): number => {
     // Free shipping promo only applies to courier shipping
@@ -308,7 +296,29 @@ const Checkout = () => {
   
   const shippingDisplayCost = getShippingDisplayCost();
   const shippingCost = getShippingCost();
-  const finalTotal = totalPrice - discount + shippingCost;
+  
+  // Calculate discount based on coupon - needs to know shippingCost for order_total scope
+  const calculateDiscount = () => {
+    if (!appliedCoupon) return 0;
+    
+    // For order_total scope, discount applies to products + shipping
+    if (appliedCoupon.scope === 'order_total') {
+      const orderTotal = totalPrice + shippingCost;
+      if (appliedCoupon.discount_type === 'percentage') {
+        return orderTotal * (appliedCoupon.discount_value / 100);
+      }
+      return Math.min(appliedCoupon.discount_value, orderTotal);
+    }
+    
+    // For other scopes, discount applies only to products
+    if (appliedCoupon.discount_type === 'percentage') {
+      return totalPrice * (appliedCoupon.discount_value / 100);
+    }
+    return Math.min(appliedCoupon.discount_value, totalPrice);
+  };
+
+  const discount = calculateDiscount();
+  const finalTotal = totalPrice + shippingCost - discount;
 
   // Validate coupon against cart items and customer email
   const validateCouponScope = async (coupon: Coupon, customerEmail: string): Promise<{ valid: boolean; message: string }> => {
@@ -326,7 +336,7 @@ const Checkout = () => {
       }
     }
 
-    if (coupon.scope === 'all') {
+    if (coupon.scope === 'all' || coupon.scope === 'order_total') {
       return { valid: true, message: '' };
     }
 
