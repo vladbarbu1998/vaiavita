@@ -20,10 +20,13 @@ interface OrderEmailRequest {
     | "cancelled"
     | "payment_failed"
     | "payment_reminder"
-    | "admin_notification";
+    | "admin_notification"
+    | "invoice";
   awbNumber?: string;
   courierName?: string;
   cancellationReason?: string;
+  invoiceNumber?: string;
+  invoiceLink?: string;
   language?: "ro" | "en";
 }
 
@@ -42,6 +45,7 @@ const EMAIL_SUBJECTS = {
     payment_failed: "Plata pentru comanda ta nu a putut fi procesată",
     payment_reminder: "Reminder: Finalizează plata pentru comanda ta",
     admin_notification: "🎉 Comandă nouă cu succes!",
+    invoice: "Factura pentru comanda ta este disponibilă",
   },
   en: {
     confirmation: "Your order has been placed successfully!",
@@ -53,6 +57,7 @@ const EMAIL_SUBJECTS = {
     payment_failed: "Payment for your order could not be processed",
     payment_reminder: "Reminder: Complete payment for your order",
     admin_notification: "🎉 New successful order!",
+    invoice: "Your invoice is now available",
   },
 };
 
@@ -1197,6 +1202,96 @@ const TEMPLATES = {
   </table>
 </body>
 </html>`,
+
+    invoice: `<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factură disponibilă - VAIAVITA</title>
+</head>
+<body style="margin: 0; padding: 0; background: linear-gradient(180deg, #e8f4f2 0%, #dceeed 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+      <td align="center" style="padding: 40px 16px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%;">
+          <tr>
+            <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                <tr>
+                  <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
+                    <span style="color: #fff; font-size: 30px; line-height: 60px;">📄</span>
+                  </td>
+                </tr>
+              </table>
+              <h1 style="color: #fff; font-size: 26px; font-weight: 700; margin: 20px 0 6px 0;">Factura ta este disponibilă!</h1>
+              <p style="color: rgba(255,255,255,0.9); font-size: 15px; margin: 0;">Mulțumim pentru comanda ta la VAIAVITA</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background: linear-gradient(180deg, #ffffff 0%, #fafcfb 100%); padding: 36px 40px;">
+              <p style="font-size: 16px; color: #444; margin: 0 0 32px 0; line-height: 1.6; text-align: center;">
+                Salut <strong style="color: #025951;">{{customer_name}}</strong>! Factura pentru comanda ta a fost emisă.
+              </p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #f0f9f7 0%, #e5f5f2 100%); border-radius: 14px; margin-bottom: 32px;">
+                <tr>
+                  <td style="padding: 24px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #d0e8e4;">
+                          <span style="font-size: 12px; color: #888; text-transform: uppercase;">Număr factură</span>
+                          <strong style="font-size: 18px; color: #025951; display: block; margin-top: 4px;">{{invoice_number}}</strong>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #d0e8e4;">
+                          <span style="font-size: 12px; color: #888; text-transform: uppercase;">Comandă</span>
+                          <strong style="font-size: 16px; color: #333; display: block; margin-top: 4px;">#{{order_number}}</strong>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0;">
+                          <span style="font-size: 12px; color: #888; text-transform: uppercase;">Total</span>
+                          <strong style="font-size: 20px; color: #025951; display: block; margin-top: 4px;">{{total}} lei</strong>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+                <tr>
+                  <td align="center">
+                    <a href="{{invoice_link}}" style="display: inline-block; padding: 18px 48px; background: linear-gradient(135deg, #025951 0%, #038578 100%); color: #ffffff; text-decoration: none; border-radius: 50px; font-size: 16px; font-weight: 600;">
+                      📥 Descarcă factura PDF
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center">
+                    <a href="mailto:office@vaiavita.com" style="display: inline-block; padding: 14px 36px; color: #025951; text-decoration: none; border-radius: 50px; font-size: 14px; font-weight: 600; border: 2px solid #025951;">
+                      Ai întrebări? Contactează-ne →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945 | J8/1310/2024</p>
+              <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2025 VAIAVITA</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
   },
 
   en: {
@@ -2284,6 +2379,96 @@ const TEMPLATES = {
   </table>
 </body>
 </html>`,
+
+    invoice: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Available - VAIAVITA</title>
+</head>
+<body style="margin: 0; padding: 0; background: linear-gradient(180deg, #e8f4f2 0%, #dceeed 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+      <td align="center" style="padding: 40px 16px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%;">
+          <tr>
+            <td style="background: linear-gradient(135deg, #025951 0%, #038578 50%, #04a396 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                <tr>
+                  <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
+                    <span style="color: #fff; font-size: 30px; line-height: 60px;">📄</span>
+                  </td>
+                </tr>
+              </table>
+              <h1 style="color: #fff; font-size: 26px; font-weight: 700; margin: 20px 0 6px 0;">Your invoice is ready!</h1>
+              <p style="color: rgba(255,255,255,0.9); font-size: 15px; margin: 0;">Thank you for your order at VAIAVITA</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background: linear-gradient(180deg, #ffffff 0%, #fafcfb 100%); padding: 36px 40px;">
+              <p style="font-size: 16px; color: #444; margin: 0 0 32px 0; line-height: 1.6; text-align: center;">
+                Hi <strong style="color: #025951;">{{customer_name}}</strong>! Your invoice has been issued.
+              </p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #f0f9f7 0%, #e5f5f2 100%); border-radius: 14px; margin-bottom: 32px;">
+                <tr>
+                  <td style="padding: 24px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #d0e8e4;">
+                          <span style="font-size: 12px; color: #888; text-transform: uppercase;">Invoice Number</span>
+                          <strong style="font-size: 18px; color: #025951; display: block; margin-top: 4px;">{{invoice_number}}</strong>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #d0e8e4;">
+                          <span style="font-size: 12px; color: #888; text-transform: uppercase;">Order</span>
+                          <strong style="font-size: 16px; color: #333; display: block; margin-top: 4px;">#{{order_number}}</strong>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0;">
+                          <span style="font-size: 12px; color: #888; text-transform: uppercase;">Total</span>
+                          <strong style="font-size: 20px; color: #025951; display: block; margin-top: 4px;">{{total}} lei</strong>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+                <tr>
+                  <td align="center">
+                    <a href="{{invoice_link}}" style="display: inline-block; padding: 18px 48px; background: linear-gradient(135deg, #025951 0%, #038578 100%); color: #ffffff; text-decoration: none; border-radius: 50px; font-size: 16px; font-weight: 600;">
+                      📥 Download Invoice PDF
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center">
+                    <a href="mailto:office@vaiavita.com" style="display: inline-block; padding: 14px 36px; color: #025951; text-decoration: none; border-radius: 50px; font-size: 14px; font-weight: 600; border: 2px solid #025951;">
+                      Questions? Contact us →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945 | J8/1310/2024</p>
+              <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2025 VAIAVITA</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
   },
 };
 
@@ -2401,6 +2586,8 @@ function replaceTemplatePlaceholders(
     awbNumber?: string;
     courierName?: string;
     cancellationReason?: string;
+    invoiceNumber?: string;
+    invoiceLink?: string;
   } = {},
 ): string {
   const customerName = `${order.customer_first_name} ${order.customer_last_name}`;
@@ -2443,7 +2630,9 @@ function replaceTemplatePlaceholders(
     .replace(
       /\{\{review_url\}\}/g,
       `https://vaiavita.ro/produse/${orderItems[0]?.product_id ? "pasta-dent-tastic" : ""}#reviews`,
-    );
+    )
+    .replace(/\{\{invoice_number\}\}/g, options.invoiceNumber || order.oblio_invoice_number || "")
+    .replace(/\{\{invoice_link\}\}/g, options.invoiceLink || order.oblio_invoice_link || "#");
 
   // Replace products HTML
   if (template.includes("{{products_html}}")) {
@@ -2466,6 +2655,8 @@ function generateEmail(
     awbNumber?: string;
     courierName?: string;
     cancellationReason?: string;
+    invoiceNumber?: string;
+    invoiceLink?: string;
   } = {},
 ): string {
   const templates = TEMPLATES[lang];
@@ -2487,7 +2678,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { orderId, emailType, awbNumber, courierName, cancellationReason, language } =
+    const { orderId, emailType, awbNumber, courierName, cancellationReason, invoiceNumber, invoiceLink, language } =
       (await req.json()) as OrderEmailRequest;
 
     console.log(`Processing ${emailType} email for order ${orderId}, language: ${language || "auto"}`);
@@ -2528,6 +2719,8 @@ const handler = async (req: Request): Promise<Response> => {
       awbNumber,
       courierName,
       cancellationReason,
+      invoiceNumber,
+      invoiceLink,
     });
 
     // Get subject
