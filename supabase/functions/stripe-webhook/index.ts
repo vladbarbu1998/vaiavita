@@ -77,13 +77,13 @@ serve(async (req) => {
         });
 
         if (orderId) {
-          // Update the order status
+          // Update the order status to card_paid (admin will manually change to processing)
           const { error } = await supabaseClient
             .from("orders")
             .update({ 
               payment_status: "paid",
               payment_id: paymentIntent.id,
-              status: "processing" // Move order to processing after payment
+              status: "card_paid" // New status for card payments - admin manually moves to processing
             })
             .eq("id", orderId);
 
@@ -92,7 +92,7 @@ serve(async (req) => {
             throw new Error(`Failed to update order: ${error.message}`);
           }
 
-          logStep("Order updated successfully", { orderId, status: "paid" });
+          logStep("Order updated successfully", { orderId, status: "card_paid" });
 
           // Send order confirmation email to customer
           try {

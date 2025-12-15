@@ -127,6 +127,7 @@ interface Category {
 
 const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
   pending: { label: 'În așteptare', color: 'bg-yellow-500/10 text-yellow-600', icon: Clock },
+  card_paid: { label: 'Plătită cu cardul', color: 'bg-emerald-500/10 text-emerald-600', icon: CreditCard },
   processing: { label: 'În procesare', color: 'bg-blue-500/10 text-blue-600', icon: Package },
   pregatita_ridicare: { label: 'Pregătită pentru ridicare', color: 'bg-purple-500/10 text-purple-600', icon: MapPin },
   shipped: { label: 'Expediată', color: 'bg-indigo-500/10 text-indigo-600', icon: Truck },
@@ -298,6 +299,7 @@ const AdminOrders = () => {
   const getEmailTypeForStatus = (status: string): string | null => {
     const statusEmailMap: Record<string, string> = {
       pending: 'confirmation',
+      card_paid: 'card_paid', // New status - uses card_paid email template
       processing: 'processing',
       pregatita_ridicare: 'ready_pickup',
       shipped: 'shipped',
@@ -487,7 +489,7 @@ const AdminOrders = () => {
     setPendingStatusOrder(null);
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'pregatita_ridicare') => {
+  const updateOrderStatus = async (orderId: string, newStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'pregatita_ridicare' | 'card_paid') => {
     const { error } = await supabase
       .from('orders')
       .update({ status: newStatus })
@@ -503,7 +505,8 @@ const AdminOrders = () => {
       }
 
       // Send email notification for status change (except shipped/cancelled which have their own flow)
-      if (newStatus !== 'shipped' && newStatus !== 'cancelled') {
+      // Also skip card_paid since confirmation email was already sent by webhook
+      if (newStatus !== 'shipped' && newStatus !== 'cancelled' && newStatus !== 'card_paid') {
         const emailType = getEmailTypeForStatus(newStatus);
         if (emailType) {
           await sendOrderEmail(orderId, emailType);
@@ -880,7 +883,9 @@ const AdminOrders = () => {
               <SelectContent>
                 <SelectItem value="all">Toate</SelectItem>
                 <SelectItem value="pending">În așteptare</SelectItem>
+                <SelectItem value="card_paid">Plătită cu cardul</SelectItem>
                 <SelectItem value="processing">În procesare</SelectItem>
+                <SelectItem value="pregatita_ridicare">Pregătită ridicare</SelectItem>
                 <SelectItem value="shipped">Expediată</SelectItem>
                 <SelectItem value="delivered">Finalizată</SelectItem>
                 <SelectItem value="cancelled">Anulată</SelectItem>
@@ -1251,6 +1256,7 @@ const AdminOrders = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pending">În așteptare</SelectItem>
+                    <SelectItem value="card_paid">Plătită cu cardul</SelectItem>
                     <SelectItem value="processing">În procesare</SelectItem>
                     {selectedOrder.delivery_method === 'pickup' && (
                       <SelectItem value="pregatita_ridicare">Pregătită ridicare</SelectItem>
