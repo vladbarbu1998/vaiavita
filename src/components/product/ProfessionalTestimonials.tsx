@@ -27,7 +27,7 @@ const testimonials: Testimonial[] = [
   {
     content_ro: 'Folosesc Dent-Tastic de doi ani și l-am recomandat atât pacienților mei, cât și prietenilor. Cu toții am devenit dependenți de senzația sa revigorantă și de prospețimea de lungă durată pe care o oferă. Încercați și voi — beneficiile depășesc cu mult sănătatea orală convențională. Împărtășiți și cu familia voastră; merită tot ce e mai bun.',
     content_en: 'I have been using Dent-Tastic for two years and have recommended it to both my patients and friends. We have all become addicted to its refreshing sensation and the long-lasting freshness it provides. Try it too — the benefits far exceed conventional oral health. Share it with your family as well; they deserve the best.',
-    author: 'Prof. A-Bakr M. Rabie',
+    author: 'Prof. Bakr Rabie',
     title_ro: 'Profesor de Ortodonție',
     title_en: 'Professor of Orthodontics',
     credentials: 'Cert.Ortho, MSc, PhD — University of Hong Kong',
