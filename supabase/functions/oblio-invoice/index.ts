@@ -115,7 +115,7 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
     },
     products: order.order_items.map((item: any) => ({
       name: item.product_name,
-      code: "",
+      code: item.product_sku || "",
       description: "",
       price: item.unit_price,
       measuringUnit: "buc",
@@ -124,7 +124,7 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
       vatPercentage: 19,
       vatIncluded: true,
       quantity: item.quantity,
-      productType: "Serviciu",
+      productType: "Marfa",
       saveToDb: false,
     })),
     language: "RO",
@@ -148,6 +148,7 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
       vatIncluded: true,
       quantity: 1,
       productType: "Serviciu",
+      saveToDb: false,
     });
   }
 
@@ -165,6 +166,7 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
       vatIncluded: true,
       quantity: 1,
       productType: "Serviciu",
+      saveToDb: false,
     });
   }
 
