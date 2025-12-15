@@ -106,7 +106,7 @@ serve(async (req) => {
                 },
                 body: JSON.stringify({
                   orderId,
-                  emailType: "order_confirmation",
+                  emailType: "confirmation",
                 }),
               }
             );
