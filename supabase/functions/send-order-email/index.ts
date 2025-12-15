@@ -13,6 +13,7 @@ interface OrderEmailRequest {
   orderId: string;
   emailType:
     | "confirmation"
+    | "card_paid"
     | "processing"
     | "ready_pickup"
     | "shipped"
@@ -34,6 +35,7 @@ type Language = "ro" | "en";
 const EMAIL_SUBJECTS = {
   ro: {
     confirmation: "Comanda ta a fost plasată cu succes!",
+    card_paid: "Plata a fost confirmată - Comanda ta este plătită!",
     processing: "Comanda ta este în procesare",
     ready_pickup: "Comanda ta este pregătită pentru ridicare",
     shipped: "Comanda ta a fost expediată!",
@@ -45,6 +47,7 @@ const EMAIL_SUBJECTS = {
   },
   en: {
     confirmation: "Your order has been placed successfully!",
+    card_paid: "Payment confirmed - Your order is paid!",
     processing: "Your order is being processed",
     ready_pickup: "Your order is ready for pickup",
     shipped: "Your order has been shipped!",
@@ -236,7 +239,121 @@ const TEMPLATES = {
 </body>
 </html>`,
 
-    processing: `<!DOCTYPE html>
+    card_paid: `<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plată Confirmată - VAIAVITA</title>
+</head>
+<body style="margin: 0; padding: 0; background: linear-gradient(180deg, #e8f4f2 0%, #dceeed 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+      <td align="center" style="padding: 40px 16px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%;">
+          <tr>
+            <td style="background: linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #4ade80 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                <tr>
+                  <td style="width: 60px; height: 60px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
+                    <span style="color: #fff; font-size: 30px; line-height: 60px;">💳</span>
+                  </td>
+                </tr>
+              </table>
+              <h1 style="color: #fff; font-size: 26px; font-weight: 700; margin: 20px 0 6px 0;">Plată confirmată!</h1>
+              <p style="color: rgba(255,255,255,0.9); font-size: 15px; margin: 0;">Comanda ta a fost plătită cu succes</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background: linear-gradient(180deg, #ffffff 0%, #fafcfb 100%); padding: 36px 40px;">
+              <p style="font-size: 16px; color: #444; margin: 0 0 32px 0; line-height: 1.6; text-align: center;">
+                Salut <strong style="color: #16a34a;">{{customer_name}}</strong>! Plata pentru comanda ta a fost procesată cu succes.
+              </p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 14px; margin-bottom: 32px;">
+                <tr>
+                  <td style="padding: 20px 24px; border-right: 1px solid #bbf7d0;" width="50%">
+                    <span style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; display: block;">Comandă</span>
+                    <strong style="font-size: 22px; color: #16a34a; display: block; margin-top: 6px;">#{{order_number}}</strong>
+                  </td>
+                  <td style="padding: 20px 24px;" width="50%">
+                    <span style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; display: block;">Status plată</span>
+                    <span style="font-size: 15px; color: #16a34a; font-weight: 700; display: block; margin-top: 6px;">✓ Plătită</span>
+                  </td>
+                </tr>
+              </table>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 14px; margin-bottom: 28px; border: 1px solid #bbf7d0;">
+                <tr>
+                  <td style="padding: 24px; text-align: center;">
+                    <p style="font-size: 14px; color: #166534; margin: 0; line-height: 1.6;">
+                      <strong>Ce urmează?</strong><br>
+                      Vom procesa comanda ta și te vom notifica când va fi expediată, cu toate detaliile de tracking.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 20px;">
+                <tr>
+                  <td style="font-size: 12px; color: #16a34a; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; padding-bottom: 14px; border-bottom: 2px solid #16a34a;">
+                    Produse comandate
+                  </td>
+                </tr>
+              </table>
+              {{products_html}}
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #f8faf9 0%, #f0f5f4 100%); border-radius: 14px; margin-bottom: 32px;">
+                <tr>
+                  <td style="padding: 20px 24px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="font-size: 14px; color: #666; padding: 6px 0;">Subtotal</td>
+                        <td align="right" style="font-size: 14px; color: #333; padding: 6px 0;">{{subtotal}} lei</td>
+                      </tr>
+                      <tr>
+                        <td style="font-size: 14px; color: #666; padding: 6px 0;">Livrare</td>
+                        <td align="right" style="font-size: 14px; color: #333; padding: 6px 0;">{{shipping_cost}}</td>
+                      </tr>
+                      {{discount_row}}
+                      <tr>
+                        <td colspan="2" style="padding: 12px 0;">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr><td style="background: linear-gradient(90deg, #16a34a, #4ade80); height: 2px; border-radius: 2px;"></td></tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-size: 18px; font-weight: 700; color: #111;">Total plătit</td>
+                        <td align="right" style="font-size: 22px; font-weight: 700; color: #16a34a;">{{total}} lei</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center">
+                    <p style="font-size: 15px; color: #666; margin: 0 0 20px 0;">Ai întrebări despre comandă?</p>
+                    <a href="tel:0732111117" style="display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); color: #ffffff; text-decoration: none; border-radius: 50px; font-size: 15px; font-weight: 600;">
+                      📞 0732 111 117
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto; opacity: 0.9;">
+              <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945</p>
+              <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2025 VAIAVITA</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+
+    processing: `<!DOCTYPE html
 <html lang="ro">
 <head>
   <meta charset="UTF-8">
@@ -1255,6 +1372,65 @@ const TEMPLATES = {
               </table>
               <p style="font-size: 12px; color: #666; margin: 0;">VAIAVITA S.R.L. | CUI 49945945 | J8/1310/2024</p>
               <p style="font-size: 11px; color: #555; margin: 10px 0 0 0;">© 2025 VAIAVITA. All rights reserved.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+
+    card_paid: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Confirmed - VAIAVITA</title>
+</head>
+<body style="margin: 0; padding: 0; background: linear-gradient(180deg, #e8f4f2 0%, #dceeed 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+      <td align="center" style="padding: 40px 16px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%;">
+          <tr>
+            <td style="background: linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #4ade80 100%); border-radius: 24px 24px 0 0; padding: 40px 40px; text-align: center;">
+              <h1 style="color: #fff; font-size: 26px; font-weight: 700; margin: 20px 0 6px 0;">💳 Payment Confirmed!</h1>
+              <p style="color: rgba(255,255,255,0.9); font-size: 15px; margin: 0;">Your order has been paid successfully</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background: #ffffff; padding: 36px 40px;">
+              <p style="font-size: 16px; color: #444; margin: 0 0 32px 0; line-height: 1.6; text-align: center;">
+                Hi <strong style="color: #16a34a;">{{customer_name}}</strong>! Your payment has been processed successfully.
+              </p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: #f0fdf4; border-radius: 14px; margin-bottom: 32px;">
+                <tr>
+                  <td style="padding: 20px 24px;" width="50%">
+                    <span style="font-size: 11px; color: #888; text-transform: uppercase;">Order</span>
+                    <strong style="font-size: 22px; color: #16a34a; display: block;">#{{order_number}}</strong>
+                  </td>
+                  <td style="padding: 20px 24px;" width="50%">
+                    <span style="font-size: 11px; color: #888; text-transform: uppercase;">Status</span>
+                    <span style="font-size: 15px; color: #16a34a; font-weight: 700; display: block;">✓ Paid</span>
+                  </td>
+                </tr>
+              </table>
+              <p style="font-size: 14px; color: #166534; text-align: center; margin-bottom: 24px;">
+                <strong>What's next?</strong> We will process your order and notify you when it ships.
+              </p>
+              {{products_html}}
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 24px;">
+                <tr>
+                  <td style="font-size: 18px; font-weight: 700; color: #16a34a;">Total Paid: {{total}} lei</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="background: #1a1a1a; border-radius: 0 0 24px 24px; padding: 32px 40px; text-align: center;">
+              <img src="https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products//logo-mail-craciun.png" alt="VAIAVITA" width="110" style="display: block; margin: 0 auto 20px auto;">
+              <p style="font-size: 11px; color: #555; margin: 0;">© 2025 VAIAVITA</p>
             </td>
           </tr>
         </table>
