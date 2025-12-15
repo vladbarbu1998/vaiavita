@@ -383,8 +383,8 @@ const AdminInbox = () => {
                             Răspuns
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" className="text-xs">
-                            Neaserăspuns
+                          <Badge variant="destructive" className="text-xs">
+                            De răspuns
                           </Badge>
                         )}
                       </div>
