@@ -174,6 +174,7 @@ const AdminOrders = () => {
   // Dialog states for status changes
   const [shippedDialogOpen, setShippedDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [pickupDialogOpen, setPickupDialogOpen] = useState(false);
   const [pendingStatusOrder, setPendingStatusOrder] = useState<Order | null>(null);
   const [awbNumber, setAwbNumber] = useState('');
   const [courierName, setCourierName] = useState('');
@@ -182,6 +183,8 @@ const AdminOrders = () => {
   const [awbFetchError, setAwbFetchError] = useState<string | null>(null);
   const [cancellationReason, setCancellationReason] = useState('');
   const [sendCancelEmail, setSendCancelEmail] = useState(true);
+  const [pickupLocation, setPickupLocation] = useState('VAIAVITA');
+  const [pickupAddress, setPickupAddress] = useState('Strada Iuliu Maniu 60, Brașov, 500091');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
@@ -316,7 +319,7 @@ const AdminOrders = () => {
     return countryCode === 'RO' ? 'ro' : 'en';
   };
 
-  const sendOrderEmail = async (orderId: string, emailType: string, options?: { awbNumber?: string; courierName?: string; cancellationReason?: string }) => {
+  const sendOrderEmail = async (orderId: string, emailType: string, options?: { awbNumber?: string; courierName?: string; cancellationReason?: string; pickupLocation?: string; pickupAddress?: string }) => {
     setSendingEmail(orderId);
     try {
       // Find the order to determine language
@@ -365,6 +368,11 @@ const AdminOrders = () => {
       setCancellationReason(order.cancel_reason || '');
       setSendCancelEmail(true);
       setCancelDialogOpen(true);
+    } else if (newStatus === 'pregatita_ridicare') {
+      setPendingStatusOrder(order);
+      setPickupLocation('VAIAVITA');
+      setPickupAddress('Strada Iuliu Maniu 60, Brașov, 500091');
+      setPickupDialogOpen(true);
     } else {
       updateOrderStatus(order.id, newStatus as any);
     }
@@ -486,6 +494,42 @@ const AdminOrders = () => {
     }
     
     setCancelDialogOpen(false);
+    setPendingStatusOrder(null);
+  };
+
+  const confirmPickupStatus = async () => {
+    if (!pendingStatusOrder) return;
+    
+    // Update order status
+    const { error } = await supabase
+      .from('orders')
+      .update({ 
+        status: 'pregatita_ridicare',
+        pickup_location: pickupLocation
+      })
+      .eq('id', pendingStatusOrder.id);
+
+    if (error) {
+      toast.error('Eroare la actualizare');
+    } else {
+      toast.success('Status actualizat');
+      fetchData();
+      if (selectedOrder?.id === pendingStatusOrder.id) {
+        setSelectedOrder({ 
+          ...selectedOrder, 
+          status: 'pregatita_ridicare',
+          pickup_location: pickupLocation
+        });
+      }
+      
+      // Send email with pickup details
+      await sendOrderEmail(pendingStatusOrder.id, 'ready_pickup', { 
+        pickupLocation,
+        pickupAddress
+      });
+    }
+    
+    setPickupDialogOpen(false);
     setPendingStatusOrder(null);
   };
 
@@ -1256,7 +1300,10 @@ const AdminOrders = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pending">În așteptare</SelectItem>
-                    <SelectItem value="card_paid">Plătită cu cardul</SelectItem>
+                    {/* card_paid is set automatically by Stripe webhook, not manually selectable for COD orders */}
+                    {selectedOrder.payment_method === 'stripe' && (
+                      <SelectItem value="card_paid">Plătită cu cardul</SelectItem>
+                    )}
                     <SelectItem value="processing">În procesare</SelectItem>
                     {selectedOrder.delivery_method === 'pickup' && (
                       <SelectItem value="pregatita_ridicare">Pregătită ridicare</SelectItem>
@@ -1668,6 +1715,59 @@ const AdminOrders = () => {
             >
               <XCircle className="w-4 h-4" />
               {sendCancelEmail ? 'Anulează + Trimite email' : 'Anulează comandă'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Pickup Ready Dialog - Location & Address */}
+      <Dialog open={pickupDialogOpen} onOpenChange={setPickupDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-primary" />
+              Detalii ridicare
+            </DialogTitle>
+            <DialogDescription>
+              Specifică locația pentru ridicarea comenzii {pendingStatusOrder?.order_number}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Aceste detalii vor fi trimise clientului în emailul de notificare.
+            </p>
+
+            <div className="space-y-2">
+              <Label htmlFor="pickupLocation">Nume locație *</Label>
+              <Input
+                id="pickupLocation"
+                placeholder="Ex: VAIAVITA"
+                value={pickupLocation}
+                onChange={(e) => setPickupLocation(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pickupAddress">Adresa completă *</Label>
+              <Textarea
+                id="pickupAddress"
+                placeholder="Ex: Strada Iuliu Maniu 60, Brașov, 500091"
+                value={pickupAddress}
+                onChange={(e) => setPickupAddress(e.target.value)}
+                rows={2}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPickupDialogOpen(false)}>
+              Anulează
+            </Button>
+            <Button 
+              onClick={confirmPickupStatus}
+              disabled={!pickupLocation.trim() || !pickupAddress.trim()}
+              className="gap-2"
+            >
+              <Mail className="w-4 h-4" />
+              Trimite email + Confirmă
             </Button>
           </DialogFooter>
         </DialogContent>

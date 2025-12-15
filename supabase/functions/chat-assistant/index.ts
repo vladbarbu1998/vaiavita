@@ -16,8 +16,7 @@ DESPRE COMPANIE:
 - Telefon: 0732 111 117
 - WhatsApp: 0732 111 117
 - Locație: Brașov, România
-- Adresa ridicare personală: Strada Iuliu Maniu 60, Brașov, 500091
-- Program ridicare: Luni - Vineri, 10:00 - 18:00
+- Ridicare personală disponibilă în Brașov (detaliile exacte sunt comunicate pe email după plasarea comenzii)
 
 CREATORUL WEBSITE-ULUI:
 Acest website a fost creat de Loren Stanoi.
@@ -55,7 +54,7 @@ LIVRARE ROMÂNIA:
 - Curier la adresă: 19 lei (1-3 zile lucrătoare)
 - Poșta Română: 15 lei (3-5 zile lucrătoare)
 - EasyBox/Locker: 15 lei (1-2 zile lucrătoare)
-- Ridicare personală Brașov: GRATUIT (Strada Iuliu Maniu 60, Brașov)
+- Ridicare personală Brașov: GRATUIT (detaliile exacte sunt comunicate pe email după plasarea comenzii)
 - Livrare GRATUITĂ pentru comenzi peste 150 lei
 - Transport GRATUIT la 4+ paste Dent-Tastic (doar România)
 

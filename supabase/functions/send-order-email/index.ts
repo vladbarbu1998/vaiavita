@@ -27,6 +27,8 @@ interface OrderEmailRequest {
   cancellationReason?: string;
   invoiceNumber?: string;
   invoiceLink?: string;
+  pickupLocation?: string;
+  pickupAddress?: string;
   language?: "ro" | "en";
 }
 
@@ -2588,6 +2590,8 @@ function replaceTemplatePlaceholders(
     cancellationReason?: string;
     invoiceNumber?: string;
     invoiceLink?: string;
+    pickupLocation?: string;
+    pickupAddress?: string;
   } = {},
 ): string {
   const customerName = `${order.customer_first_name} ${order.customer_last_name}`;
@@ -2617,8 +2621,9 @@ function replaceTemplatePlaceholders(
     .replace(/\{\{payment_status\}\}/g, getPaymentStatusText(order.payment_status || "pending", lang))
     .replace(/\{\{customer_email\}\}/g, order.customer_email)
     .replace(/\{\{customer_phone\}\}/g, order.customer_phone)
-    .replace(/\{\{pickup_location\}\}/g, "VAIAVITA")
-    .replace(/\{\{pickup_address\}\}/g, "Strada Iuliu Maniu 60, Brașov, 500091")
+    .replace(/\{\{pickup_location\}\}/g, options.pickupLocation || "VAIAVITA")
+    .replace(/\{\{pickup_address\}\}/g, options.pickupAddress || "Strada Iuliu Maniu 60, Brașov, 500091")
+    .replace(/\{\{company_phone\}\}/g, "0732 111 117")
     .replace(/\{\{awb_number\}\}/g, options.awbNumber || "")
     .replace(/\{\{courier_name\}\}/g, options.courierName || "")
     .replace(/\{\{tracking_url\}\}/g, order.tracking_url || "#")
@@ -2657,6 +2662,8 @@ function generateEmail(
     cancellationReason?: string;
     invoiceNumber?: string;
     invoiceLink?: string;
+    pickupLocation?: string;
+    pickupAddress?: string;
   } = {},
 ): string {
   const templates = TEMPLATES[lang];
@@ -2678,7 +2685,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { orderId, emailType, awbNumber, courierName, cancellationReason, invoiceNumber, invoiceLink, language } =
+    const { orderId, emailType, awbNumber, courierName, cancellationReason, invoiceNumber, invoiceLink, pickupLocation, pickupAddress, language } =
       (await req.json()) as OrderEmailRequest;
 
     console.log(`Processing ${emailType} email for order ${orderId}, language: ${language || "auto"}`);
@@ -2721,6 +2728,8 @@ const handler = async (req: Request): Promise<Response> => {
       cancellationReason,
       invoiceNumber,
       invoiceLink,
+      pickupLocation,
+      pickupAddress,
     });
 
     // Get subject
