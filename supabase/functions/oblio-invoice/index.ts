@@ -109,7 +109,7 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
     seriesName: seriesName,
     orderNumber: order.order_number, // Reference to original order (BT-13)
     collect: {
-      type: order.payment_method === 'cash_on_delivery' ? "Ramburs" : "Card bancar",
+      type: order.payment_method === 'cash_on_delivery' ? "Ramburs" : "Card",
       value: order.total,
     },
     products: order.order_items.map((item: any) => ({
