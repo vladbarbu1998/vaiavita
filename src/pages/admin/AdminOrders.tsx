@@ -1555,68 +1555,9 @@ const AdminOrders = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {/* Ecolet AWB fetch button - always visible */}
-            {pendingStatusOrder && (
-              <div className="space-y-3">
-                {pendingStatusOrder.ecolet_synced ? (
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                    <div className="flex items-center gap-2 text-green-700">
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span className="text-sm font-medium">Sincronizat în Ecolet</span>
-                    </div>
-                  </div>
-                ) : canSendToEcolet(pendingStatusOrder) ? (
-                  <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-700">
-                    <div className="flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                      <span>Comanda nu e încă în Ecolet</span>
-                    </div>
-                  </div>
-                ) : null}
-
-                {/* Preia AWB button */}
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    if (pendingStatusOrder.ecolet_synced) {
-                      fetchAwbFromEcolet(pendingStatusOrder.id);
-                    } else if (canSendToEcolet(pendingStatusOrder)) {
-                      // First sync, then fetch AWB
-                      sendToEcolet(pendingStatusOrder).then(() => {
-                        setTimeout(() => fetchAwbFromEcolet(pendingStatusOrder.id), 1500);
-                      });
-                    }
-                  }}
-                  disabled={fetchingAwb || sendingToEcolet === pendingStatusOrder.id}
-                  className="w-full gap-2"
-                >
-                  {fetchingAwb || sendingToEcolet === pendingStatusOrder.id ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Download className="w-4 h-4" />
-                  )}
-                  {fetchingAwb ? 'Se preia AWB...' : sendingToEcolet === pendingStatusOrder.id ? 'Se sincronizează...' : 'Preia AWB din Ecolet'}
-                </Button>
-
-                {awbFetchError && (
-                  <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-700">
-                    <div className="flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                      <span>{awbFetchError}</span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">sau introdu manual</span>
-                  </div>
-                </div>
-              </div>
-            )}
+            <p className="text-sm text-muted-foreground">
+              Introdu detaliile AWB pentru a notifica clientul despre expediere.
+            </p>
 
             <div className="space-y-2">
               <Label htmlFor="awb">Număr AWB *</Label>
