@@ -13,7 +13,6 @@ interface OrderEmailRequest {
   orderId: string;
   emailType:
     | "confirmation"
-    | "card_paid"
     | "processing"
     | "ready_pickup"
     | "shipped"
@@ -35,7 +34,6 @@ type Language = "ro" | "en";
 const EMAIL_SUBJECTS = {
   ro: {
     confirmation: "Comanda ta a fost plasată cu succes!",
-    card_paid: "Plata a fost confirmată - Comanda ta este plătită!",
     processing: "Comanda ta este în procesare",
     ready_pickup: "Comanda ta este pregătită pentru ridicare",
     shipped: "Comanda ta a fost expediată!",
@@ -47,7 +45,6 @@ const EMAIL_SUBJECTS = {
   },
   en: {
     confirmation: "Your order has been placed successfully!",
-    card_paid: "Payment confirmed - Your order is paid!",
     processing: "Your order is being processed",
     ready_pickup: "Your order is ready for pickup",
     shipped: "Your order has been shipped!",
