@@ -108,8 +108,9 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
     dueDate: new Date().toISOString().split('T')[0],
     seriesName: seriesName,
     orderNumber: order.order_number, // Reference to original order (BT-13)
-    collect: {
-      type: order.payment_method === 'cash_on_delivery' ? "Ramburs" : "Card",
+    collect: order.payment_method === 'cash_on_delivery' ? null : {
+      type: "Card",
+      documentNumber: order.payment_id || order.order_number,
       value: order.total,
     },
     products: order.order_items.map((item: any) => ({
