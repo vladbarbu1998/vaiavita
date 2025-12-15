@@ -34,8 +34,8 @@ export function Footer() {
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
               {language === 'ro' 
-                ? 'Produse premium pentru sănătate și vitalitate, selectate riguros din SUA și Hong Kong.'
-                : 'Premium health and vitality products, carefully selected from the USA and Hong Kong.'}
+                ? 'Produse premium pentru sănătate și vitalitate, fabricate în SUA.'
+                : 'Premium health and vitality products, manufactured in the USA.'}
             </p>
           </div>
 

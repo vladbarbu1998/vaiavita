@@ -48,8 +48,8 @@ AVAILABLE PRODUCTS:
    - Free gift when purchasing 2 or more Dent-Tastic toothpastes
 
 3. Qivaro Premium Supplements (coming soon)
-   - Elite nutritional supplements from USA
-   - Created in advanced laboratories in Hong Kong
+   - Elite nutritional supplements manufactured in USA
+   - Created in advanced laboratories in USA
    - Innovative formulas for optimal health
 
 PROFESSIONAL TESTIMONIALS FOR DENT-TASTIC:
