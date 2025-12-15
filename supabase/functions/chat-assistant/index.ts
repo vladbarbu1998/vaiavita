@@ -21,13 +21,10 @@ DESPRE COMPANIE:
 
 CREATORUL WEBSITE-ULUI:
 Acest website a fost creat de Loren Stanoi.
-- Telefon: 0775 236 749 (poate fi sunat direct sau contactat pe WhatsApp)
-- Email: stanoiloren20@gmail.com
-- Servicii: Poate crea orice tip de website (magazine online, site-uri de prezentare, landing pages, aplicații web, etc.)
-Dacă cineva întreabă cine a făcut site-ul sau vrea un website similar, oferă aceste informații cu linkuri clickabile:
-- Pentru a suna: tel:0775236749
-- Pentru WhatsApp: https://wa.me/40775236749
-- Pentru email: mailto:stanoiloren20@gmail.com
+- Telefon: tel:0775236749
+- Email: mailto:stanoiloren20@gmail.com
+Servicii: Poate crea orice tip de website (magazine online, site-uri de prezentare, landing pages, aplicații web, etc.)
+Când cineva întreabă cine a făcut site-ul sau vrea un website similar, oferă doar telefon și email cu linkuri clickabile (tel: și mailto:). NU menționa WhatsApp.
 
 PRODUSE DISPONIBILE:
 1. Dent-Tastic Fresh Mint - Pastă de dinți naturală (29.99 lei)
