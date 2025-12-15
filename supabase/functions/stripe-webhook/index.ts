@@ -94,6 +94,32 @@ serve(async (req) => {
 
           logStep("Order updated successfully", { orderId, status: "paid" });
 
+          // Send order confirmation email to customer
+          try {
+            const confirmationEmailResponse = await fetch(
+              `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-order-email`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                },
+                body: JSON.stringify({
+                  orderId,
+                  emailType: "order_confirmation",
+                }),
+              }
+            );
+            
+            if (confirmationEmailResponse.ok) {
+              logStep("Order confirmation email sent to customer", { orderId });
+            } else {
+              logStep("Failed to send order confirmation email", { orderId });
+            }
+          } catch (confirmEmailError) {
+            logStep("Error sending order confirmation email", { error: confirmEmailError });
+          }
+
           // Send admin notification email for successful payment
           try {
             const adminEmailResponse = await fetch(
