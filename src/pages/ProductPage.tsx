@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart, PROMO_CONFIG } from '@/context/CartContext';
@@ -133,6 +134,11 @@ const ProductPage = () => {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [ipAddress, setIpAddress] = useState<string | null>(null);
   const reviewImageInputRef = useRef<HTMLInputElement>(null);
+  
+  // Review image lightbox state
+  const [reviewLightboxOpen, setReviewLightboxOpen] = useState(false);
+  const [reviewLightboxImages, setReviewLightboxImages] = useState<string[]>([]);
+  const [reviewLightboxIndex, setReviewLightboxIndex] = useState(0);
   const [reviewForm, setReviewForm] = useState<ReviewFormData>({
     customer_name: '',
     customer_email: '',
@@ -1677,15 +1683,18 @@ const ProductPage = () => {
                             {review.images && review.images.length > 0 && (
                               <div className="flex flex-wrap gap-2 mt-3">
                                 {review.images.map((img, index) => (
-                                  <a 
+                                  <button 
                                     key={index} 
-                                    href={img} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="w-20 h-20 rounded-lg overflow-hidden border border-border hover:border-primary transition-colors"
+                                    type="button"
+                                    onClick={() => {
+                                      setReviewLightboxImages(review.images as string[]);
+                                      setReviewLightboxIndex(index);
+                                      setReviewLightboxOpen(true);
+                                    }}
+                                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border border-border hover:border-primary transition-colors cursor-zoom-in"
                                   >
                                     <img src={img} alt="" className="w-full h-full object-cover" />
-                                  </a>
+                                  </button>
                                 ))}
                               </div>
                             )}
@@ -1703,6 +1712,59 @@ const ProductPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Review Image Lightbox */}
+      <Dialog open={reviewLightboxOpen} onOpenChange={setReviewLightboxOpen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-background/98 backdrop-blur-xl border border-border">
+          <div className="relative w-full h-full min-h-[80vh] flex items-center justify-center p-8">
+            {/* Close Button */}
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute top-4 right-4 z-50 bg-background/90 hover:bg-muted shadow-lg"
+              onClick={() => setReviewLightboxOpen(false)}
+            >
+              <X className="w-5 h-5" />
+            </Button>
+
+            {/* Navigation Arrows */}
+            {reviewLightboxImages.length > 1 && (
+              <>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-50 bg-background/90 hover:bg-muted shadow-lg h-12 w-12"
+                  onClick={() => setReviewLightboxIndex(prev => prev === 0 ? reviewLightboxImages.length - 1 : prev - 1)}
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-50 bg-background/90 hover:bg-muted shadow-lg h-12 w-12"
+                  onClick={() => setReviewLightboxIndex(prev => prev === reviewLightboxImages.length - 1 ? 0 : prev + 1)}
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </Button>
+              </>
+            )}
+
+            {/* Zoomed Image */}
+            <img 
+              src={reviewLightboxImages[reviewLightboxIndex]} 
+              alt="" 
+              className="max-w-full max-h-[80vh] object-contain" 
+            />
+
+            {/* Image Counter */}
+            {reviewLightboxImages.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium border border-border shadow-md">
+                {reviewLightboxIndex + 1} / {reviewLightboxImages.length}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 };
