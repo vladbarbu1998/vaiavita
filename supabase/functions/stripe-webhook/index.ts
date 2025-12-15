@@ -77,6 +77,25 @@ serve(async (req) => {
         });
 
         if (orderId) {
+          // First, check if this order was already processed (prevent duplicate emails on webhook retries)
+          const { data: existingOrder, error: fetchError } = await supabaseClient
+            .from("orders")
+            .select("confirmation_email_sent_at, payment_status")
+            .eq("id", orderId)
+            .single();
+
+          if (fetchError) {
+            logStep("Error fetching order", { error: fetchError.message });
+            throw new Error(`Failed to fetch order: ${fetchError.message}`);
+          }
+
+          // Check if confirmation email was already sent (webhook retry protection)
+          const alreadyProcessed = existingOrder?.confirmation_email_sent_at !== null;
+          
+          if (alreadyProcessed) {
+            logStep("Order already processed, skipping duplicate email", { orderId, sentAt: existingOrder.confirmation_email_sent_at });
+          }
+
           // Update the order status to card_paid (admin will manually change to processing)
           const { error } = await supabaseClient
             .from("orders")
@@ -94,58 +113,67 @@ serve(async (req) => {
 
           logStep("Order updated successfully", { orderId, status: "card_paid" });
 
-          // Send order confirmation email to customer
-          try {
-            const confirmationEmailResponse = await fetch(
-              `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-order-email`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-                },
-                body: JSON.stringify({
-                  orderId,
-                  emailType: "confirmation",
-                }),
+          // Only send confirmation email if not already sent (prevents duplicates on webhook retries)
+          if (!alreadyProcessed) {
+            // Send order confirmation email to customer
+            try {
+              const confirmationEmailResponse = await fetch(
+                `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-order-email`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                  },
+                  body: JSON.stringify({
+                    orderId,
+                    emailType: "confirmation",
+                  }),
+                }
+              );
+              
+              if (confirmationEmailResponse.ok) {
+                logStep("Order confirmation email sent to customer", { orderId });
+                
+                // Mark confirmation email as sent to prevent duplicates
+                await supabaseClient
+                  .from("orders")
+                  .update({ confirmation_email_sent_at: new Date().toISOString() })
+                  .eq("id", orderId);
+              } else {
+                logStep("Failed to send order confirmation email", { orderId });
               }
-            );
-            
-            if (confirmationEmailResponse.ok) {
-              logStep("Order confirmation email sent to customer", { orderId });
-            } else {
-              logStep("Failed to send order confirmation email", { orderId });
+            } catch (confirmEmailError) {
+              logStep("Error sending order confirmation email", { error: confirmEmailError });
             }
-          } catch (confirmEmailError) {
-            logStep("Error sending order confirmation email", { error: confirmEmailError });
-          }
 
-          // Send admin notification email for successful payment
-          try {
-            const adminEmailResponse = await fetch(
-              `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-order-email`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-                },
-                body: JSON.stringify({
-                  orderId,
-                  emailType: "admin_notification",
-                  language: "ro",
-                }),
+            // Send admin notification email for successful payment
+            try {
+              const adminEmailResponse = await fetch(
+                `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-order-email`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                  },
+                  body: JSON.stringify({
+                    orderId,
+                    emailType: "admin_notification",
+                    language: "ro",
+                  }),
+                }
+              );
+              
+              if (adminEmailResponse.ok) {
+                logStep("Admin notification email sent", { orderId });
+              } else {
+                logStep("Failed to send admin notification email", { orderId });
               }
-            );
-            
-            if (adminEmailResponse.ok) {
-              logStep("Admin notification email sent", { orderId });
-            } else {
-              logStep("Failed to send admin notification email", { orderId });
+            } catch (adminEmailError) {
+              logStep("Error sending admin notification email", { error: adminEmailError });
             }
-          } catch (adminEmailError) {
-            logStep("Error sending admin notification email", { error: adminEmailError });
-          }
+          } // End of if (!alreadyProcessed)
 
           // Now sync to Ecolet after successful payment
           // Fetch order details to get all required data

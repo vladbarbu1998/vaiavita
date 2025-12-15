@@ -301,6 +301,7 @@ export type Database = {
           cancel_reason: string | null
           cancel_source: string | null
           cancelled_email_sent_at: string | null
+          confirmation_email_sent_at: string | null
           coupon_code: string | null
           courier_name: string | null
           created_at: string
@@ -352,6 +353,7 @@ export type Database = {
           cancel_reason?: string | null
           cancel_source?: string | null
           cancelled_email_sent_at?: string | null
+          confirmation_email_sent_at?: string | null
           coupon_code?: string | null
           courier_name?: string | null
           created_at?: string
@@ -403,6 +405,7 @@ export type Database = {
           cancel_reason?: string | null
           cancel_source?: string | null
           cancelled_email_sent_at?: string | null
+          confirmation_email_sent_at?: string | null
           coupon_code?: string | null
           courier_name?: string | null
           created_at?: string
