@@ -656,6 +656,9 @@ const TEMPLATES = {
                     <p style="color: rgba(255,255,255,0.7); font-size: 12px; margin: 16px 0 0 0;">
                       Folosește același email: <strong>{{customer_email}}</strong>
                     </p>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 11px; margin: 12px 0 0 0; padding: 10px 16px; background: rgba(0,0,0,0.15); border-radius: 8px;">
+                      ⚠️ <strong>Atenție:</strong> Cuponul de reducere se generează o singură dată per adresă de email. Dacă ai mai lăsat o recenzie și ai primit deja un cupon, nu vei primi unul nou.
+                    </p>
                   </td>
                 </tr>
               </table>
@@ -1680,6 +1683,9 @@ const TEMPLATES = {
                     </a>
                     <p style="color: rgba(255,255,255,0.7); font-size: 12px; margin: 16px 0 0 0;">
                       Use the same email: <strong>{{customer_email}}</strong>
+                    </p>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 11px; margin: 12px 0 0 0; padding: 10px 16px; background: rgba(0,0,0,0.15); border-radius: 8px;">
+                      ⚠️ <strong>Note:</strong> The discount coupon is generated only once per email address. If you have already left a review and received a coupon, you will not receive a new one.
                     </p>
                   </td>
                 </tr>
