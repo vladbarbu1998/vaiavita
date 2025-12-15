@@ -1284,6 +1284,25 @@ const ProductPage = () => {
                               <p className="text-muted-foreground text-sm leading-relaxed">{displayContent}</p>
                             );
                           })()}
+                          {/* Review Images - Mobile */}
+                          {review.images && review.images.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-3">
+                              {review.images.map((img, index) => (
+                                <button 
+                                  key={index} 
+                                  type="button"
+                                  onClick={() => {
+                                    setReviewLightboxImages(review.images as string[]);
+                                    setReviewLightboxIndex(index);
+                                    setReviewLightboxOpen(true);
+                                  }}
+                                  className="w-14 h-14 rounded-lg overflow-hidden border border-border hover:border-primary transition-colors cursor-zoom-in"
+                                >
+                                  <img src={img} alt="" className="w-full h-full object-cover" />
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
