@@ -1194,6 +1194,30 @@ const ProductPage = () => {
                               <ImagePlus className="w-5 h-5 text-muted-foreground" />
                             </button>
                           )}
+                          <input
+                            ref={reviewImageInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              const remainingSlots = 5 - reviewImages.length;
+                              const newFiles = files.slice(0, remainingSlots);
+                              
+                              setReviewImages(prev => [...prev, ...newFiles]);
+                              
+                              newFiles.forEach(file => {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                  setReviewImagePreviews(prev => [...prev, ev.target?.result as string]);
+                                };
+                                reader.readAsDataURL(file);
+                              });
+                              
+                              e.target.value = '';
+                            }}
+                            className="hidden"
+                          />
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {language === 'ro' ? `${reviewImages.length}/5 imagini` : `${reviewImages.length}/5 images`}
