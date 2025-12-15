@@ -205,33 +205,6 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
     logStep("Error updating order with invoice", { error: updateError.message });
   }
 
-  // Send personalized invoice email via VAIAVITA email system
-  try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-order-email`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-      },
-      body: JSON.stringify({
-        orderId: orderId,
-        emailType: "invoice",
-        invoiceNumber: `${responseData.data.seriesName} ${responseData.data.number}`,
-        invoiceLink: responseData.data.link,
-      }),
-    });
-
-    if (emailResponse.ok) {
-      logStep("Invoice email sent successfully");
-    } else {
-      const emailError = await emailResponse.text();
-      logStep("Error sending invoice email", { error: emailError });
-    }
-  } catch (emailError) {
-    logStep("Exception sending invoice email", { error: String(emailError) });
-  }
-
   return {
     success: true,
     invoiceNumber: responseData.data.number,
