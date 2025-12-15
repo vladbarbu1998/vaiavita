@@ -299,7 +299,7 @@ const AdminOrders = () => {
   const getEmailTypeForStatus = (status: string): string | null => {
     const statusEmailMap: Record<string, string> = {
       pending: 'confirmation',
-      card_paid: 'card_paid', // New status - uses card_paid email template
+      card_paid: 'confirmation', // Card payments use same confirmation email
       processing: 'processing',
       pregatita_ridicare: 'ready_pickup',
       shipped: 'shipped',
