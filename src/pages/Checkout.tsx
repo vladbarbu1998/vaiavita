@@ -727,8 +727,9 @@ const Checkout = () => {
           });
         }
 
-        // Apply discount as negative line item or adjust prices
-        // For simplicity, we'll include discount info in metadata and adjust total via Stripe
+        // Calculate discount and pass it to Stripe
+        const discountAmount = discount > 0 ? discount : 0;
+        const couponCode = appliedCoupon?.code || null;
         
         const { data: stripeData, error: stripeError } = await supabase.functions.invoke('create-stripe-checkout', {
           body: {
@@ -739,6 +740,8 @@ const Checkout = () => {
             orderNumber: orderNumber,
             successUrl: `${window.location.origin}/comanda-confirmata?order=${orderNumber}&payment=success`,
             cancelUrl: `${window.location.origin}/checkout?payment=cancelled`,
+            discountAmount: discountAmount,
+            couponCode: couponCode,
           },
         });
 

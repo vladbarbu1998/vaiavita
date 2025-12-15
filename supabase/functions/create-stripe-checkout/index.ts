@@ -21,6 +21,8 @@ interface CheckoutRequest {
   orderNumber: string;
   successUrl: string;
   cancelUrl: string;
+  discountAmount?: number;
+  couponCode?: string;
 }
 
 const logStep = (step: string, details?: any) => {
@@ -83,8 +85,29 @@ serve(async (req) => {
       logStep("Created new Stripe customer", { customerId });
     }
 
+    // Calculate total before discount
+    const itemsTotal = body.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const discountAmount = body.discountAmount && body.discountAmount > 0 ? body.discountAmount : 0;
+    
+    logStep("Calculating totals", { itemsTotal, discountAmount });
+
+    let lineItems: any[];
+    let stripeCouponId: string | undefined;
+
+    if (discountAmount > 0) {
+      // Create a one-time Stripe coupon for this checkout
+      const stripeCoupon = await stripe.coupons.create({
+        amount_off: Math.round(discountAmount * 100), // Convert to bani
+        currency: "ron",
+        name: body.couponCode ? `Cupon: ${body.couponCode}` : "Reducere",
+        duration: "once",
+      });
+      stripeCouponId = stripeCoupon.id;
+      logStep("Created Stripe coupon", { couponId: stripeCoupon.id, amountOff: discountAmount });
+    }
+
     // Create line items for checkout
-    const lineItems = body.items.map(item => ({
+    lineItems = body.items.map(item => ({
       price_data: {
         currency: "ron",
         product_data: {
@@ -98,8 +121,8 @@ serve(async (req) => {
 
     logStep("Created line items", { count: lineItems.length });
 
-    // Create checkout session
-    const session = await stripe.checkout.sessions.create({
+    // Create checkout session with optional discount
+    const sessionConfig: any = {
       customer: customerId,
       line_items: lineItems,
       mode: "payment",
@@ -108,14 +131,24 @@ serve(async (req) => {
       metadata: {
         orderId: body.orderId,
         orderNumber: body.orderNumber,
+        ...(body.couponCode && { couponCode: body.couponCode }),
+        ...(body.discountAmount && { discountAmount: String(body.discountAmount) }),
       },
       payment_intent_data: {
         metadata: {
           orderId: body.orderId,
           orderNumber: body.orderNumber,
+          ...(body.couponCode && { couponCode: body.couponCode }),
         },
       },
-    });
+    };
+
+    // Add discount if coupon was created
+    if (stripeCouponId) {
+      sessionConfig.discounts = [{ coupon: stripeCouponId }];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 
