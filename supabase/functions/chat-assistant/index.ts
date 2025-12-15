@@ -53,7 +53,7 @@ AVAILABLE PRODUCTS:
    - Innovative formulas for optimal health
 
 PROFESSIONAL TESTIMONIALS FOR DENT-TASTIC:
-- Prof. A-Bakr M. Rabie (Professor of Orthodontics, University of Hong Kong, MSc, PhD): Published on LinkedIn about the product's efficacy and recommends it to his patients. One of the world's most renowned orthodontic specialists.
+- Prof. Bakr Rabie (Professor of Orthodontics, University of Hong Kong, MSc, PhD): Published on LinkedIn about the product's efficacy and recommends it to his patients. One of the world's most renowned orthodontic specialists.
 - Dr. Diana Moldovan (Dentist): "I recommend this toothpaste to all my patients suffering from gum sensitivity."
 - Dr. Alexandru Pop (Orthodontist): "The natural ingredients and clinical results convinced me to include it in my daily recommendations."
 
