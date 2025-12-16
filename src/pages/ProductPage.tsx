@@ -154,16 +154,6 @@ const ProductPage = () => {
     });
   }, []);
 
-  // Handle #recenzii hash in URL - scroll to reviews section
-  useEffect(() => {
-    if (!loading && product && window.location.hash === '#recenzii') {
-      // Small delay to ensure DOM is ready
-      setTimeout(() => {
-        scrollToReviews();
-      }, 500);
-    }
-  }, [loading, product]);
-
   const handleRelatedTouchStart = (e: TouchEvent) => {
     relatedTouchStartX.current = e.touches[0].clientX;
   };
