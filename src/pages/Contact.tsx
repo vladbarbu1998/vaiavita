@@ -406,11 +406,12 @@ const Contact = () => {
                   )}
                 </div>
 
-                <div className="flex items-start gap-3">
+                <div className="flex gap-3">
                   <Checkbox
                     id="gdpr"
                     checked={formData.gdprConsent}
                     onCheckedChange={(checked) => setFormData({ ...formData, gdprConsent: checked as boolean })}
+                    className="mt-0.5"
                   />
                   <label htmlFor="gdpr" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
                     {isRo 
