@@ -226,7 +226,7 @@ const Produse = () => {
                   >
                     {/* Image with Quick Add button */}
                     <div className="relative">
-                      <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-4 rounded-t-2xl">
+                      <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-4 rounded-t-3xl">
                         <img 
                           src={getProductImage(product)} 
                           alt={language === 'ro' ? product.name_ro : product.name_en}

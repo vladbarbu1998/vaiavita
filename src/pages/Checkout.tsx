@@ -1314,7 +1314,7 @@ const Checkout = () => {
                         key={`${item.id}-${item.isGift ? 'gift' : 'regular'}`} 
                         className={`flex gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl ${item.isGift ? 'bg-green-500/10 ring-1 ring-green-500/30' : 'bg-muted/30'}`}
                       >
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-muted shrink-0 relative">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-muted shrink-0 relative">
                           <img 
                             src={item.image} 
                             alt={language === 'ro' ? item.name : item.nameEn}

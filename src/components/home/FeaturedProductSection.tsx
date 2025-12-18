@@ -29,14 +29,14 @@ export function FeaturedProductSection() {
             {/* Single elegant frame - same width as text */}
             <div className="relative w-full mx-auto">
               {/* Glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-primary/5 rounded-2xl blur-xl" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-primary/5 rounded-3xl blur-xl" />
               
               {/* Single border frame */}
-              <div className="relative rounded-2xl border-2 border-primary/30 bg-background/5 p-3 sm:p-4 shadow-xl">
+              <div className="relative rounded-3xl border-2 border-primary/30 bg-background/5 p-3 sm:p-4 shadow-xl">
                 <img 
                   src={dentTasticImage} 
                   alt="Dent-Tastic Fresh Mint" 
-                  className="relative w-full h-auto rounded-xl group-hover:scale-105 transition-transform duration-500"
+                  className="relative w-full h-auto rounded-3xl group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
             </div>
