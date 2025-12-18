@@ -390,15 +390,15 @@ const Contact = () => {
                   </div>
                 </div>
 
-                {/* reCAPTCHA widget - always show container when site key is loaded */}
-                <div className="space-y-2">
+                {/* reCAPTCHA widget - aligned left like other form elements */}
+                <div>
                   <div 
                     ref={recaptchaContainerRef}
-                    className="flex justify-center items-center min-h-[78px] rounded-lg"
-                    style={{ display: recaptchaSiteKey ? 'flex' : 'none' }}
+                    className="min-h-[78px]"
+                    style={{ display: recaptchaSiteKey ? 'block' : 'none' }}
                   />
                   {recaptchaSiteKey && !recaptchaReady && (
-                    <div className="flex justify-center items-center min-h-[78px]">
+                    <div className="min-h-[78px] flex items-center">
                       <span className="text-sm text-muted-foreground">
                         {isRo ? 'Se încarcă verificarea...' : 'Loading verification...'}
                       </span>
