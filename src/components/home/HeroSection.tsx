@@ -50,12 +50,12 @@ export function HeroSection() {
           >
             <div className="relative w-full max-w-md lg:max-w-lg mx-auto">
               {/* Glow effect behind image */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-2xl blur-3xl scale-110" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-3xl blur-3xl scale-110" />
               
               <img 
                 src={heroImage} 
                 alt="Dent-Tastic Toothpaste" 
-                className="relative w-full h-auto rounded-2xl drop-shadow-2xl group-hover:scale-105 transition-transform duration-500"
+                className="relative w-full h-auto rounded-3xl drop-shadow-2xl group-hover:scale-105 transition-transform duration-500"
               />
             </div>
           </Link>

@@ -1004,8 +1004,8 @@ const AdminProducts = () => {
               <Label>Galerie imagini</Label>
               <div className="flex flex-wrap gap-3">
                 {galleryImages.map((img, index) => (
-                  <div key={index} className="relative w-24 h-24 rounded-xl overflow-hidden border border-border">
-                    <img src={img} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
+                  <div key={index} className="relative w-24 h-24 rounded-3xl overflow-hidden border border-border">
+                    <img src={img} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover rounded-3xl" />
                     <button
                       type="button"
                       onClick={() => removeGalleryImage(index)}

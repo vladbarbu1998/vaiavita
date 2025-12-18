@@ -64,7 +64,7 @@ function ProofDialog({ language }: { language: string }) {
           <img 
             src={bakrRabieProof} 
             alt="Prof. Bakr Rabie LinkedIn post about Dent-Tastic" 
-            className="w-full rounded-lg border shadow-sm"
+            className="w-full rounded-3xl border shadow-sm"
           />
           <a 
             href="https://www.linkedin.com/posts/prof-bakr-rabie-830231200_past%C4%83-de-din%C8%9Bi-natural%C4%83-dent-tastic-activity-7397429607756595200-90xA/"

@@ -47,7 +47,7 @@ const Despre = () => {
               <img 
                 src={despreImage} 
                 alt="VAIAVITA Products" 
-                className="w-full max-w-md mx-auto"
+                className="w-full max-w-md mx-auto rounded-3xl"
               />
             </div>
           </div>

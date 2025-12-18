@@ -63,7 +63,7 @@ const Cart = () => {
                   <div className="flex gap-4">
                     <Link 
                       to={`/produse/${item.slug}`}
-                      className="w-20 h-20 sm:w-28 sm:h-28 rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 overflow-hidden shrink-0 p-2 sm:p-3 hover:ring-2 hover:ring-primary/30 transition-all relative"
+                      className="w-20 h-20 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-br from-muted/50 to-muted/30 overflow-hidden shrink-0 p-2 sm:p-3 hover:ring-2 hover:ring-primary/30 transition-all relative"
                     >
                       <img 
                         src={item.image} 

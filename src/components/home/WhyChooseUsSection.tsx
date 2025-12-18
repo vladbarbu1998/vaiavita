@@ -27,12 +27,12 @@ export function WhyChooseUsSection() {
           {/* Image - First on mobile */}
           <div className="order-1 lg:order-1 opacity-0 animate-fade-up flex items-center justify-center w-full">
             <div className="relative w-full max-w-md lg:max-w-lg mx-auto">
-              <div className="absolute -inset-4 bg-gradient-to-br from-primary/10 to-transparent rounded-2xl blur-2xl opacity-60" />
-              <div className="relative bg-card/50 backdrop-blur-sm rounded-2xl p-4 sm:p-6 w-full flex items-center justify-center border border-border/30 shadow-card overflow-hidden">
+              <div className="absolute -inset-4 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl blur-2xl opacity-60" />
+              <div className="relative bg-card/50 backdrop-blur-sm rounded-3xl p-4 sm:p-6 w-full flex items-center justify-center border border-border/30 shadow-card overflow-hidden">
                 <img 
                   src={despreImage} 
                   alt="VAIAVITA Products" 
-                  className="w-full h-auto object-contain hover:scale-105 transition-transform duration-700 rounded-xl"
+                  className="w-full h-auto object-contain hover:scale-105 transition-transform duration-700 rounded-3xl"
                 />
               </div>
             </div>

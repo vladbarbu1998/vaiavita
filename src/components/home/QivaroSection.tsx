@@ -31,11 +31,11 @@ export function QivaroSection() {
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-xl" />
               
               {/* Image container */}
-              <div className="relative rounded-xl border-2 border-primary/30 overflow-hidden bg-background/50 p-3 sm:p-4">
+              <div className="relative rounded-3xl border-2 border-primary/30 overflow-hidden bg-background/50 p-3 sm:p-4">
                 <img 
                   src={qivaroImage} 
                   alt="Qivaro Supplements" 
-                  className="w-full h-auto rounded-lg"
+                  className="w-full h-auto rounded-3xl"
                 />
               </div>
             </div>

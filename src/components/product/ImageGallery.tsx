@@ -123,7 +123,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
                     key={actualIndex}
                     onClick={() => setActiveImage(actualIndex)}
                     style={{ height: `${THUMBNAIL_HEIGHT}px` }}
-                    className={`relative overflow-hidden shrink-0 rounded-lg border-2 transition-all duration-200 bg-muted/30 ${
+                    className={`relative overflow-hidden shrink-0 rounded-xl border-2 transition-all duration-200 bg-muted/30 ${
                       activeImage === actualIndex 
                         ? 'border-primary shadow-md' 
                         : 'border-border hover:border-primary/50 opacity-60 hover:opacity-100'
@@ -173,7 +173,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
           )}
           
           <div 
-            className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-muted/30 to-muted/10 cursor-zoom-in group w-full h-full mx-auto touch-pan-y"
+            className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-muted/30 to-muted/10 cursor-zoom-in group w-full h-full mx-auto touch-pan-y"
             onClick={() => setZoomOpen(true)}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -228,7 +228,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
                   <button
                     key={actualIndex}
                     onClick={() => setActiveImage(actualIndex)}
-                    className={`shrink-0 overflow-hidden w-14 h-14 rounded-lg border-2 transition-all bg-muted/30 ${
+                    className={`shrink-0 overflow-hidden w-14 h-14 rounded-xl border-2 transition-all bg-muted/30 ${
                       activeImage === actualIndex 
                         ? 'border-primary shadow-md' 
                         : 'border-border opacity-60'
