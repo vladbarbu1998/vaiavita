@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getTrackingInfo } from '@/hooks/useIpTracking';
 import { MainLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -12,11 +12,22 @@ import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 
+declare global {
+  interface Window {
+    grecaptcha: {
+      ready: (callback: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+    };
+  }
+}
+
 const Contact = () => {
   const { language } = useLanguage();
   const isRo = language === 'ro';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ipAddress, setIpAddress] = useState<string | null>(null);
+  const [recaptchaSiteKey, setRecaptchaSiteKey] = useState<string | null>(null);
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -32,6 +43,56 @@ const Contact = () => {
       setIpAddress(info.ip_address);
     });
   }, []);
+
+  // Fetch reCAPTCHA site key and load script
+  useEffect(() => {
+    const loadRecaptcha = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-recaptcha-site-key');
+        if (error || !data?.siteKey) {
+          console.error('Failed to get reCAPTCHA site key:', error);
+          return;
+        }
+        
+        setRecaptchaSiteKey(data.siteKey);
+        
+        // Load reCAPTCHA v3 script
+        if (!document.querySelector('script[src*="recaptcha"]')) {
+          const script = document.createElement('script');
+          script.src = `https://www.google.com/recaptcha/api.js?render=${data.siteKey}`;
+          script.async = true;
+          script.onload = () => setRecaptchaLoaded(true);
+          document.head.appendChild(script);
+        } else {
+          setRecaptchaLoaded(true);
+        }
+      } catch (err) {
+        console.error('Error loading reCAPTCHA:', err);
+      }
+    };
+    
+    loadRecaptcha();
+  }, []);
+
+  // Get reCAPTCHA token
+  const getRecaptchaToken = useCallback(async (): Promise<string | null> => {
+    if (!recaptchaSiteKey || !recaptchaLoaded || !window.grecaptcha) {
+      console.log('reCAPTCHA not ready');
+      return null;
+    }
+    
+    return new Promise((resolve) => {
+      window.grecaptcha.ready(async () => {
+        try {
+          const token = await window.grecaptcha.execute(recaptchaSiteKey, { action: 'contact_form' });
+          resolve(token);
+        } catch (err) {
+          console.error('reCAPTCHA execution error:', err);
+          resolve(null);
+        }
+      });
+    });
+  }, [recaptchaSiteKey, recaptchaLoaded]);
 
   const breadcrumbItems = [
     { label: isRo ? 'Contact' : 'Contact', labelEn: 'Contact', href: '/contact' }
@@ -61,6 +122,9 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
+      // Get reCAPTCHA token
+      const recaptchaToken = await getRecaptchaToken();
+      
       // Capture IP and user agent
       const userAgent = navigator.userAgent;
       
@@ -83,8 +147,8 @@ const Contact = () => {
         throw new Error('Failed to save submission');
       }
 
-      // Send emails via edge function
-      const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
+      // Send emails via edge function with reCAPTCHA token
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-contact-email', {
         body: {
           name: formData.name.trim(),
           email: formData.email.trim().toLowerCase(),
@@ -92,12 +156,19 @@ const Contact = () => {
           subject: formData.subject.trim() || null,
           message: formData.message.trim(),
           language: language,
+          recaptchaToken: recaptchaToken,
         }
       });
 
       if (emailError) {
         console.error('Email error:', emailError);
         // Don't fail the submission if email fails - the data is already saved
+      }
+      
+      // Check if reCAPTCHA verification failed
+      if (emailData && !emailData.success && emailData.error === 'reCAPTCHA verification failed') {
+        toast.error(isRo ? 'Verificarea de securitate a eșuat. Încercați din nou.' : 'Security verification failed. Please try again.');
+        return;
       }
 
       toast.success(isRo ? 'Mesaj trimis cu succes!' : 'Message sent successfully!', {
