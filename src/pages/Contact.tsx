@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getTrackingInfo } from '@/hooks/useIpTracking';
 import { MainLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,7 @@ declare global {
       }) => number;
       getResponse: (widgetId?: number) => string;
       reset: (widgetId?: number) => void;
+      ready: (callback: () => void) => void;
     };
     onRecaptchaLoad?: () => void;
   }
@@ -36,6 +37,8 @@ const Contact = () => {
   const [recaptchaSiteKey, setRecaptchaSiteKey] = useState<string | null>(null);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [recaptchaWidgetId, setRecaptchaWidgetId] = useState<number | null>(null);
+  const [recaptchaReady, setRecaptchaReady] = useState(false);
+  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -64,10 +67,11 @@ const Contact = () => {
         
         setRecaptchaSiteKey(data.siteKey);
         
-        // Load reCAPTCHA v2 script
-        if (!document.querySelector('script[src*="recaptcha"]')) {
+        // Load reCAPTCHA v2 script if not already loaded
+        if (!document.querySelector('script[src*="recaptcha/api.js"]')) {
           window.onRecaptchaLoad = () => {
-            // Script loaded, widget will be rendered when container is ready
+            console.log('reCAPTCHA script loaded');
+            setRecaptchaReady(true);
           };
           
           const script = document.createElement('script');
@@ -75,6 +79,9 @@ const Contact = () => {
           script.async = true;
           script.defer = true;
           document.head.appendChild(script);
+        } else if (window.grecaptcha?.render) {
+          // Script already loaded
+          setRecaptchaReady(true);
         }
       } catch (err) {
         console.error('Error loading reCAPTCHA:', err);
@@ -84,38 +91,52 @@ const Contact = () => {
     loadRecaptcha();
   }, []);
 
-  // Render reCAPTCHA widget when ready
+  // Render reCAPTCHA widget when everything is ready
   useEffect(() => {
-    if (!recaptchaSiteKey || recaptchaWidgetId !== null) return;
+    // Only render if we have all prerequisites and haven't rendered yet
+    if (!recaptchaSiteKey || !recaptchaReady || recaptchaWidgetId !== null) {
+      return;
+    }
     
-    const container = document.getElementById('recaptcha-container');
-    if (!container || !window.grecaptcha?.render) return;
+    const container = recaptchaContainerRef.current;
+    if (!container) {
+      return;
+    }
+
+    // Clear any existing content
+    container.innerHTML = '';
 
     const renderWidget = () => {
+      if (!window.grecaptcha?.render) {
+        console.log('grecaptcha.render not available yet, retrying...');
+        setTimeout(renderWidget, 200);
+        return;
+      }
+
       try {
-        const widgetId = window.grecaptcha.render('recaptcha-container', {
+        console.log('Rendering reCAPTCHA widget with sitekey:', recaptchaSiteKey);
+        const widgetId = window.grecaptcha.render(container, {
           sitekey: recaptchaSiteKey,
-          callback: (token: string) => setRecaptchaToken(token),
-          'expired-callback': () => setRecaptchaToken(null),
+          callback: (token: string) => {
+            console.log('reCAPTCHA callback received token');
+            setRecaptchaToken(token);
+          },
+          'expired-callback': () => {
+            console.log('reCAPTCHA token expired');
+            setRecaptchaToken(null);
+          },
           theme: 'light',
         });
+        console.log('reCAPTCHA widget rendered with ID:', widgetId);
         setRecaptchaWidgetId(widgetId);
       } catch (err) {
         console.error('Error rendering reCAPTCHA:', err);
       }
     };
 
-    // Wait for grecaptcha to be ready
-    const checkAndRender = () => {
-      if (window.grecaptcha?.render) {
-        renderWidget();
-      } else {
-        setTimeout(checkAndRender, 100);
-      }
-    };
-    
-    checkAndRender();
-  }, [recaptchaSiteKey, recaptchaWidgetId]);
+    // Small delay to ensure DOM is ready
+    setTimeout(renderWidget, 100);
+  }, [recaptchaSiteKey, recaptchaReady, recaptchaWidgetId]);
 
   const breadcrumbItems = [
     { label: isRo ? 'Contact' : 'Contact', labelEn: 'Contact', href: '/contact' }
@@ -369,12 +390,21 @@ const Contact = () => {
                   </div>
                 </div>
 
-                {/* reCAPTCHA widget */}
-                {recaptchaSiteKey && (
-                  <div className="flex justify-center">
-                    <div id="recaptcha-container"></div>
-                  </div>
-                )}
+                {/* reCAPTCHA widget - always show container when site key is loaded */}
+                <div className="space-y-2">
+                  <div 
+                    ref={recaptchaContainerRef}
+                    className="flex justify-center items-center min-h-[78px] rounded-lg"
+                    style={{ display: recaptchaSiteKey ? 'flex' : 'none' }}
+                  />
+                  {recaptchaSiteKey && !recaptchaReady && (
+                    <div className="flex justify-center items-center min-h-[78px]">
+                      <span className="text-sm text-muted-foreground">
+                        {isRo ? 'Se încarcă verificarea...' : 'Loading verification...'}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
                 <div className="flex items-start gap-3">
                   <Checkbox
