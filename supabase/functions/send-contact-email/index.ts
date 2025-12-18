@@ -13,6 +13,37 @@ interface ContactEmailRequest {
   subject?: string;
   message: string;
   language: 'ro' | 'en';
+  recaptchaToken?: string;
+}
+
+// Verify reCAPTCHA token with Google
+async function verifyRecaptcha(token: string): Promise<{ success: boolean; score?: number }> {
+  const secretKey = Deno.env.get("RECAPTCHA_SECRET_KEY");
+  if (!secretKey) {
+    console.log('RECAPTCHA_SECRET_KEY not configured, skipping verification');
+    return { success: true };
+  }
+
+  try {
+    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `secret=${secretKey}&response=${token}`,
+    });
+    
+    const data = await response.json();
+    console.log('reCAPTCHA verification result:', JSON.stringify(data));
+    
+    // For v3, score >= 0.5 is typically considered human
+    // For v2, just check success
+    return { 
+      success: data.success && (data.score === undefined || data.score >= 0.5),
+      score: data.score 
+    };
+  } catch (error) {
+    console.error('reCAPTCHA verification error:', error);
+    return { success: false };
+  }
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -24,10 +55,25 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const body: ContactEmailRequest = await req.json();
-    console.log('Request body:', JSON.stringify(body));
+    console.log('Request body:', JSON.stringify({ ...body, recaptchaToken: body.recaptchaToken ? '[PRESENT]' : '[MISSING]' }));
 
-    const { name, email, phone, subject, message, language } = body;
+    const { name, email, phone, subject, message, language, recaptchaToken } = body;
     const isRo = language === 'ro';
+
+    // Verify reCAPTCHA token if provided
+    if (recaptchaToken) {
+      const recaptchaResult = await verifyRecaptcha(recaptchaToken);
+      if (!recaptchaResult.success) {
+        console.log('reCAPTCHA verification failed');
+        return new Response(
+          JSON.stringify({ success: false, error: 'reCAPTCHA verification failed' }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      console.log('reCAPTCHA verified successfully, score:', recaptchaResult.score);
+    } else {
+      console.log('No reCAPTCHA token provided');
+    }
 
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {

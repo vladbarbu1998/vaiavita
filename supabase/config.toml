@@ -1,5 +1,8 @@
 project_id = "hivkibfnkaarlzxyokqd"
 
+[functions.get-recaptcha-site-key]
+verify_jwt = false
+
 [functions.setup-admin]
 verify_jwt = false
 
