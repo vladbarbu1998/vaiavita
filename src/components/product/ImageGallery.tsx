@@ -123,7 +123,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
                     key={actualIndex}
                     onClick={() => setActiveImage(actualIndex)}
                     style={{ height: `${THUMBNAIL_HEIGHT}px` }}
-                    className={`relative overflow-hidden shrink-0 rounded-2xl border-2 transition-all duration-200 bg-muted/30 ${
+                    className={`relative overflow-hidden shrink-0 rounded-xl border-2 transition-all duration-200 bg-muted/30 ${
                       activeImage === actualIndex 
                         ? 'border-primary shadow-md' 
                         : 'border-border hover:border-primary/50 opacity-60 hover:opacity-100'
@@ -132,7 +132,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
                     <img 
                       src={img} 
                       alt="" 
-                      className="w-full h-full object-contain p-2 rounded-xl" 
+                      className="w-full h-full object-contain p-2" 
                     />
                   </button>
                 );
@@ -182,7 +182,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
             <img 
               src={images[activeImage]} 
               alt={productName} 
-              className="w-full h-full object-contain p-6 transition-transform duration-300 group-hover:scale-105 pointer-events-none select-none rounded-3xl" 
+              className="w-full h-full object-contain p-6 transition-transform duration-300 group-hover:scale-105 pointer-events-none select-none" 
               draggable={false}
             />
             
@@ -228,13 +228,13 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
                   <button
                     key={actualIndex}
                     onClick={() => setActiveImage(actualIndex)}
-                    className={`shrink-0 overflow-hidden w-14 h-14 rounded-2xl border-2 transition-all bg-muted/30 ${
+                    className={`shrink-0 overflow-hidden w-14 h-14 rounded-xl border-2 transition-all bg-muted/30 ${
                       activeImage === actualIndex 
                         ? 'border-primary shadow-md' 
                         : 'border-border opacity-60'
                     }`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-contain p-1 rounded-xl" />
+                    <img src={img} alt="" className="w-full h-full object-contain p-1" />
                   </button>
                 );
               })}
