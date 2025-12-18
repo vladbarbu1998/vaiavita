@@ -132,7 +132,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
                     <img 
                       src={img} 
                       alt="" 
-                      className="w-full h-full object-contain p-2" 
+                      className="w-full h-full object-contain p-2 rounded-xl" 
                     />
                   </button>
                 );
@@ -182,7 +182,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
             <img 
               src={images[activeImage]} 
               alt={productName} 
-              className="w-full h-full object-contain p-6 transition-transform duration-300 group-hover:scale-105 pointer-events-none select-none" 
+              className="w-full h-full object-contain p-6 transition-transform duration-300 group-hover:scale-105 pointer-events-none select-none rounded-3xl" 
               draggable={false}
             />
             
@@ -234,7 +234,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
                         : 'border-border opacity-60'
                     }`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-contain p-1" />
+                    <img src={img} alt="" className="w-full h-full object-contain p-1 rounded-xl" />
                   </button>
                 );
               })}
