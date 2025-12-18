@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { getTrackingInfo } from '@/hooks/useIpTracking';
 import { MainLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -15,9 +15,16 @@ import { Link } from 'react-router-dom';
 declare global {
   interface Window {
     grecaptcha: {
-      ready: (callback: () => void) => void;
-      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+      render: (container: string | HTMLElement, parameters: {
+        sitekey: string;
+        callback?: (token: string) => void;
+        'expired-callback'?: () => void;
+        theme?: 'light' | 'dark';
+      }) => number;
+      getResponse: (widgetId?: number) => string;
+      reset: (widgetId?: number) => void;
     };
+    onRecaptchaLoad?: () => void;
   }
 }
 
@@ -27,7 +34,8 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ipAddress, setIpAddress] = useState<string | null>(null);
   const [recaptchaSiteKey, setRecaptchaSiteKey] = useState<string | null>(null);
-  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [recaptchaWidgetId, setRecaptchaWidgetId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -56,15 +64,17 @@ const Contact = () => {
         
         setRecaptchaSiteKey(data.siteKey);
         
-        // Load reCAPTCHA v3 script
+        // Load reCAPTCHA v2 script
         if (!document.querySelector('script[src*="recaptcha"]')) {
+          window.onRecaptchaLoad = () => {
+            // Script loaded, widget will be rendered when container is ready
+          };
+          
           const script = document.createElement('script');
-          script.src = `https://www.google.com/recaptcha/api.js?render=${data.siteKey}`;
+          script.src = 'https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit';
           script.async = true;
-          script.onload = () => setRecaptchaLoaded(true);
+          script.defer = true;
           document.head.appendChild(script);
-        } else {
-          setRecaptchaLoaded(true);
         }
       } catch (err) {
         console.error('Error loading reCAPTCHA:', err);
@@ -74,25 +84,38 @@ const Contact = () => {
     loadRecaptcha();
   }, []);
 
-  // Get reCAPTCHA token
-  const getRecaptchaToken = useCallback(async (): Promise<string | null> => {
-    if (!recaptchaSiteKey || !recaptchaLoaded || !window.grecaptcha) {
-      console.log('reCAPTCHA not ready');
-      return null;
-    }
+  // Render reCAPTCHA widget when ready
+  useEffect(() => {
+    if (!recaptchaSiteKey || recaptchaWidgetId !== null) return;
     
-    return new Promise((resolve) => {
-      window.grecaptcha.ready(async () => {
-        try {
-          const token = await window.grecaptcha.execute(recaptchaSiteKey, { action: 'contact_form' });
-          resolve(token);
-        } catch (err) {
-          console.error('reCAPTCHA execution error:', err);
-          resolve(null);
-        }
-      });
-    });
-  }, [recaptchaSiteKey, recaptchaLoaded]);
+    const container = document.getElementById('recaptcha-container');
+    if (!container || !window.grecaptcha?.render) return;
+
+    const renderWidget = () => {
+      try {
+        const widgetId = window.grecaptcha.render('recaptcha-container', {
+          sitekey: recaptchaSiteKey,
+          callback: (token: string) => setRecaptchaToken(token),
+          'expired-callback': () => setRecaptchaToken(null),
+          theme: 'light',
+        });
+        setRecaptchaWidgetId(widgetId);
+      } catch (err) {
+        console.error('Error rendering reCAPTCHA:', err);
+      }
+    };
+
+    // Wait for grecaptcha to be ready
+    const checkAndRender = () => {
+      if (window.grecaptcha?.render) {
+        renderWidget();
+      } else {
+        setTimeout(checkAndRender, 100);
+      }
+    };
+    
+    checkAndRender();
+  }, [recaptchaSiteKey, recaptchaWidgetId]);
 
   const breadcrumbItems = [
     { label: isRo ? 'Contact' : 'Contact', labelEn: 'Contact', href: '/contact' }
@@ -103,6 +126,12 @@ const Contact = () => {
     
     if (!formData.gdprConsent) {
       toast.error(isRo ? 'Trebuie să acceptați politica de confidențialitate.' : 'You must accept the privacy policy.');
+      return;
+    }
+
+    // Validate reCAPTCHA
+    if (recaptchaSiteKey && !recaptchaToken) {
+      toast.error(isRo ? 'Vă rugăm să completați verificarea reCAPTCHA.' : 'Please complete the reCAPTCHA verification.');
       return;
     }
 
@@ -122,9 +151,6 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      // Get reCAPTCHA token
-      const recaptchaToken = await getRecaptchaToken();
-      
       // Capture IP and user agent
       const userAgent = navigator.userAgent;
       
@@ -168,6 +194,11 @@ const Contact = () => {
       // Check if reCAPTCHA verification failed
       if (emailData && !emailData.success && emailData.error === 'reCAPTCHA verification failed') {
         toast.error(isRo ? 'Verificarea de securitate a eșuat. Încercați din nou.' : 'Security verification failed. Please try again.');
+        // Reset reCAPTCHA
+        if (recaptchaWidgetId !== null && window.grecaptcha) {
+          window.grecaptcha.reset(recaptchaWidgetId);
+          setRecaptchaToken(null);
+        }
         return;
       }
 
@@ -176,6 +207,12 @@ const Contact = () => {
       });
       
       setFormData({ name: '', phone: '', email: '', subject: '', message: '', gdprConsent: false });
+      
+      // Reset reCAPTCHA after successful submission
+      if (recaptchaWidgetId !== null && window.grecaptcha) {
+        window.grecaptcha.reset(recaptchaWidgetId);
+        setRecaptchaToken(null);
+      }
     } catch (error) {
       console.error('Submission error:', error);
       toast.error(isRo ? 'A apărut o eroare. Încercați din nou.' : 'An error occurred. Please try again.');
@@ -331,6 +368,13 @@ const Contact = () => {
                     />
                   </div>
                 </div>
+
+                {/* reCAPTCHA widget */}
+                {recaptchaSiteKey && (
+                  <div className="flex justify-center">
+                    <div id="recaptcha-container"></div>
+                  </div>
+                )}
 
                 <div className="flex items-start gap-3">
                   <Checkbox

@@ -16,8 +16,8 @@ interface ContactEmailRequest {
   recaptchaToken?: string;
 }
 
-// Verify reCAPTCHA token with Google
-async function verifyRecaptcha(token: string): Promise<{ success: boolean; score?: number }> {
+// Verify reCAPTCHA token with Google (v2 checkbox)
+async function verifyRecaptcha(token: string): Promise<{ success: boolean }> {
   const secretKey = Deno.env.get("RECAPTCHA_SECRET_KEY");
   if (!secretKey) {
     console.log('RECAPTCHA_SECRET_KEY not configured, skipping verification');
@@ -34,12 +34,7 @@ async function verifyRecaptcha(token: string): Promise<{ success: boolean; score
     const data = await response.json();
     console.log('reCAPTCHA verification result:', JSON.stringify(data));
     
-    // For v3, score >= 0.5 is typically considered human
-    // For v2, just check success
-    return { 
-      success: data.success && (data.score === undefined || data.score >= 0.5),
-      score: data.score 
-    };
+    return { success: data.success };
   } catch (error) {
     console.error('reCAPTCHA verification error:', error);
     return { success: false };
@@ -70,7 +65,7 @@ const handler = async (req: Request): Promise<Response> => {
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      console.log('reCAPTCHA verified successfully, score:', recaptchaResult.score);
+      console.log('reCAPTCHA verified successfully');
     } else {
       console.log('No reCAPTCHA token provided');
     }
