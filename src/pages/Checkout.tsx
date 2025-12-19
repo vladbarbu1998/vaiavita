@@ -574,6 +574,19 @@ const Checkout = () => {
       // Capture user agent for tracking
       const userAgent = navigator.userAgent;
 
+      // Build shipping address object for billing (required for all delivery methods)
+      const shippingAddressData = {
+        country: countryDisplayName,
+        countryCode: form.country,
+        address: form.address,
+        addressLine2: form.addressLine2,
+        city: form.city,
+        county: form.county,
+        postalCode: form.postalCode,
+      };
+      
+      console.log('[Checkout] Saving order with shipping_address:', shippingAddressData);
+
       const { error: orderError } = await supabase
         .from('orders')
         .insert([{
@@ -586,16 +599,8 @@ const Checkout = () => {
           delivery_method: (form.deliveryMethod === 'pickup_dentalmed' ? 'pickup' : form.deliveryMethod) as 'shipping' | 'pickup' | 'locker' | 'postal',
           payment_method: (form.paymentMethod === 'card_at_locker' ? 'stripe' : form.paymentMethod) as 'stripe' | 'netopia' | 'cash_on_delivery',
           // Always save customer address for billing purposes (used on invoices)
-          shipping_address: {
-            country: countryDisplayName,
-            countryCode: form.country,
-            address: form.address,
-            addressLine2: form.addressLine2,
-            city: form.city,
-            county: form.county,
-            postalCode: form.postalCode,
-          },
-          pickup_location: form.deliveryMethod === 'pickup' 
+          shipping_address: shippingAddressData,
+          pickup_location: form.deliveryMethod === 'pickup'
             ? 'Brașov, România' 
             : form.deliveryMethod === 'pickup_dentalmed' 
               ? `${DENTALMED_LOCATION.name} - ${DENTALMED_LOCATION.address}`
