@@ -76,6 +76,7 @@ interface Order {
   payment_method: string;
   payment_status: string | null;
   shipping_address: any;
+  billing_address: any;
   pickup_location: string | null;
   locker_id: string | null;
   locker_name: string | null;
@@ -1369,7 +1370,23 @@ const AdminOrders = () => {
                         {selectedOrder.customer_phone}
                       </a>
                     </div>
-                    {selectedOrder.shipping_address ? (
+                    {selectedOrder.billing_address ? (
+                      <div className="flex items-start gap-3">
+                        <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                        <div>
+                          <p>{selectedOrder.billing_address.address}</p>
+                          {selectedOrder.billing_address.addressLine2 && (
+                            <p>{selectedOrder.billing_address.addressLine2}</p>
+                          )}
+                          <p>
+                            {selectedOrder.billing_address.city}
+                            {selectedOrder.billing_address.county && `, ${selectedOrder.billing_address.county}`}
+                            {selectedOrder.billing_address.postalCode && ` - ${selectedOrder.billing_address.postalCode}`}
+                          </p>
+                          <p>{selectedOrder.billing_address.country}</p>
+                        </div>
+                      </div>
+                    ) : selectedOrder.shipping_address ? (
                       <div className="flex items-start gap-3">
                         <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
                         <div>
