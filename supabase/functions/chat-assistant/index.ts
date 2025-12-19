@@ -62,8 +62,19 @@ DELIVERY ROMANIA:
 - Romanian Post: 15 lei (3-5 business days)
 - EasyBox/Locker: 15 lei (1-2 business days)
 - Personal pickup Brașov: FREE (exact details communicated via email after placing the order)
+- Pickup from DentalMed Brașov: FREE (only card payment, only for Brașov county)
+  - Address: Strada Lungă 14, Brașov 500058
+  - Google Maps: https://maps.app.goo.gl/TyE5CozicKWBfeK9A
 - FREE delivery for orders over 150 lei
 - FREE shipping with 4+ Dent-Tastic toothpastes (Romania only)
+
+PARTNER - DENTALMED BRAȘOV:
+DentalMed Com Brașov is one of our trusted partners in modern dentistry. The clinic offers complete dental services, performed by a team with over 25 years of experience, recognized for professionalism, patient care, and high-quality results.
+- Location: Strada Lungă nr. 14, Brașov (central, modern and easily accessible space)
+- Google Maps: https://maps.app.goo.gl/TyE5CozicKWBfeK9A
+- You can pick up your VAIAVITA order from DentalMed clinic (only available for Brașov county, card payment only)
+- Our Dent-Tastic toothpaste is also available at DentalMed clinic
+- DentalMed recommends our products with confidence
 
 INTERNATIONAL DELIVERY (EU + UK):
 - International courier: 25 lei
