@@ -1369,6 +1369,23 @@ const AdminOrders = () => {
                         {selectedOrder.customer_phone}
                       </a>
                     </div>
+                    {selectedOrder.shipping_address && (
+                      <div className="flex items-start gap-3">
+                        <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                        <div>
+                          <p>{selectedOrder.shipping_address.address}</p>
+                          {selectedOrder.shipping_address.addressLine2 && (
+                            <p>{selectedOrder.shipping_address.addressLine2}</p>
+                          )}
+                          <p>
+                            {selectedOrder.shipping_address.city}
+                            {selectedOrder.shipping_address.county && `, ${selectedOrder.shipping_address.county}`}
+                            {selectedOrder.shipping_address.postalCode && ` - ${selectedOrder.shipping_address.postalCode}`}
+                          </p>
+                          <p>{selectedOrder.shipping_address.country}</p>
+                        </div>
+                      </div>
+                    )}
                     <div className="flex items-center gap-3">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
                       <span>{formatDate(selectedOrder.created_at)}</span>
