@@ -639,29 +639,22 @@ const ProductPage = () => {
                 productName={language === 'ro' ? product.name_ro : product.name_en} 
               />
               
-              {/* Key Features / Benefits Section */}
+              {/* Dentalmed Recommendation Badge - Under gallery for toothpaste (product_number 1) */}
               {product.product_number === 1 && (
-                <div className="mt-6 p-4 rounded-xl bg-muted/30 border border-border/50">
-                  <h3 className="text-sm font-semibold text-foreground/80 mb-3 uppercase tracking-wide">
-                    {language === 'ro' ? 'Beneficii cheie' : 'Key Benefits'}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                      <span>{language === 'ro' ? 'Fără fluor sau triclosan' : 'No fluoride or triclosan'}</span>
+                <div className="mt-6 p-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
+                  <div className="flex items-center gap-3">
+                    <div className="w-20 shrink-0 p-1.5 bg-white rounded-lg">
+                      <img 
+                        src={dentalmedLogo} 
+                        alt="DentalMed" 
+                        className="w-full h-auto object-contain"
+                      />
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                      <span>{language === 'ro' ? 'Ingrediente naturale' : 'Natural ingredients'}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                      <span>{language === 'ro' ? 'Protejează gingiile' : 'Protects gums'}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                      <span>{language === 'ro' ? 'Testat clinic' : 'Clinically tested'}</span>
-                    </div>
+                    <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
+                      {language === 'ro' 
+                        ? <>Recomandat cu încredere de partenerii noștri <a href="https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">DentalMed Brașov</a></>
+                        : <>Recommended with confidence by our partners <a href="https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">DentalMed Brașov</a></>}
+                    </p>
                   </div>
                 </div>
               )}
@@ -761,26 +754,6 @@ const ProductPage = () => {
                           }
                         </p>
                       </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Dentalmed Recommendation Badge - Only for toothpaste (product_number 1) */}
-                {product.product_number === 1 && (
-                  <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
-                    <div className="flex items-center gap-3">
-                      <div className="w-20 shrink-0 p-1.5 bg-white rounded-lg">
-                        <img 
-                          src={dentalmedLogo} 
-                          alt="DentalMed" 
-                          className="w-full h-auto object-contain"
-                        />
-                      </div>
-                      <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
-                        {language === 'ro' 
-                          ? <>Recomandat cu încredere de partenerii noștri <a href="https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">DentalMed Brașov</a></>
-                          : <>Recommended with confidence by our partners <a href="https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">DentalMed Brașov</a></>}
-                      </p>
                     </div>
                   </div>
                 )}
