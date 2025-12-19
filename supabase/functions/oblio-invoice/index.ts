@@ -154,6 +154,11 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
       // This prevents name mismatch issues between systems
       const productName = productCode || item.product_name;
       
+      // TEMPORARY: Skip stock for toothbrush (periuta-dinti-vaiavita) until stock is updated in Oblio
+      const isToothbrush = productCode === "periuta-dinti-vaiavita" || 
+                           item.product_name?.toLowerCase().includes("periuță") ||
+                           item.product_name?.toLowerCase().includes("periuta");
+      
       return {
         name: productName,
         code: productCode,
@@ -165,8 +170,8 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
         vatPercentage: 19,
         vatIncluded: true,
         quantity: item.quantity,
-        productType: "Marfa", // Marfa = goods (decreases stock), Serviciu = service (no stock)
-        management: "VVT", // Gestiune name in Oblio
+        productType: isToothbrush ? "Serviciu" : "Marfa", // Serviciu = no stock deduction, Marfa = decreases stock
+        management: isToothbrush ? "" : "VVT", // No management for products without stock
         saveToDb: false,
       };
     }),
