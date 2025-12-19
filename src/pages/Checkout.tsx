@@ -528,13 +528,18 @@ const Checkout = () => {
       return;
     }
 
-    // Validate address fields for shipping and postal delivery
-    if ((form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal') && (!form.address || !form.city)) {
-      toast.error(language === 'ro' ? 'Completează adresa de livrare' : 'Fill in shipping address');
+    // Validate address fields for ALL delivery methods (needed for billing/invoice)
+    if (!form.address || !form.city) {
+      toast.error(language === 'ro' ? 'Completează adresa (necesară pentru facturare)' : 'Fill in address (required for billing)');
       return;
     }
 
-    if (isRomania && (form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal' || form.deliveryMethod === 'locker') && !form.county) {
+    if (!form.postalCode) {
+      toast.error(language === 'ro' ? 'Completează codul poștal (necesar pentru facturare)' : 'Fill in postal code (required for billing)');
+      return;
+    }
+
+    if (isRomania && !form.county) {
       toast.error(language === 'ro' ? 'Selectează județul' : 'Select county');
       return;
     }
