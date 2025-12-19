@@ -575,6 +575,7 @@ const Checkout = () => {
       const userAgent = navigator.userAgent;
 
       // Build shipping address object for billing (required for all delivery methods)
+      // CRITICAL: This address is used for invoicing - must always be present
       const shippingAddressData = {
         country: countryDisplayName,
         countryCode: form.country,
@@ -585,7 +586,15 @@ const Checkout = () => {
         postalCode: form.postalCode,
       };
       
-      console.log('[Checkout] Saving order with shipping_address:', shippingAddressData);
+      // Failsafe: Verify address is not empty before proceeding
+      if (!shippingAddressData.address || !shippingAddressData.city) {
+        console.error('[Checkout] CRITICAL: Empty billing address detected', shippingAddressData);
+        toast.error(language === 'ro' ? 'Eroare: Adresa de facturare este incompletă' : 'Error: Billing address is incomplete');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      console.log('[Checkout] Saving order with shipping_address:', JSON.stringify(shippingAddressData));
 
       const { error: orderError } = await supabase
         .from('orders')
