@@ -158,13 +158,14 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
       vatPercentage: 19,
       vatIncluded: true,
       quantity: item.quantity,
-      productType: "Serviciu",
+      productType: "Marfa", // Marfa = goods (decreases stock), Serviciu = service (no stock)
+      management: "VVT", // Gestiune name in Oblio
       saveToDb: false,
     })),
     language: "RO",
     precision: 2,
     currency: "RON",
-    useStock: true,
+    useStock: 1, // Enable stock deduction (1 = yes, 0 = no)
     sendEmail: true, // Automatically send invoice to customer email
   };
 
