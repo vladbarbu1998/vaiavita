@@ -84,9 +84,8 @@ const Despre = () => {
                   <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                     <a 
                       href="https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-primary hover:underline"
+                      onClick={(e) => { e.preventDefault(); window.open('https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic', '_blank', 'noopener,noreferrer'); }}
+                      className="inline-flex items-center gap-2 text-primary hover:underline cursor-pointer"
                     >
                       <span>📍</span>
                       Str. Lungă nr. 14, Brașov
