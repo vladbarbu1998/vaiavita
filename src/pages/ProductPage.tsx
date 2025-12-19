@@ -746,6 +746,20 @@ const ProductPage = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Dentalmed Recommendation Badge - Only for toothpaste (product_number 1) */}
+                {product.product_number === 1 && (
+                  <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🦷</span>
+                      <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
+                        {language === 'ro' 
+                          ? 'Recomandat cu încredere de partenerii noștri DentalMed Brașov'
+                          : 'Recommended with confidence by our partners DentalMed Brașov'}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Price */}

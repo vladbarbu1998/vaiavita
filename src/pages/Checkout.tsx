@@ -85,8 +85,14 @@ const COUNTRIES = [
   { code: 'GB', name: 'Regatul Unit', nameEn: 'United Kingdom', postalFormat: /^[A-Za-z]{1,2}\d[A-Za-z\d]?\s?\d[A-Za-z]{2}$/, postalExample: 'SW1A 1AA' },
 ];
 
-type DeliveryMethod = 'shipping' | 'pickup' | 'locker' | 'postal';
+type DeliveryMethod = 'shipping' | 'pickup' | 'locker' | 'postal' | 'pickup_dentalmed';
 type PaymentMethod = 'stripe' | 'cash_on_delivery' | 'card_at_locker';
+
+const DENTALMED_LOCATION = {
+  name: 'DentalMed Com Brașov',
+  address: 'Strada Lungă 14, Brașov 500058',
+  mapsUrl: 'https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic',
+};
 
 interface CheckoutForm {
   firstName: string;
@@ -181,8 +187,8 @@ const Checkout = () => {
       return ['shipping'] as DeliveryMethod[];
     }
     if (isBrasov) {
-      // Brașov: shipping, postal, pickup, locker
-      return ['shipping', 'postal', 'pickup', 'locker'] as DeliveryMethod[];
+      // Brașov: shipping, postal, pickup, pickup_dentalmed, locker
+      return ['shipping', 'postal', 'pickup', 'pickup_dentalmed', 'locker'] as DeliveryMethod[];
     }
     // Rest of Romania: shipping, postal, locker
     return ['shipping', 'postal', 'locker'] as DeliveryMethod[];
@@ -222,16 +228,23 @@ const Checkout = () => {
     setForm(prev => {
       const newIsBrasov = county === 'Brașov';
       let newDeliveryMethod = prev.deliveryMethod;
+      let newPaymentMethod = prev.paymentMethod;
       
-      // If switching away from Brașov and method is pickup, reset to shipping
-      if (!newIsBrasov && prev.deliveryMethod === 'pickup') {
+      // If switching away from Brașov and method is pickup or pickup_dentalmed, reset to shipping
+      if (!newIsBrasov && (prev.deliveryMethod === 'pickup' || prev.deliveryMethod === 'pickup_dentalmed')) {
         newDeliveryMethod = 'shipping';
+      }
+      
+      // If method becomes unavailable, also reset payment
+      if (newDeliveryMethod !== prev.deliveryMethod && prev.paymentMethod === 'cash_on_delivery') {
+        newPaymentMethod = 'stripe';
       }
       
       return { 
         ...prev, 
         county,
-        deliveryMethod: newDeliveryMethod
+        deliveryMethod: newDeliveryMethod,
+        paymentMethod: newPaymentMethod
       };
     });
     setCountyOpen(false);
@@ -279,6 +292,8 @@ const Checkout = () => {
         return 15; // Easybox / Locker
       case 'pickup':
         return 0; // Ridicare personală
+      case 'pickup_dentalmed':
+        return 0; // Ridicare Dentalmed
       default:
         return 0;
     }
@@ -483,8 +498,8 @@ const Checkout = () => {
           preloadLockers();
         }
         
-        // If switching to locker or pickup and payment is cash_on_delivery, reset to stripe
-        if ((value === 'locker' || value === 'pickup') && prev.paymentMethod === 'cash_on_delivery') {
+        // If switching to locker, pickup or pickup_dentalmed and payment is cash_on_delivery, reset to stripe
+        if ((value === 'locker' || value === 'pickup' || value === 'pickup_dentalmed') && prev.paymentMethod === 'cash_on_delivery') {
           newPaymentMethod = 'stripe';
         }
         
@@ -563,7 +578,7 @@ const Checkout = () => {
           customer_phone: form.phone,
           customer_first_name: form.firstName,
           customer_last_name: form.lastName,
-          delivery_method: form.deliveryMethod as 'shipping' | 'pickup' | 'locker',
+          delivery_method: (form.deliveryMethod === 'pickup_dentalmed' ? 'pickup' : form.deliveryMethod) as 'shipping' | 'pickup' | 'locker' | 'postal',
           payment_method: (form.paymentMethod === 'card_at_locker' ? 'stripe' : form.paymentMethod) as 'stripe' | 'netopia' | 'cash_on_delivery',
           shipping_address: form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal' ? {
             country: countryDisplayName,
@@ -574,7 +589,11 @@ const Checkout = () => {
             county: form.county,
             postalCode: form.postalCode,
           } : null,
-          pickup_location: form.deliveryMethod === 'pickup' ? 'Brașov, România' : null,
+          pickup_location: form.deliveryMethod === 'pickup' 
+            ? 'Brașov, România' 
+            : form.deliveryMethod === 'pickup_dentalmed' 
+              ? `${DENTALMED_LOCATION.name} - ${DENTALMED_LOCATION.address}`
+              : null,
           locker_id: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.id : null,
           locker_name: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.name : null,
           locker_address: form.deliveryMethod === 'locker' && selectedLocker ? selectedLocker.address : null,
@@ -1111,6 +1130,58 @@ const Checkout = () => {
                         </label>
                       )}
 
+                      {/* Pickup Dentalmed - only for Brașov */}
+                      {availableDeliveryMethods.includes('pickup_dentalmed') && (
+                        <div className="space-y-3">
+                          <label 
+                            className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                              form.deliveryMethod === 'pickup_dentalmed' 
+                                ? 'border-primary bg-primary/5' 
+                                : 'border-border hover:border-primary/50'
+                            }`}
+                          >
+                            <RadioGroupItem value="pickup_dentalmed" id="pickup_dentalmed" />
+                            <MapPin className="w-5 h-5 text-primary" />
+                            <div className="flex-1">
+                              <p className="font-medium">
+                                {language === 'ro' ? 'Ridicare DentalMed Brașov' : 'Pickup DentalMed Brașov'}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {language === 'ro' ? 'Partener de încredere' : 'Trusted partner'}
+                              </p>
+                            </div>
+                            <span className="font-medium text-primary">
+                              {language === 'ro' ? 'Gratuit' : 'Free'}
+                            </span>
+                          </label>
+                          
+                          {/* Dentalmed location info - appears below when selected */}
+                          {form.deliveryMethod === 'pickup_dentalmed' && (
+                            <div className="ml-9 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                              <p className="font-medium mb-1 flex items-center gap-2">
+                                <MapPin className="w-4 h-4 text-primary" />
+                                {language === 'ro' ? 'Locația de ridicare:' : 'Pickup location:'}
+                              </p>
+                              <p className="font-medium">{DENTALMED_LOCATION.name}</p>
+                              <a 
+                                href={DENTALMED_LOCATION.mapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline inline-flex items-center gap-1"
+                              >
+                                {DENTALMED_LOCATION.address}
+                                <span className="text-xs">↗</span>
+                              </a>
+                              <p className="text-sm text-muted-foreground mt-2">
+                                {language === 'ro' 
+                                  ? 'Plata se face doar cu cardul. Vei primi un email cu detalii după plasarea comenzii.'
+                                  : 'Card payment only. You will receive an email with details after placing the order.'}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Postal - Poșta Română - only for Romania */}
                       {availableDeliveryMethods.includes('postal') && (
                         <label 
@@ -1239,8 +1310,8 @@ const Checkout = () => {
                     onValueChange={(value) => updateForm('paymentMethod', value)}
                     className="space-y-3"
                   >
-                    {/* Cash on delivery - only for Romania, not locker, not pickup */}
-                    {isRomania && form.deliveryMethod !== 'locker' && form.deliveryMethod !== 'pickup' && (
+                    {/* Cash on delivery - only for Romania, not locker, not pickup, not pickup_dentalmed */}
+                    {isRomania && form.deliveryMethod !== 'locker' && form.deliveryMethod !== 'pickup' && form.deliveryMethod !== 'pickup_dentalmed' && (
                       <label 
                         className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
                           form.paymentMethod === 'cash_on_delivery' 
