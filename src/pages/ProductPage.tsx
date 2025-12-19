@@ -650,16 +650,6 @@ const ProductPage = () => {
                 }`}>
                   {isInStock ? t('common.inStock') : t('common.outOfStock')}
                 </Badge>
-                {/* Categories */}
-                {categories.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {categories.map((category) => (
-                      <Badge key={category.id} variant="secondary" className="text-xs">
-                        {language === 'ro' ? category.name_ro : category.name_en}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
                 
                 <h1 className="font-display text-2xl sm:text-3xl md:text-4xl tracking-wide break-words">
                   {language === 'ro' ? product.name_ro : product.name_en}
