@@ -1737,6 +1737,34 @@ const AdminOrders = () => {
               Aceste detalii vor fi trimise clientului în emailul de notificare.
             </p>
 
+            {/* Quick fill buttons */}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => {
+                  setPickupLocation('VAIAVITA');
+                  setPickupAddress('Strada Iuliu Maniu 60, Brașov, 500091');
+                }}
+              >
+                VAIAVITA
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => {
+                  setPickupLocation('DentalMed Brașov');
+                  setPickupAddress('Strada Lungă 14, Brașov, 500058');
+                }}
+              >
+                DentalMed
+              </Button>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="pickupLocation">Nume locație *</Label>
               <Input
