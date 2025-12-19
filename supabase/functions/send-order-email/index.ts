@@ -2489,7 +2489,12 @@ function formatDate(dateString: string, lang: Language): string {
   });
 }
 
-function getDeliveryMethodText(method: string, lang: Language): string {
+function getDeliveryMethodText(method: string, lang: Language, pickupLocation?: string): string {
+  // Check if it's DentalMed pickup
+  if (method === "pickup" && pickupLocation && pickupLocation.toLowerCase().includes("dentalmed")) {
+    return lang === "ro" ? "Ridicare DentalMed Brașov" : "DentalMed Brașov Pickup";
+  }
+  
   const methods = {
     ro: {
       shipping: "Curier la adresă",
@@ -2574,6 +2579,10 @@ function generateDeliveredProductsHtml(orderItems: any[]): string {
 }
 
 function getDeliveryAddress(order: any): string {
+  // For pickup orders, use the pickup_location if available
+  if (order.delivery_method === "pickup" && order.pickup_location) {
+    return order.pickup_location;
+  }
   if (!order.shipping_address) return "";
   const addr = order.shipping_address;
   return `${addr.address || ""}${addr.apartment ? ", " + addr.apartment : ""}, ${addr.city || ""}, ${addr.county || ""} ${addr.postalCode || ""}, ${addr.country || "România"}`;
@@ -2615,7 +2624,7 @@ function replaceTemplatePlaceholders(
     .replace(/\{\{shipping_cost\}\}/g, shippingCost)
     .replace(/\{\{discount_row\}\}/g, discountRow)
     .replace(/\{\{total\}\}/g, formatPrice(order.total))
-    .replace(/\{\{delivery_method\}\}/g, getDeliveryMethodText(order.delivery_method, lang))
+    .replace(/\{\{delivery_method\}\}/g, getDeliveryMethodText(order.delivery_method, lang, order.pickup_location))
     .replace(/\{\{delivery_address\}\}/g, deliveryAddress)
     .replace(/\{\{payment_method\}\}/g, getPaymentMethodText(order.payment_method, lang))
     .replace(/\{\{payment_status\}\}/g, getPaymentStatusText(order.payment_status || "pending", lang))
