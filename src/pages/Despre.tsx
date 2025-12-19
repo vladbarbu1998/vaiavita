@@ -54,6 +54,52 @@ const Despre = () => {
         </div>
       </section>
 
+      {/* Partners Section */}
+      <section className="section-padding bg-secondary/30">
+        <div className="container-custom">
+          <div className="max-w-4xl mx-auto opacity-0 animate-fade-up">
+            <h2 className="font-display text-3xl md:text-4xl tracking-wide text-center mb-8">
+              {language === 'ro' ? 'PARTENERII NOȘTRI' : 'OUR PARTNERS'}
+            </h2>
+            
+            <div className="card-premium p-6 md:p-8">
+              <div className="flex flex-col md:flex-row gap-6 items-start">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-2xl">🦷</span>
+                </div>
+                <div className="space-y-4">
+                  <h3 className="font-display text-xl md:text-2xl tracking-wide">
+                    DentalMed Com Brașov
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {language === 'ro' 
+                      ? 'DentalMed Com Brașov este unul dintre partenerii noștri de încredere în domeniul stomatologiei moderne. Clinica oferă servicii stomatologice complete, realizate de o echipă cu peste 25 de ani de experiență, recunoscută pentru profesionalism, grijă față de pacient și rezultate de înaltă calitate.'
+                      : 'DentalMed Com Brașov is one of our trusted partners in the field of modern dentistry. The clinic offers comprehensive dental services, delivered by a team with over 25 years of experience, recognized for professionalism, patient care, and high-quality results.'}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                    <a 
+                      href="https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-primary hover:underline"
+                    >
+                      <span>📍</span>
+                      Str. Lungă nr. 14, Brașov
+                      <span className="text-xs">↗</span>
+                    </a>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'ro'
+                      ? 'Poți ridica produsele VAIAVITA de la clinica DentalMed - disponibil la checkout pentru județul Brașov.'
+                      : 'You can pick up VAIAVITA products from DentalMed clinic - available at checkout for Brașov county.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Google Reviews */}
       <GoogleReviewsSection />
     </MainLayout>
