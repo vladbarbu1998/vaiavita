@@ -84,6 +84,42 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
 
   const shippingAddress = order.shipping_address as any;
 
+  // Build client address based on delivery method
+  let clientAddress = "";
+  let clientCity = "";
+  let clientState = "";
+  let clientCountry = "Romania";
+
+  if (shippingAddress) {
+    // Shipping or postal delivery - use shipping_address
+    clientAddress = [
+      shippingAddress.address,
+      shippingAddress.addressLine2
+    ].filter(Boolean).join(", ");
+    clientCity = shippingAddress.city || "";
+    clientState = shippingAddress.county || "";
+    clientCountry = shippingAddress.country || "Romania";
+  } else if (order.delivery_method === 'locker' && order.locker_address) {
+    // Locker delivery - use locker details
+    clientAddress = order.locker_address;
+    clientCity = order.locker_city || "";
+    clientState = ""; // Locker doesn't store county
+    clientCountry = "Romania";
+  } else if (order.delivery_method === 'pickup' && order.pickup_location) {
+    // Pickup - use pickup_location as address
+    clientAddress = order.pickup_location;
+    clientCity = "";
+    clientState = "";
+    clientCountry = "Romania";
+  }
+
+  logStep("Client address built", { 
+    deliveryMethod: order.delivery_method,
+    address: clientAddress, 
+    city: clientCity, 
+    state: clientState 
+  });
+
   // Prepare invoice data
   const invoiceData: any = {
     cif: cif,
@@ -92,10 +128,10 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
       name: `${order.customer_first_name} ${order.customer_last_name}`,
       rc: "",
       code: "",
-      address: shippingAddress?.address || "",
-      state: shippingAddress?.county || "",
-      city: shippingAddress?.city || "",
-      country: shippingAddress?.country || "Romania",
+      address: clientAddress,
+      state: clientState,
+      city: clientCity,
+      country: clientCountry,
       iban: "",
       bank: "",
       email: order.customer_email,
