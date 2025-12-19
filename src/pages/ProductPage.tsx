@@ -652,8 +652,8 @@ const ProductPage = () => {
                     </div>
                     <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
                       {language === 'ro' 
-                        ? <>Recomandat cu încredere de partenerii noștri <a href="https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">DentalMed Brașov</a></>
-                        : <>Recommended with confidence by our partners <a href="https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">DentalMed Brașov</a></>}
+                        ? <>Recomandat cu încredere de partenerii noștri <a href="https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic" onClick={(e) => { e.preventDefault(); window.open('https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic', '_blank', 'noopener,noreferrer'); }} className="underline hover:no-underline cursor-pointer">DentalMed Brașov</a></>
+                        : <>Recommended with confidence by our partners <a href="https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic" onClick={(e) => { e.preventDefault(); window.open('https://maps.app.goo.gl/TyE5CozicKWBfeK9A?g_st=ic', '_blank', 'noopener,noreferrer'); }} className="underline hover:no-underline cursor-pointer">DentalMed Brașov</a></>}
                     </p>
                   </div>
                 </div>
