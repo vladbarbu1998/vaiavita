@@ -1025,9 +1025,13 @@ const Checkout = () => {
                   </div>
 
                   {/* Address */}
+                  {/* Address - required for all delivery methods (billing/invoice) */}
                   <div className="space-y-2">
                     <Label htmlFor="address">
                       {language === 'ro' ? 'Adresă' : 'Address'} *
+                      <span className="text-xs text-muted-foreground ml-2">
+                        ({language === 'ro' ? 'pentru facturare' : 'for billing'})
+                      </span>
                     </Label>
                     <Input
                       id="address"
@@ -1035,7 +1039,7 @@ const Checkout = () => {
                       onChange={(e) => updateForm('address', e.target.value)}
                       placeholder={language === 'ro' ? 'Strada, număr' : 'Street, number'}
                       autoComplete="street-address"
-                      required={form.deliveryMethod === 'shipping'}
+                      required
                     />
                   </div>
 
@@ -1053,10 +1057,10 @@ const Checkout = () => {
                     />
                   </div>
 
-                  {/* Postal Code */}
+                  {/* Postal Code - required for billing */}
                   <div className="space-y-2 max-w-xs">
                     <Label htmlFor="postalCode">
-                      {language === 'ro' ? 'Cod poștal' : 'Postal code'}
+                      {language === 'ro' ? 'Cod poștal' : 'Postal code'} *
                       {selectedCountry && (
                         <span className="text-xs text-muted-foreground ml-2">
                           ({language === 'ro' ? 'ex:' : 'e.g.'} {selectedCountry.postalExample})
@@ -1070,6 +1074,7 @@ const Checkout = () => {
                       placeholder={selectedCountry?.postalExample || (language === 'ro' ? 'Cod poștal' : 'Postal code')}
                       autoComplete="postal-code"
                       className={postalCodeError ? 'border-destructive' : ''}
+                      required
                     />
                     {postalCodeError && (
                       <p className="text-xs text-destructive">{postalCodeError}</p>
