@@ -159,12 +159,14 @@ const AdminCustomers = () => {
     });
   };
 
-  const statusLabels: Record<string, string> = {
-    pending: 'În așteptare',
-    processing: 'În procesare',
-    shipped: 'Expediată',
-    delivered: 'Finalizată',
-    cancelled: 'Anulată',
+  const statusConfig: Record<string, { label: string; color: string }> = {
+    pending: { label: 'În așteptare', color: 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400' },
+    processing: { label: 'În procesare', color: 'bg-blue-500/20 text-blue-600 dark:text-blue-400' },
+    shipped: { label: 'Expediată', color: 'bg-purple-500/20 text-purple-600 dark:text-purple-400' },
+    delivered: { label: 'Finalizată', color: 'bg-green-500/20 text-green-600 dark:text-green-400' },
+    cancelled: { label: 'Anulată', color: 'bg-red-500/20 text-red-600 dark:text-red-400' },
+    pregatita_ridicare: { label: 'Pregătită ridicare', color: 'bg-teal-500/20 text-teal-600 dark:text-teal-400' },
+    card_paid: { label: 'Plătită cu card', color: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' },
   };
 
   const deleteCustomer = async (customer: Customer) => {
@@ -408,9 +410,11 @@ const AdminCustomers = () => {
                         <p className="font-medium text-sm">{order.order_number}</p>
                         <p className="text-xs text-muted-foreground">{formatDate(order.created_at)}</p>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right space-y-1">
                         <p className="font-medium text-sm">{Number(order.total).toFixed(2)} lei</p>
-                        <p className="text-xs text-muted-foreground">{statusLabels[order.status]}</p>
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${statusConfig[order.status]?.color || 'bg-muted text-muted-foreground'}`}>
+                          {statusConfig[order.status]?.label || order.status}
+                        </span>
                       </div>
                     </div>
                   ))}
