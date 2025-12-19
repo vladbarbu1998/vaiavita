@@ -84,14 +84,13 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
 
   const shippingAddress = order.shipping_address as any;
 
-  // Build client address based on delivery method
+  // Always use customer's billing address from shipping_address (saved for all delivery methods)
   let clientAddress = "";
   let clientCity = "";
   let clientState = "";
   let clientCountry = "Romania";
 
   if (shippingAddress) {
-    // Shipping or postal delivery - use shipping_address
     clientAddress = [
       shippingAddress.address,
       shippingAddress.addressLine2
@@ -99,25 +98,14 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
     clientCity = shippingAddress.city || "";
     clientState = shippingAddress.county || "";
     clientCountry = shippingAddress.country || "Romania";
-  } else if (order.delivery_method === 'locker' && order.locker_address) {
-    // Locker delivery - use locker details
-    clientAddress = order.locker_address;
-    clientCity = order.locker_city || "";
-    clientState = ""; // Locker doesn't store county
-    clientCountry = "Romania";
-  } else if (order.delivery_method === 'pickup' && order.pickup_location) {
-    // Pickup - use pickup_location as address
-    clientAddress = order.pickup_location;
-    clientCity = "";
-    clientState = "";
-    clientCountry = "Romania";
   }
 
-  logStep("Client address built", { 
+  logStep("Client billing address", { 
     deliveryMethod: order.delivery_method,
     address: clientAddress, 
     city: clientCity, 
-    state: clientState 
+    state: clientState,
+    country: clientCountry
   });
 
   // Prepare invoice data
