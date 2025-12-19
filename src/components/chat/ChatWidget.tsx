@@ -262,7 +262,8 @@ export function ChatWidget() {
                   />
                 )}
                 <div 
-                  className={`max-w-[75%] p-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-br-md' : 'bg-muted rounded-bl-md'}`}
+                  className={`max-w-[75%] p-3 rounded-2xl text-sm break-words overflow-hidden ${msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-br-md' : 'bg-muted rounded-bl-md'}`}
+                  style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
                   dangerouslySetInnerHTML={{ __html: msg.role === 'bot' ? formatMessage(msg.content) : msg.content }}
                 />
               </div>

@@ -761,8 +761,8 @@ const ProductPage = () => {
                       </div>
                       <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
                         {language === 'ro' 
-                          ? 'Recomandat cu încredere de partenerii noștri DentalMed Brașov'
-                          : 'Recommended with confidence by our partners DentalMed Brașov'}
+                          ? <>Recomandat cu încredere de partenerii noștri <a href="https://maps.app.goo.gl/TyE5CozicKWBfeK9A" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">DentalMed Brașov</a></>
+                          : <>Recommended with confidence by our partners <a href="https://maps.app.goo.gl/TyE5CozicKWBfeK9A" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">DentalMed Brașov</a></>}
                       </p>
                     </div>
                   </div>

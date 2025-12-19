@@ -10,7 +10,7 @@ interface ImageGalleryProps {
 
 const VISIBLE_THUMBNAILS = 4;
 const MOBILE_VISIBLE_THUMBNAILS = 4;
-const THUMBNAIL_HEIGHT = 80; // Fixed height for each thumbnail in px
+const THUMBNAIL_HEIGHT = 88; // Fixed height for each thumbnail in px
 const THUMBNAIL_GAP = 8; // Gap between thumbnails in px
 const ARROW_HEIGHT = 28; // Fixed height for arrows in px
 const ARROW_MARGIN = 6; // Margin for arrows in px
