@@ -1412,7 +1412,8 @@ const AdminOrders = () => {
                       })()}
                       <div>
                         <p className="font-medium">{deliveryLabels[selectedOrder.delivery_method]?.label}</p>
-                        {selectedOrder.shipping_address && (
+                        {/* Show delivery address only for shipping/postal - pickup/locker address is already shown in Date Client */}
+                        {(selectedOrder.delivery_method === 'shipping' || selectedOrder.delivery_method === 'postal') && selectedOrder.shipping_address && (
                           <p className="text-muted-foreground mt-1">
                             {selectedOrder.shipping_address.address}
                             {selectedOrder.shipping_address.addressLine2 && `, ${selectedOrder.shipping_address.addressLine2}`}
