@@ -166,7 +166,7 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
     language: "RO",
     precision: 2,
     currency: "RON",
-    useStock: false,
+    useStock: true,
     sendEmail: true, // Automatically send invoice to customer email
   };
 
