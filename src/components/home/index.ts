@@ -5,3 +5,4 @@ export { QivaroSection } from './QivaroSection';
 export { WhyChooseUsSection } from './WhyChooseUsSection';
 export { GoogleReviewsSection } from './GoogleReviewsSection';
 export { ContactTeaserSection } from './ContactTeaserSection';
+export { PartnersSection } from './PartnersSection';

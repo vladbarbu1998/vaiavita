@@ -2,6 +2,7 @@ import { MainLayout } from '@/components/layout';
 import { useLanguage } from '@/context/LanguageContext';
 import { GoogleReviewsSection } from '@/components/home';
 import despreImage from '@/assets/despre.webp';
+import dentalmedLogo from '@/assets/dentalmed-logo.png';
 
 const Despre = () => {
   const { language } = useLanguage();
@@ -64,8 +65,12 @@ const Despre = () => {
             
             <div className="card-premium p-6 md:p-8">
               <div className="flex flex-col md:flex-row gap-6 items-start">
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="text-2xl">🦷</span>
+                <div className="w-32 md:w-40 shrink-0 p-4 bg-white rounded-xl">
+                  <img 
+                    src={dentalmedLogo} 
+                    alt="DentalMed Com Brașov" 
+                    className="w-full h-auto object-contain"
+                  />
                 </div>
                 <div className="space-y-4">
                   <h3 className="font-display text-xl md:text-2xl tracking-wide">

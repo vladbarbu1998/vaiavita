@@ -7,6 +7,7 @@ import {
   WhyChooseUsSection,
   GoogleReviewsSection,
   ContactTeaserSection,
+  PartnersSection,
 } from '@/components/home';
 
 const Index = () => {
@@ -15,6 +16,7 @@ const Index = () => {
       <HeroSection />
       <USPSection />
       <FeaturedProductSection />
+      <PartnersSection />
       <QivaroSection />
       <WhyChooseUsSection />
       <GoogleReviewsSection />

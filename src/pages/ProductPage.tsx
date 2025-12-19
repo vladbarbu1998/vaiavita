@@ -22,6 +22,7 @@ import { ImageGallery } from '@/components/product/ImageGallery';
 import { ProfessionalTestimonials } from '@/components/product/ProfessionalTestimonials';
 import dentTasticImage from '@/assets/dent-tastic-product.webp';
 import qivaroImage from '@/assets/qivaro.webp';
+import dentalmedLogo from '@/assets/dentalmed-logo.png';
 
 // Fallback images for products without uploaded images
 const fallbackImages: Record<string, string> = {
@@ -749,9 +750,15 @@ const ProductPage = () => {
 
                 {/* Dentalmed Recommendation Badge - Only for toothpaste (product_number 1) */}
                 {product.product_number === 1 && (
-                  <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
+                  <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">🦷</span>
+                      <div className="w-20 shrink-0 p-1.5 bg-white rounded-lg">
+                        <img 
+                          src={dentalmedLogo} 
+                          alt="DentalMed" 
+                          className="w-full h-auto object-contain"
+                        />
+                      </div>
                       <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
                         {language === 'ro' 
                           ? 'Recomandat cu încredere de partenerii noștri DentalMed Brașov'
