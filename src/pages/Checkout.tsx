@@ -1165,8 +1165,10 @@ const Checkout = () => {
                               <p className="font-medium">{DENTALMED_LOCATION.name}</p>
                               <a 
                                 href={DENTALMED_LOCATION.mapsUrl}
-                                onClick={(e) => { e.preventDefault(); window.open(DENTALMED_LOCATION.mapsUrl, '_blank', 'noopener,noreferrer'); }}
-                                className="text-primary hover:underline inline-flex items-center gap-1 cursor-pointer"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                referrerPolicy="no-referrer"
+                                className="text-primary hover:underline inline-flex items-center gap-1"
                               >
                                 {DENTALMED_LOCATION.address}
                                 <span className="text-xs">↗</span>
