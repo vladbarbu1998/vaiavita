@@ -147,21 +147,28 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
       documentNumber: order.payment_id || order.order_number,
       value: order.total,
     },
-    products: order.order_items.map((item: any) => ({
-      name: item.product_name,
-      code: item.product_sku || "",
-      description: "",
-      price: item.unit_price,
-      measuringUnit: "buc",
-      currency: "RON",
-      vatName: "Normala",
-      vatPercentage: 19,
-      vatIncluded: true,
-      quantity: item.quantity,
-      productType: "Marfa", // Marfa = goods (decreases stock), Serviciu = service (no stock)
-      management: "VVT", // Gestiune name in Oblio
-      saveToDb: false,
-    })),
+    products: order.order_items.map((item: any) => {
+      const productCode = item.product_sku || "";
+      // If we have a SKU/code, use it as the name to force Oblio to match by code
+      // This prevents name mismatch issues between systems
+      const productName = productCode || item.product_name;
+      
+      return {
+        name: productName,
+        code: productCode,
+        description: "", 
+        price: item.unit_price,
+        measuringUnit: "buc",
+        currency: "RON",
+        vatName: "Normala",
+        vatPercentage: 19,
+        vatIncluded: true,
+        quantity: item.quantity,
+        productType: "Marfa", // Marfa = goods (decreases stock), Serviciu = service (no stock)
+        management: "VVT", // Gestiune name in Oblio
+        saveToDb: false,
+      };
+    }),
     language: "RO",
     precision: 2,
     currency: "RON",
