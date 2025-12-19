@@ -580,7 +580,8 @@ const Checkout = () => {
           customer_last_name: form.lastName,
           delivery_method: (form.deliveryMethod === 'pickup_dentalmed' ? 'pickup' : form.deliveryMethod) as 'shipping' | 'pickup' | 'locker' | 'postal',
           payment_method: (form.paymentMethod === 'card_at_locker' ? 'stripe' : form.paymentMethod) as 'stripe' | 'netopia' | 'cash_on_delivery',
-          shipping_address: form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal' ? {
+          // Always save customer address for billing purposes (used on invoices)
+          shipping_address: {
             country: countryDisplayName,
             countryCode: form.country,
             address: form.address,
@@ -588,7 +589,7 @@ const Checkout = () => {
             city: form.city,
             county: form.county,
             postalCode: form.postalCode,
-          } : null,
+          },
           pickup_location: form.deliveryMethod === 'pickup' 
             ? 'Brașov, România' 
             : form.deliveryMethod === 'pickup_dentalmed' 
