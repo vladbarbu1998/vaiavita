@@ -647,6 +647,7 @@ const Checkout = () => {
         order_id: orderId,
         product_id: item.id,
         product_name: language === 'ro' ? item.name : item.nameEn,
+        product_sku: item.sku || null,
         quantity: item.quantity,
         unit_price: item.isGift ? 0 : item.price,
         total_price: item.isGift ? 0 : item.price * item.quantity,

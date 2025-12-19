@@ -20,6 +20,7 @@ interface DatabaseProduct {
   status: string;
   images: string[] | null;
   stock: number;
+  sku: string | null;
 }
 
 interface ProductRating {
@@ -55,6 +56,7 @@ const Produse = () => {
       price: product.price,
       image: getProductImage(product),
       slug: product.slug,
+      sku: product.sku,
     });
     
     toast({
@@ -68,7 +70,7 @@ const Produse = () => {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('id, slug, name_ro, name_en, price, status, images, stock')
+          .select('id, slug, name_ro, name_en, price, status, images, stock, sku')
           .eq('status', 'active')
           .order('created_at', { ascending: true });
 

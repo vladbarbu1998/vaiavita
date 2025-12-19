@@ -54,6 +54,7 @@ interface Product {
   specifications: ProductSpecifications | null;
   related_products: string[] | null;
   product_number: number;
+  sku: string | null;
 }
 
 interface RelatedProduct {
@@ -63,6 +64,7 @@ interface RelatedProduct {
   name_en: string;
   price: number;
   images: string[] | null;
+  sku: string | null;
 }
 
 interface RelatedProductRating {
@@ -182,6 +184,7 @@ const ProductPage = () => {
       price: relProd.price,
       image: relProd.images?.[0] || '',
       slug: relProd.slug,
+      sku: relProd.sku,
     });
     
     toast({
@@ -226,7 +229,7 @@ const ProductPage = () => {
         if (data.related_products && (data.related_products as string[]).length > 0) {
           const { data: relatedData } = await supabase
             .from('products')
-            .select('id, slug, name_ro, name_en, price, images')
+            .select('id, slug, name_ro, name_en, price, images, sku')
             .in('id', data.related_products as string[])
             .eq('status', 'active');
           
@@ -348,6 +351,7 @@ const ProductPage = () => {
         price: Number(product.price),
         image: getProductImage(),
         slug: product.slug,
+        sku: product.sku,
       });
     }
     
