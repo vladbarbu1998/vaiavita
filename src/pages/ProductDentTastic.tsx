@@ -99,6 +99,7 @@ const ProductDentTastic = () => {
         price: productPrice,
         image: dentTasticImage,
         slug: 'dent-tastic',
+        sku: 'dent01',
       });
     }
     toast({

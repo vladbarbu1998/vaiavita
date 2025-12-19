@@ -10,6 +10,7 @@ export interface CartItem {
   quantity: number;
   image: string;
   slug: string;
+  sku?: string | null;
   isGift?: boolean;
 }
 
