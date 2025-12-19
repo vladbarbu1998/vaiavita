@@ -298,6 +298,7 @@ export type Database = {
         Row: {
           admin_notes: string | null
           awb_number: string | null
+          billing_address: Json | null
           cancel_reason: string | null
           cancel_source: string | null
           cancelled_email_sent_at: string | null
@@ -350,6 +351,7 @@ export type Database = {
         Insert: {
           admin_notes?: string | null
           awb_number?: string | null
+          billing_address?: Json | null
           cancel_reason?: string | null
           cancel_source?: string | null
           cancelled_email_sent_at?: string | null
@@ -402,6 +404,7 @@ export type Database = {
         Update: {
           admin_notes?: string | null
           awb_number?: string | null
+          billing_address?: Json | null
           cancel_reason?: string | null
           cancel_source?: string | null
           cancelled_email_sent_at?: string | null

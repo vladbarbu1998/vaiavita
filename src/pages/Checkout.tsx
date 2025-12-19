@@ -574,9 +574,9 @@ const Checkout = () => {
       // Capture user agent for tracking
       const userAgent = navigator.userAgent;
 
-      // Build shipping address object for billing (required for all delivery methods)
-      // CRITICAL: This address is used for invoicing - must always be present
-      const shippingAddressData = {
+      // BILLING ADDRESS - Customer's address for invoices (Oblio)
+      // This is ALWAYS the address filled by the customer, regardless of delivery method
+      const billingAddressData = {
         country: countryDisplayName,
         countryCode: form.country,
         address: form.address,
@@ -586,15 +586,23 @@ const Checkout = () => {
         postalCode: form.postalCode,
       };
       
-      // Failsafe: Verify address is not empty before proceeding
-      if (!shippingAddressData.address || !shippingAddressData.city) {
-        console.error('[Checkout] CRITICAL: Empty billing address detected', shippingAddressData);
+      // SHIPPING ADDRESS - Delivery destination (only for courier/postal, NOT for pickup/locker)
+      // For pickup: null (uses pickup_location field)
+      // For locker: null (uses locker_* fields)
+      // For shipping/postal: same as billing or different if shipping to another address
+      const shippingAddressData = (form.deliveryMethod === 'shipping' || form.deliveryMethod === 'postal')
+        ? billingAddressData  // For now, shipping = billing. Can be split later if needed
+        : null;
+      
+      // Failsafe: Verify billing address is not empty before proceeding
+      if (!billingAddressData.address || !billingAddressData.city) {
+        console.error('[Checkout] CRITICAL: Empty billing address detected', billingAddressData);
         toast.error(language === 'ro' ? 'Eroare: Adresa de facturare este incompletă' : 'Error: Billing address is incomplete');
         setIsSubmitting(false);
         return;
       }
       
-      console.log('[Checkout] Saving order with shipping_address:', JSON.stringify(shippingAddressData));
+      console.log('[Checkout] Saving order with billing_address:', JSON.stringify(billingAddressData));
 
       const { error: orderError } = await supabase
         .from('orders')
@@ -607,7 +615,9 @@ const Checkout = () => {
           customer_last_name: form.lastName,
           delivery_method: (form.deliveryMethod === 'pickup_dentalmed' ? 'pickup' : form.deliveryMethod) as 'shipping' | 'pickup' | 'locker' | 'postal',
           payment_method: (form.paymentMethod === 'card_at_locker' ? 'stripe' : form.paymentMethod) as 'stripe' | 'netopia' | 'cash_on_delivery',
-          // Always save customer address for billing purposes (used on invoices)
+          // BILLING ADDRESS - Used for invoices (Oblio)
+          billing_address: billingAddressData,
+          // SHIPPING ADDRESS - Used for delivery (courier/postal only)
           shipping_address: shippingAddressData,
           pickup_location: form.deliveryMethod === 'pickup'
             ? 'Brașov, România' 
