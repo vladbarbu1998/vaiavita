@@ -1369,7 +1369,7 @@ const AdminOrders = () => {
                         {selectedOrder.customer_phone}
                       </a>
                     </div>
-                    {selectedOrder.shipping_address && (
+                    {selectedOrder.shipping_address ? (
                       <div className="flex items-start gap-3">
                         <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
                         <div>
@@ -1384,6 +1384,11 @@ const AdminOrders = () => {
                           </p>
                           <p>{selectedOrder.shipping_address.country}</p>
                         </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-start gap-3">
+                        <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                        <span className="text-muted-foreground italic">Adresă necompletată (comandă veche)</span>
                       </div>
                     )}
                     <div className="flex items-center gap-3">
