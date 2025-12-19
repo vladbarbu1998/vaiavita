@@ -8,14 +8,14 @@ interface ImageGalleryProps {
   productName: string;
 }
 
-const VISIBLE_THUMBNAILS = 5;
+const VISIBLE_THUMBNAILS = 4;
 const MOBILE_VISIBLE_THUMBNAILS = 4;
-const THUMBNAIL_HEIGHT = 88; // Fixed height for each thumbnail in px
+const THUMBNAIL_HEIGHT = 80; // Fixed height for each thumbnail in px
 const THUMBNAIL_GAP = 8; // Gap between thumbnails in px
-const ARROW_HEIGHT = 32; // Fixed height for arrows in px
-const ARROW_MARGIN = 8; // Margin for arrows in px
+const ARROW_HEIGHT = 28; // Fixed height for arrows in px
+const ARROW_MARGIN = 6; // Margin for arrows in px
 
-// Calculate total height: 5 thumbnails + 4 gaps = main image height
+// Calculate total height: 4 thumbnails + 3 gaps = main image height
 // Main image is square, so we need thumbnails to match that height
 const THUMBNAILS_CONTAINER_HEIGHT = (THUMBNAIL_HEIGHT * VISIBLE_THUMBNAILS) + (THUMBNAIL_GAP * (VISIBLE_THUMBNAILS - 1));
 
