@@ -82,27 +82,28 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
 
   logStep("Creating invoice for order", { orderId, orderNumber: order.order_number });
 
-  const shippingAddress = order.shipping_address as any;
+  // CRITICAL: Use billing_address for invoices (NOT shipping_address)
+  // billing_address = customer's address for invoice
+  // shipping_address = delivery destination (courier/postal only)
+  const billingAddress = order.billing_address as any;
 
-  // CRITICAL: Always use customer's billing address from shipping_address
-  // This is the address filled by customer in checkout, NOT the pickup/locker location
   let clientAddress = "";
   let clientCity = "";
   let clientState = "";
   let clientCountry = "Romania";
 
-  if (shippingAddress && shippingAddress.address) {
-    // Customer billing address from checkout form
+  if (billingAddress && billingAddress.address) {
+    // Customer billing address for invoice
     clientAddress = [
-      shippingAddress.address,
-      shippingAddress.addressLine2
+      billingAddress.address,
+      billingAddress.addressLine2
     ].filter(Boolean).join(", ");
-    clientCity = shippingAddress.city || "";
-    clientState = shippingAddress.county || "";
-    clientCountry = shippingAddress.country || "Romania";
+    clientCity = billingAddress.city || "";
+    clientState = billingAddress.county || "";
+    clientCountry = billingAddress.country || "Romania";
   } else {
-    // Fallback error - shipping_address should always be present
-    logStep("WARNING: No shipping_address found for billing", { 
+    // Fallback error - billing_address must be present for invoices
+    logStep("ERROR: No billing_address found for invoice", { 
       orderId, 
       orderNumber: order.order_number,
       deliveryMethod: order.delivery_method
