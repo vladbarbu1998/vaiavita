@@ -84,13 +84,15 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
 
   const shippingAddress = order.shipping_address as any;
 
-  // Always use customer's billing address from shipping_address (saved for all delivery methods)
+  // CRITICAL: Always use customer's billing address from shipping_address
+  // This is the address filled by customer in checkout, NOT the pickup/locker location
   let clientAddress = "";
   let clientCity = "";
   let clientState = "";
   let clientCountry = "Romania";
 
-  if (shippingAddress) {
+  if (shippingAddress && shippingAddress.address) {
+    // Customer billing address from checkout form
     clientAddress = [
       shippingAddress.address,
       shippingAddress.addressLine2
@@ -98,11 +100,19 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
     clientCity = shippingAddress.city || "";
     clientState = shippingAddress.county || "";
     clientCountry = shippingAddress.country || "Romania";
+  } else {
+    // Fallback error - shipping_address should always be present
+    logStep("WARNING: No shipping_address found for billing", { 
+      orderId, 
+      orderNumber: order.order_number,
+      deliveryMethod: order.delivery_method
+    });
+    throw new Error(`Eroare: Adresa de facturare lipsește pentru comanda ${order.order_number}. Verifică datele comenzii.`);
   }
 
-  logStep("Client billing address", { 
+  logStep("Client billing address for invoice", { 
     deliveryMethod: order.delivery_method,
-    address: clientAddress, 
+    billingAddress: clientAddress, 
     city: clientCity, 
     state: clientState,
     country: clientCountry
