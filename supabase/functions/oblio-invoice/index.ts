@@ -136,7 +136,7 @@ async function createInvoice(orderId: string, supabaseClient: any, accessToken: 
       phone: order.customer_phone,
       contact: `${order.customer_first_name} ${order.customer_last_name}`,
       vatPayer: false,
-      save: false,
+      save: true, // Must be true to UPDATE existing client data (matched by email)
     },
     issueDate: new Date().toISOString().split('T')[0],
     dueDate: new Date().toISOString().split('T')[0],
