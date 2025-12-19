@@ -638,6 +638,33 @@ const ProductPage = () => {
                 images={images} 
                 productName={language === 'ro' ? product.name_ro : product.name_en} 
               />
+              
+              {/* Key Features / Benefits Section */}
+              {product.product_number === 1 && (
+                <div className="mt-6 p-4 rounded-xl bg-muted/30 border border-border/50">
+                  <h3 className="text-sm font-semibold text-foreground/80 mb-3 uppercase tracking-wide">
+                    {language === 'ro' ? 'Beneficii cheie' : 'Key Benefits'}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                      <span>{language === 'ro' ? 'Fără fluor sau triclosan' : 'No fluoride or triclosan'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                      <span>{language === 'ro' ? 'Ingrediente naturale' : 'Natural ingredients'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                      <span>{language === 'ro' ? 'Protejează gingiile' : 'Protects gums'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                      <span>{language === 'ro' ? 'Testat clinic' : 'Clinically tested'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Product Details */}
