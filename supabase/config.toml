@@ -4,7 +4,7 @@ project_id = "hivkibfnkaarlzxyokqd"
 verify_jwt = false
 
 [functions.setup-admin]
-verify_jwt = false
+verify_jwt = true
 
 [functions.translate-product]
 verify_jwt = false
@@ -58,7 +58,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.update-user-password]
-verify_jwt = false
+verify_jwt = true
 
 [functions.force-logout-user]
-verify_jwt = false
+verify_jwt = true
