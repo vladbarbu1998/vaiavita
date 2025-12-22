@@ -68,6 +68,12 @@ export function Footer() {
               <Link to="/politica-cookie-uri" className="text-sm text-muted-foreground hover:text-primary transition-colors hover:translate-x-1 transform duration-200">
                 {t('footer.cookies')}
               </Link>
+              <Link to="/politica-retur" className="text-sm text-muted-foreground hover:text-primary transition-colors hover:translate-x-1 transform duration-200">
+                {language === 'ro' ? 'Politica de Retur' : 'Return Policy'}
+              </Link>
+              <Link to="/politica-livrare" className="text-sm text-muted-foreground hover:text-primary transition-colors hover:translate-x-1 transform duration-200">
+                {language === 'ro' ? 'Politica de Livrare' : 'Delivery Policy'}
+              </Link>
             </nav>
           </div>
 

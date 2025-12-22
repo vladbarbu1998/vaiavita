@@ -23,6 +23,8 @@ import OrderConfirmation from "./pages/OrderConfirmation";
 import PoliticaConfidentialitate from "./pages/PoliticaConfidentialitate";
 import TermeniConditii from "./pages/TermeniConditii";
 import PoliticaCookies from "./pages/PoliticaCookies";
+import PoliticaRetur from "./pages/PoliticaRetur";
+import PoliticaLivrare from "./pages/PoliticaLivrare";
 import NotFound from "./pages/NotFound";
 import { AdminDashboard, AdminOverview, AdminProducts, AdminCategories, AdminOrders, AdminCustomers, AdminReviews, AdminCoupons, AdminInbox } from "./pages/admin";
 
@@ -53,6 +55,8 @@ const App = () => (
                   <Route path="/politica-confidentialitate" element={<PoliticaConfidentialitate />} />
                   <Route path="/termeni-si-conditii" element={<TermeniConditii />} />
                   <Route path="/politica-cookie-uri" element={<PoliticaCookies />} />
+                  <Route path="/politica-retur" element={<PoliticaRetur />} />
+                  <Route path="/politica-livrare" element={<PoliticaLivrare />} />
                   <Route path="/admin" element={<AdminDashboard />}>
                     <Route index element={<AdminOverview />} />
                     <Route path="products" element={<AdminProducts />} />
