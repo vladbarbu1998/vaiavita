@@ -88,8 +88,8 @@ const PoliticaLivrare = () => {
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">{isRo ? "GRATUIT" : "FREE"}</p>
                 <p className="text-muted-foreground text-sm">
                   {isRo 
-                    ? "Ridicare din Brașov, Str. Căliman nr. 25 (doar cu programare prealabilă)"
-                    : "Pickup from Brașov, Str. Căliman no. 25 (by appointment only)"
+                    ? "Ridicare din Brașov, de la unul din punctele noastre: VAIAVITA sau Dentalmed (doar cu programare prealabilă)"
+                    : "Pickup from Brașov, from one of our locations: VAIAVITA or Dentalmed (by appointment only)"
                   }
                 </p>
               </div>
