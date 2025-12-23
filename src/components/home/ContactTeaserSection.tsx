@@ -13,7 +13,7 @@ export function ContactTeaserSection() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-6">
             <Mail className="w-8 h-8" />
           </div>
-          <h2 className="font-display text-3xl md:text-4xl tracking-wide mb-4 text-center md:text-center">
+          <h2 className="font-display text-3xl md:text-4xl tracking-wide mb-4 text-left md:text-center">
             {t('contact.title')}
           </h2>
           <p className="text-muted-foreground leading-relaxed mb-8 max-w-xl mx-auto">
