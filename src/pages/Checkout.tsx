@@ -1117,6 +1117,22 @@ const Checkout = () => {
                       {language === 'ro' ? 'Metoda de livrare' : 'Delivery method'}
                     </h3>
 
+                    {/* Delivery info banner */}
+                    {isRomania && !form.county && (
+                      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                        <p className="text-sm text-amber-700 dark:text-amber-300">
+                          {language === 'ro' 
+                            ? '📍 Selectează județul pentru a vedea toate opțiunile de livrare și prețurile exacte.'
+                            : '📍 Select your county to see all delivery options and exact prices.'}
+                        </p>
+                        <p className="text-sm text-amber-700 dark:text-amber-300 mt-1 font-medium">
+                          {language === 'ro' 
+                            ? '🎁 În Brașov: ridicare personală GRATUITĂ!'
+                            : '🎁 In Brașov: FREE personal pickup!'}
+                        </p>
+                      </div>
+                    )}
+
                     <RadioGroup
                       value={form.deliveryMethod}
                       onValueChange={(value) => updateForm('deliveryMethod', value)}
@@ -1545,20 +1561,38 @@ const Checkout = () => {
                       <span className="text-muted-foreground">
                         {language === 'ro' ? 'Livrare' : 'Shipping'}
                       </span>
-                      <span className={shippingCost === 0 ? 'text-primary' : ''}>
-                        {shippingCost === 0 
-                          ? (language === 'ro' ? 'Gratuit' : 'Free')
-                          : formatPrice(shippingCost)}
-                      </span>
+                      {/* Hide delivery cost until county is selected (Romania only) */}
+                      {isRomania && !form.county ? (
+                        <span className="text-muted-foreground italic text-xs">
+                          {language === 'ro' ? 'Selectează județul' : 'Select county'}
+                        </span>
+                      ) : (
+                        <span className={shippingCost === 0 ? 'text-primary' : ''}>
+                          {shippingCost === 0 
+                            ? (language === 'ro' ? 'Gratuit' : 'Free')
+                            : formatPrice(shippingCost)}
+                        </span>
+                      )}
                     </div>
                   </div>
 
                   <div className="pt-3 sm:pt-4 border-t border-border">
                     <div className="flex justify-between items-baseline">
                       <span className="font-display text-base sm:text-lg">TOTAL</span>
-                      <span className="font-bold text-primary text-lg sm:text-xl">
-                        {formatPrice(finalTotal)}
-                      </span>
+                      {isRomania && !form.county ? (
+                        <div className="text-right">
+                          <span className="font-bold text-primary text-lg sm:text-xl">
+                            {formatPrice(totalPrice - discount)}
+                          </span>
+                          <p className="text-[10px] text-muted-foreground">
+                            {language === 'ro' ? '+ transport' : '+ shipping'}
+                          </p>
+                        </div>
+                      ) : (
+                        <span className="font-bold text-primary text-lg sm:text-xl">
+                          {formatPrice(finalTotal)}
+                        </span>
+                      )}
                     </div>
                   </div>
 
