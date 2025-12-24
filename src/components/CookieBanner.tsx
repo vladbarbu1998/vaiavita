@@ -93,7 +93,7 @@ const CookieBanner = () => {
         s.parentNode.insertBefore(t, s);
       })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
       
-      window.fbq('init', '24769777672702052');
+      window.fbq('init', '3067663113435976');
       window.fbq('track', 'PageView');
     }
   };
