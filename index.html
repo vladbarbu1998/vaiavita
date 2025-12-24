@@ -16,16 +16,37 @@
     <meta name="google-site-verification" content="KjA5b81drYUqk2HLaA4B_qhI3kfsdrmixqHbvLcxtSA" />
     <meta name="msvalidate.01" content="A9E666520EDD5A98AC7460EE66F5ED7E" />
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1FVH88QWJ5"></script>
+    <!-- Google Consent Mode v2 - Default denied -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      
+      // Set default consent to denied (GDPR compliant)
+      gtag('consent', 'default', {
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'analytics_storage': 'denied',
+        'functionality_storage': 'granted',
+        'personalization_storage': 'denied',
+        'security_storage': 'granted',
+        'wait_for_update': 500
+      });
+      
+      // Enable URL passthrough for better conversion modeling
+      gtag('set', 'url_passthrough', true);
+      // Enable ads data redaction when consent denied
+      gtag('set', 'ads_data_redaction', true);
+    </script>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1FVH88QWJ5"></script>
+    <script>
       gtag('js', new Date());
       gtag('config', 'G-1FVH88QWJ5');
     </script>
 
-    <!-- Meta Pixel Code -->
+    <!-- Meta Pixel Code with Consent Mode -->
     <script>
       !function(f,b,e,v,n,t,s)
       {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -35,6 +56,9 @@
       t.src=v;s=b.getElementsByTagName(e)[0];
       s.parentNode.insertBefore(t,s)}(window, document,'script',
       'https://connect.facebook.net/en_US/fbevents.js');
+      
+      // Initialize with consent revoked by default
+      fbq('consent', 'revoke');
       fbq('init', '3067663113435976');
       fbq('track', 'PageView');
     </script>
