@@ -39,9 +39,9 @@ const Despre = () => {
                       produs, pentru a-ți aduce experiențe premium care contează cu adevărat.
                     </p>
                     <p>
-                      Filosofia noastră este simplă: luxul autentic înseamnă funcționalitate, utilitate și impact real
-                      asupra vieții tale. Produsele noastre îmbină designul elegant cu performanța remarcabilă,
-                      oferindu-ți o experiență premium în fiecare zi.
+                      Filosofia noastră este simplă: calitatea premium înseamnă funcționalitate, utilitate și impact
+                      real asupra vieții tale. Produsele noastre îmbină designul elegant cu performanța remarcabilă,
+                      oferindu-ți o experiență superioară, în fiecare zi.
                     </p>
                     <p>
                       Prin VAIAVITA, intri într-un univers curat, select și inovator, unde fiecare alegere devine o
