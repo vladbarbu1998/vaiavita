@@ -36,7 +36,7 @@ const Despre = () => {
                     </p>
                     <p>
                       VAIAVITA este poarta ta către inovație, calitate și rafinament. Selectăm cu grijă fiecare brand și
-                      produs, pentru a-ți aduce experiențe premium care contează cu adevărat.{" "}
+                      produs, pentru a-ți aduce experiențe premium care contează cu adevărat.
                     </p>
                     <p>
                       Filosofia noastră este simplă: luxul autentic înseamnă funcționalitate, utilitate și impact real
