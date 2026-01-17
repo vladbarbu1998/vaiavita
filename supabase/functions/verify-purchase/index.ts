@@ -27,6 +27,20 @@ serve(async (req) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
+    // Allow admin/test email to review any product without purchase verification
+    const ALLOWED_EMAILS = ["stanoiloren20@gmail.com"];
+    if (ALLOWED_EMAILS.includes(normalizedEmail)) {
+      console.log(`Admin email ${normalizedEmail} bypassing purchase verification`);
+      return new Response(
+        JSON.stringify({ 
+          verified: true, 
+          order_id: null,
+          is_admin_bypass: true 
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Count delivered orders containing this product
     const { data: deliveredOrders } = await supabase
       .from("orders")
