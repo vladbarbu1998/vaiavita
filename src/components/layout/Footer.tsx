@@ -27,7 +27,7 @@ export function Footer() {
           <div className="space-y-5">
             <Link to="/" className="inline-block transition-transform hover:scale-105">
               <img 
-                src={theme === 'dark' ? logoDark : logoLightNew} 
+                src={theme === 'dark' ? logoLight : logoLightNew} 
                 alt="VAIAVITA" 
                 className="h-12 w-auto"
               />
