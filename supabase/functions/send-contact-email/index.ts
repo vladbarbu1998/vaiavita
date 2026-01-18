@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const resend = new Resend(resendApiKey);
-    const logoUrl = 'https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png';
+    const logoUrl = 'https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-light.png';
     const adminEmail = 'office@vaiavita.com';
 
     // Email to admin
