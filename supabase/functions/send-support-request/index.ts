@@ -21,7 +21,7 @@ interface SupportRequest {
 }
 
 const getAdminEmailTemplate = (data: SupportRequest): string => {
-  const logoUrl = 'https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png';
+  const logoUrl = 'https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-light.png';
   
   return `
 <!DOCTYPE html>
@@ -128,7 +128,7 @@ const getAdminEmailTemplate = (data: SupportRequest): string => {
 
 const getCustomerEmailTemplate = (data: SupportRequest): string => {
   const isRomanian = data.language === 'ro';
-  const logoUrl = 'https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-mail-craciun.png';
+  const logoUrl = 'https://hivkibfnkaarlzxyokqd.supabase.co/storage/v1/object/public/products/logo-light.png';
   
   return `
 <!DOCTYPE html>
