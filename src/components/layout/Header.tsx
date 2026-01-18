@@ -39,7 +39,7 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center transition-transform hover:scale-105">
             <img 
-              src={theme === 'dark' ? logoDark : logoLightNew} 
+              src={theme === 'dark' ? logoLight : logoLightNew} 
               alt="VAIAVITA" 
               className="h-11 w-auto"
             />
