@@ -1,90 +1,92 @@
 
-# Plan: Migrare Chatbot de la Gemini API la Lovable AI
+# Plan: Migrare translate-text și translate-product la Lovable AI
 
 ## Rezumat
 
-Vom migra chatbot-ul VAIAVITA de la utilizarea directă a Gemini API (care necesită `GEMINI_API_KEY`) la **Lovable AI Gateway**, care este **inclus automat** în proiectele Lovable Cloud și nu necesită nicio configurare suplimentară.
+Vom migra cele 2 funcții de traducere de la Gemini API la **Lovable AI Gateway**, eliminând dependența de `GEMINI_API_KEY`.
+
+> **Notă**: Funcția `generate-specifications` este deja migrată la Lovable AI.
 
 ---
 
-## Ce se schimbă
+## Funcții de migrat
 
-| Aspect | Acum (Gemini API) | După (Lovable AI) |
-|--------|-------------------|-------------------|
-| **API Key** | `GEMINI_API_KEY` (manual) | `LOVABLE_API_KEY` (automat) |
-| **Endpoint** | `generativelanguage.googleapis.com` | `ai.gateway.lovable.dev` |
-| **Model** | `gemini-2.0-flash` | `google/gemini-3-flash-preview` |
-| **Cost** | Plătit separat la Google | Inclus în Lovable (cu limite) |
+| Funcție | Status actual | După migrare |
+|---------|---------------|--------------|
+| `translate-text` | Gemini API (`GEMINI_API_KEY`) | Lovable AI (`LOVABLE_API_KEY`) |
+| `translate-product` | Gemini API (`GEMINI_API_KEY`) | Lovable AI (`LOVABLE_API_KEY`) |
+| `generate-specifications` | ✅ Deja Lovable AI | - |
+| `chat-assistant` | ✅ Deja Lovable AI | - |
+
+---
+
+## Modificări pentru fiecare funcție
+
+### 1. `supabase/functions/translate-text/index.ts`
+
+**Schimbări:**
+- Înlocuire `GEMINI_API_KEY` → `LOVABLE_API_KEY`
+- Schimbare endpoint: `generativelanguage.googleapis.com` → `ai.gateway.lovable.dev`
+- Schimbare model: `gemini-2.0-flash` → `google/gemini-2.5-flash`
+- Adaptare format mesaje (de la Gemini la OpenAI format)
+- Adăugare error handling pentru 402 (Payment Required)
+- Actualizare extragere răspuns: `candidates[0].content.parts[0].text` → `choices[0].message.content`
+
+### 2. `supabase/functions/translate-product/index.ts`
+
+**Schimbări identice cu translate-text:**
+- Înlocuire `GEMINI_API_KEY` → `LOVABLE_API_KEY`
+- Schimbare endpoint și model
+- Adaptare format mesaje
+- Adăugare error handling 402
+- Actualizare extragere răspuns
+
+---
+
+## Structura nouă a request-ului
+
+```typescript
+// Înainte (Gemini API)
+const response = await fetch(
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+  {
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+    })
+  }
+);
+
+// După (Lovable AI)
+const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  headers: {
+    Authorization: `Bearer ${LOVABLE_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "google/gemini-2.5-flash",
+    messages: [
+      { role: "system", content: "You are a professional translator..." },
+      { role: "user", content: prompt }
+    ],
+  }),
+});
+```
 
 ---
 
 ## Beneficii
 
-- **Nu mai ai nevoie de API key** - `LOVABLE_API_KEY` este deja configurat automat
-- **Aceleași capabilități** - Gemini 3 Flash Preview oferă performanțe similare sau mai bune
-- **Cost inclus** - Utilizare gratuită limitată inclusă în Lovable
-- **Simplitate** - Fără configurări externe
-
----
-
-## Modificări tehnice
-
-### 1. Actualizare `supabase/functions/chat-assistant/index.ts`
-
-```text
-Schimbări:
-├── Înlocuire GEMINI_API_KEY cu LOVABLE_API_KEY
-├── Schimbare endpoint de la Google la Lovable AI Gateway
-├── Actualizare format mesaje (de la Gemini format la OpenAI format)
-├── Adăugare handling pentru erori 429 (rate limit) și 402 (payment required)
-└── Păstrare SITE_CONTEXT și logică existentă
-```
-
-### 2. Structura nouă a request-ului
-
-```typescript
-// Endpoint nou
-const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-  method: "POST",
-  headers: {
-    "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    model: "google/gemini-3-flash-preview",
-    messages: [
-      { role: "system", content: SITE_CONTEXT },
-      ...conversationHistory,
-      { role: "user", content: message }
-    ],
-    temperature: 0.7,
-    max_tokens: 500,
-  }),
-});
-```
-
-### 3. Handling erori actualizat
-
-- **429 (Rate Limit)**: "Sistemul este momentan ocupat..."
-- **402 (Payment Required)**: "Limită de utilizare atinsă..."
+- **Eliminare GEMINI_API_KEY** - Nu mai ai nevoie de API key extern
+- **Consistență** - Toate funcțiile AI folosesc același gateway
+- **Mentenanță simplificată** - Un singur punct de configurare
+- **Cost inclus** - Utilizare în limita Lovable
 
 ---
 
 ## Pași de implementare
 
-1. **Modificare `chat-assistant/index.ts`**
-   - Schimbare de la Gemini API la Lovable AI Gateway
-   - Adaptare format mesaje
-   - Actualizare error handling
-
-2. **Deploy edge function**
-   - Funcția va fi deployată automat
-
-3. **Testare chatbot**
-   - Verificare funcționare pe site
-
----
-
-## Notă importantă
-
-Celelalte funcții care folosesc Gemini API (`translate-text`, `translate-product`, `generate-specifications`) pot fi și ele migrate ulterior dacă dorești, dar pentru moment doar chatbot-ul va fi migrat.
+1. Actualizare `translate-text/index.ts`
+2. Actualizare `translate-product/index.ts`
+3. Deploy automat al funcțiilor
+4. Testare traduceri în admin panel
