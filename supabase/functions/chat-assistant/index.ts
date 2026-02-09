@@ -34,7 +34,7 @@ Services: Can create any type of website (online stores, presentation sites, lan
 DO NOT mention WhatsApp. Display clean text (only number/email visible) but with clickable links.
 
 AVAILABLE PRODUCTS:
-1. Dent-Tastic Fresh Mint - Natural toothpaste (29.99 lei / ~6 EUR)
+1. Dent-Tastic Fresh Mint - Natural toothpaste (32.99 lei / ~6.50 EUR)
    - Patented formula in USA, created after 10 years of research
    - No fluoride, no triclosan, no controversial ingredients
    - Patented active ingredients: Quercetin 1%, Paeoniflorine 0.5%
@@ -43,9 +43,9 @@ AVAILABLE PRODUCTS:
    - Origin: USA
    - Recommended by dental specialists
 
-2. VAIAVITA Toothbrush (free with 2+ Dent-Tastic toothpastes)
-   - Premium toothbrush
-   - Free gift when purchasing 2 or more Dent-Tastic toothpastes
+2. VAIAVITA Toothbrush (7.99 lei / ~1.60 EUR)
+   - Premium toothbrush, available for individual purchase in the shop
+   - Also available as a FREE gift when purchasing 2 or more Dent-Tastic toothpastes
 
 3. Qivaro Premium Supplements (coming soon)
    - Elite nutritional supplements manufactured in USA
