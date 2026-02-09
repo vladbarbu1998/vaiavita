@@ -1,92 +1,37 @@
 
-# Plan: Migrare translate-text și translate-product la Lovable AI
+# Plan: Actualizare informații chatbot (prețuri și produse)
 
-## Rezumat
+## Problemele identificate
 
-Vom migra cele 2 funcții de traducere de la Gemini API la **Lovable AI Gateway**, eliminând dependența de `GEMINI_API_KEY`.
+1. **Preț greșit Dent-Tastic**: Chatbot-ul spune 29.99 lei, dar pe site prețul real este **32.99 lei**
+2. **Periuța de dinți**: Chatbot-ul spune că nu este de vânzare separat, dar pe site este listată la **7.99 lei** și disponibilă pentru cumpărare
 
-> **Notă**: Funcția `generate-specifications` este deja migrată la Lovable AI.
+## Modificări
 
----
+### Fișier: `supabase/functions/chat-assistant/index.ts`
 
-## Funcții de migrat
+Actualizare secțiunea **AVAILABLE PRODUCTS** din `SITE_CONTEXT`:
 
-| Funcție | Status actual | După migrare |
-|---------|---------------|--------------|
-| `translate-text` | Gemini API (`GEMINI_API_KEY`) | Lovable AI (`LOVABLE_API_KEY`) |
-| `translate-product` | Gemini API (`GEMINI_API_KEY`) | Lovable AI (`LOVABLE_API_KEY`) |
-| `generate-specifications` | ✅ Deja Lovable AI | - |
-| `chat-assistant` | ✅ Deja Lovable AI | - |
+**Produs 1 - Dent-Tastic Fresh Mint:**
+- Preț corectat: `29.99 lei` -> `32.99 lei` (~6.50 EUR)
 
----
+**Produs 2 - Periuța VAIAVITA:**
+- Adăugare: disponibilă și separat la **7.99 lei**
+- Păstrare info: GRATUITĂ la 2+ paste Dent-Tastic
+- Periuța poate fi cumpărată individual din magazin
 
-## Modificări pentru fiecare funcție
+**Actualizare secțiunea PROMOȚII:**
+- Clarificare că prețul pentru 2 paste = 65.98 lei (nu 59.98)
 
-### 1. `supabase/functions/translate-text/index.ts`
+## Ce rămâne neschimbat
 
-**Schimbări:**
-- Înlocuire `GEMINI_API_KEY` → `LOVABLE_API_KEY`
-- Schimbare endpoint: `generativelanguage.googleapis.com` → `ai.gateway.lovable.dev`
-- Schimbare model: `gemini-2.0-flash` → `google/gemini-2.5-flash`
-- Adaptare format mesaje (de la Gemini la OpenAI format)
-- Adăugare error handling pentru 402 (Payment Required)
-- Actualizare extragere răspuns: `candidates[0].content.parts[0].text` → `choices[0].message.content`
+- Toate celelalte informații (companie, livrare, plată, retururi, DentalMed, creator website, reguli limbă, stil comunicare)
+- Logica de funcționare a chatbot-ului
+- Endpoint-ul și modelul AI
 
-### 2. `supabase/functions/translate-product/index.ts`
+## Detalii tehnice
 
-**Schimbări identice cu translate-text:**
-- Înlocuire `GEMINI_API_KEY` → `LOVABLE_API_KEY`
-- Schimbare endpoint și model
-- Adaptare format mesaje
-- Adăugare error handling 402
-- Actualizare extragere răspuns
-
----
-
-## Structura nouă a request-ului
-
-```typescript
-// Înainte (Gemini API)
-const response = await fetch(
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-  {
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
-    })
-  }
-);
-
-// După (Lovable AI)
-const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-  headers: {
-    Authorization: `Bearer ${LOVABLE_API_KEY}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    model: "google/gemini-2.5-flash",
-    messages: [
-      { role: "system", content: "You are a professional translator..." },
-      { role: "user", content: prompt }
-    ],
-  }),
-});
-```
-
----
-
-## Beneficii
-
-- **Eliminare GEMINI_API_KEY** - Nu mai ai nevoie de API key extern
-- **Consistență** - Toate funcțiile AI folosesc același gateway
-- **Mentenanță simplificată** - Un singur punct de configurare
-- **Cost inclus** - Utilizare în limita Lovable
-
----
-
-## Pași de implementare
-
-1. Actualizare `translate-text/index.ts`
-2. Actualizare `translate-product/index.ts`
-3. Deploy automat al funcțiilor
-4. Testare traduceri în admin panel
+Se modifică doar string-ul `SITE_CONTEXT` din `supabase/functions/chat-assistant/index.ts`, actualizând:
+- Linia 37: preț Dent-Tastic de la 29.99 la 32.99
+- Liniile 46-48: periuța - adăugare preț 7.99 lei și disponibilitate separată
+- Deploy automat al funcției
