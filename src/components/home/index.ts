@@ -6,3 +6,4 @@ export { WhyChooseUsSection } from './WhyChooseUsSection';
 export { GoogleReviewsSection } from './GoogleReviewsSection';
 export { ContactTeaserSection } from './ContactTeaserSection';
 export { PartnersSection } from './PartnersSection';
+export { FAQSection } from './FAQSection';

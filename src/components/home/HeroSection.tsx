@@ -16,7 +16,7 @@ export function HeroSection() {
       <div className="container-custom section-padding relative z-10">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Text Content - First on mobile */}
-          <div className="order-1 lg:order-1 space-y-6 opacity-0 animate-fade-up">
+          <div className="order-1 lg:order-1 space-y-6 opacity-0 animate-fade-up hero-speakable">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
               <Sparkles className="w-4 h-4" />
               <span>{t('hero.badge')}</span>

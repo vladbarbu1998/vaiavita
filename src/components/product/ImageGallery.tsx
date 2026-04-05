@@ -105,7 +105,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
                   >
                     <img 
                       src={img} 
-                      alt="" 
+                      alt={`${productName} - miniatura ${actualIndex + 1}`}
                       className="w-full h-full object-contain p-1.5" 
                     />
                   </button>
@@ -202,7 +202,7 @@ export const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
                         : 'border-border opacity-60'
                     }`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-contain p-1" />
+                    <img src={img} alt={`${productName} - miniatura ${actualIndex + 1}`} className="w-full h-full object-contain p-1" />
                   </button>
                 );
               })}

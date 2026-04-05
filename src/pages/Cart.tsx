@@ -5,15 +5,26 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Package, Truck, Gift } from 'lucide-react';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 const Cart = () => {
   const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
   const { items, updateQuantity, removeItem, totalPrice, hasPromoFreeShipping } = useCart();
 
+  const seoHead = (
+    <SEOHead
+      title="Coș de Cumpărături | VAIAVITA"
+      description="Finalizează comanda ta VAIAVITA. Produse premium pentru sănătate orală cu livrare rapidă în toată România."
+      url="/cos"
+      noindex
+    />
+  );
+
   if (items.length === 0) {
     return (
       <MainLayout>
+        {seoHead}
         <section className="section-padding">
           <div className="container-custom">
             <div className="text-center max-w-md mx-auto space-y-8 opacity-0 animate-fade-up">
@@ -45,6 +56,7 @@ const Cart = () => {
 
   return (
     <MainLayout>
+      {seoHead}
       <section className="section-padding overflow-hidden">
         <div className="container-custom">
           <h1 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-wide mb-8 sm:mb-10 opacity-0 animate-fade-up">

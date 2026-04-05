@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from '@/lib/utils';
 import { LockerSelector, preloadLockers } from '@/components/checkout/LockerSelector';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 // Romanian counties
 const ROMANIAN_COUNTIES = [
@@ -851,6 +852,12 @@ const Checkout = () => {
 
   return (
     <MainLayout>
+      <SEOHead
+        title="Checkout | VAIAVITA"
+        description="Finalizează comanda ta VAIAVITA."
+        url="/checkout"
+        noindex
+      />
       <section className="section-padding overflow-hidden">
         <div className="container-custom">
           <div className="mb-8">

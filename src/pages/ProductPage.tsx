@@ -20,6 +20,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ProductSpecificationsDisplay, ProductSpecifications } from '@/components/product/ProductSpecifications';
 import { ImageGallery } from '@/components/product/ImageGallery';
 import { ProfessionalTestimonials } from '@/components/product/ProfessionalTestimonials';
+import { SEOHead } from '@/components/seo/SEOHead';
 import dentTasticImage from '@/assets/dent-tastic-product.webp';
 import qivaroImage from '@/assets/qivaro.webp';
 import dentalmedLogo from '@/assets/dentalmed-logo.png';
@@ -631,8 +632,81 @@ const ProductPage = () => {
     labelEn: product.name_en,
   });
 
+  const productDescription = language === 'ro'
+    ? (product.short_description_ro || product.description_ro || `${product.name_ro} - produs premium de la VAIAVITA`)
+    : (product.short_description_en || product.description_en || `${product.name_en} - premium product by VAIAVITA`);
+
+  const productImage = images.length > 0 ? images[0] : 'https://vaiavita.ro/og-image.jpg';
+
+  const productJsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    'name': product.name_ro,
+    'description': product.short_description_ro || product.description_ro || '',
+    'image': productImage,
+    'sku': product.sku || undefined,
+    'brand': {
+      '@type': 'Brand',
+      'name': 'VAIAVITA',
+    },
+    'offers': {
+      '@type': 'Offer',
+      'price': product.price.toString(),
+      'priceCurrency': 'RON',
+      'availability': isInStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      'url': `https://vaiavita.ro/produse/${product.slug}`,
+      'seller': {
+        '@type': 'Organization',
+        'name': 'VAIAVITA S.R.L.',
+      },
+    },
+  };
+
+  if (reviewStats.reviewCount > 0) {
+    productJsonLd.aggregateRating = {
+      '@type': 'AggregateRating',
+      'ratingValue': reviewStats.averageRating.toFixed(1),
+      'reviewCount': reviewStats.reviewCount.toString(),
+      'bestRating': '5',
+      'worstRating': '1',
+    };
+  }
+
+  const breadcrumbJsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      {
+        '@type': 'ListItem',
+        'position': 1,
+        'name': 'Acasă',
+        'item': 'https://vaiavita.ro/',
+      },
+      {
+        '@type': 'ListItem',
+        'position': 2,
+        'name': 'Produse',
+        'item': 'https://vaiavita.ro/produse',
+      },
+      {
+        '@type': 'ListItem',
+        'position': 3,
+        'name': product.name_ro,
+        'item': `https://vaiavita.ro/produse/${product.slug}`,
+      },
+    ],
+  };
+
   return (
     <MainLayout breadcrumbItems={breadcrumbItems}>
+      <SEOHead
+        title={`${language === 'ro' ? product.name_ro : product.name_en} | VAIAVITA`}
+        description={productDescription.substring(0, 160)}
+        url={`/produse/${product.slug}`}
+        image={productImage}
+        type="product"
+        jsonLd={[productJsonLd, breadcrumbJsonLd]}
+      />
       <section className="section-padding overflow-hidden">
         <div className="container-custom">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">

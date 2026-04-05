@@ -1,6 +1,7 @@
 import { MainLayout } from "@/components/layout";
 import { useLanguage } from "@/context/LanguageContext";
 import { GoogleReviewsSection } from "@/components/home";
+import { SEOHead } from "@/components/seo/SEOHead";
 import despreImage from "@/assets/despre.webp";
 import dentalmedLogo from "@/assets/dentalmed-logo.png";
 
@@ -9,6 +10,19 @@ const Despre = () => {
 
   return (
     <MainLayout>
+      <SEOHead
+        title="Despre VAIAVITA | Importator Produse Premium Sănătate"
+        description="VAIAVITA S.R.L. din Brașov este importator de produse premium pentru sănătate orală. Descoperă povestea noastră, filosofia și partenerii."
+        url="/despre"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          'itemListElement': [
+            { '@type': 'ListItem', 'position': 1, 'name': 'Acasă', 'item': 'https://vaiavita.ro/' },
+            { '@type': 'ListItem', 'position': 2, 'name': 'Despre', 'item': 'https://vaiavita.ro/despre' },
+          ],
+        }}
+      />
       {/* Hero Banner */}
       <section className="gradient-animated py-16 md:py-24">
         <div className="container-custom">

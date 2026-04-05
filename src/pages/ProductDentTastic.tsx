@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ProductSpecificationsDisplay, ProductSpecifications } from '@/components/product/ProductSpecifications';
 import dentTasticImage from '@/assets/dent-tastic-product.webp';
 import heroImage from '@/assets/hero-toothpaste.webp';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 // Product ID from database
 const PRODUCT_ID = 'a04ebe48-1ceb-4188-a9c4-99a8e14f0481';
@@ -226,6 +227,47 @@ const ProductDentTastic = () => {
 
   return (
     <MainLayout>
+      <SEOHead
+        title="Dent-Tastic Fresh Mint - Pastă de Dinți Naturală | VAIAVITA"
+        description="Pastă de dinți naturală Dent-Tastic Fresh Mint cu quercetin și paeoniflorin. Fără fluor, fără triclosan. Formulă patentată SUA pentru sănătatea gingiilor."
+        url="/produse/dent-tastic"
+        type="product"
+        jsonLd={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            'name': 'Dent-Tastic Fresh Mint',
+            'description': 'Pastă de dinți naturală cu quercetin și paeoniflorin, special concepută pentru sănătatea gingiilor. Formulă patentată în SUA, fără fluor și triclosan.',
+            'image': 'https://vaiavita.ro/og-image.jpg',
+            'sku': 'dent01',
+            'brand': { '@type': 'Brand', 'name': 'VAIAVITA' },
+            'offers': {
+              '@type': 'Offer',
+              'price': productPrice.toString(),
+              'priceCurrency': 'RON',
+              'availability': 'https://schema.org/InStock',
+              'url': 'https://vaiavita.ro/produse/dent-tastic',
+              'seller': { '@type': 'Organization', 'name': 'VAIAVITA S.R.L.' },
+            },
+            'aggregateRating': {
+              '@type': 'AggregateRating',
+              'ratingValue': '5.0',
+              'reviewCount': '2',
+              'bestRating': '5',
+              'worstRating': '1',
+            },
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            'itemListElement': [
+              { '@type': 'ListItem', 'position': 1, 'name': 'Acasă', 'item': 'https://vaiavita.ro/' },
+              { '@type': 'ListItem', 'position': 2, 'name': 'Produse', 'item': 'https://vaiavita.ro/produse' },
+              { '@type': 'ListItem', 'position': 3, 'name': 'Dent-Tastic Fresh Mint', 'item': 'https://vaiavita.ro/produse/dent-tastic' },
+            ],
+          },
+        ]}
+      />
       <section className="section-padding">
         <div className="container-custom">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">

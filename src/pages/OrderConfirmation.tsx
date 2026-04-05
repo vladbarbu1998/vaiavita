@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/context/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckCircle2, Package, Mail, ArrowRight, Loader2 } from 'lucide-react';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 interface Order {
   order_number: string;
@@ -61,6 +62,12 @@ const OrderConfirmation = () => {
 
   return (
     <MainLayout>
+      <SEOHead
+        title="Confirmare Comandă | VAIAVITA"
+        description="Comanda ta VAIAVITA a fost plasată cu succes."
+        url="/confirmare-comanda"
+        noindex
+      />
       <section className="section-padding">
         <div className="container-custom">
           <div className="max-w-2xl mx-auto text-center space-y-8 opacity-0 animate-fade-up">

@@ -7,6 +7,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { ArrowRight, Loader2, ShoppingCart, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { toast } from '@/hooks/use-toast';
 import dentTasticImage from '@/assets/dent-tastic-product.webp';
 import qivaroImage from '@/assets/qivaro.webp';
@@ -183,6 +184,29 @@ const Produse = () => {
 
   return (
     <MainLayout>
+      <SEOHead
+        title="Produse | VAIAVITA - Pastă de Dinți și Periuță Naturală"
+        description="Descoperă gama completă de produse VAIAVITA: pastă de dinți naturală Dent-Tastic Fresh Mint, periuțe bambus și suplimente nutritive premium."
+        url="/produse"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          'itemListElement': [
+            {
+              '@type': 'ListItem',
+              'position': 1,
+              'name': 'Acasă',
+              'item': 'https://vaiavita.ro/',
+            },
+            {
+              '@type': 'ListItem',
+              'position': 2,
+              'name': 'Produse',
+              'item': 'https://vaiavita.ro/produse',
+            },
+          ],
+        }}
+      />
       {/* Hero Banner */}
       <section className="gradient-animated py-16 md:py-24">
         <div className="container-custom">
