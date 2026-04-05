@@ -56,8 +56,8 @@ const faqs: FAQItem[] = [
   {
     questionRo: 'Cum pot plăti?',
     questionEn: 'How can I pay?',
-    answerRo: 'Acceptăm plata cu cardul (prin Stripe, procesor securizat de plăți) și plata ramburs (la primirea coletului). Toate tranzacțiile cu cardul sunt criptate și sigure.',
-    answerEn: 'We accept card payments (via Stripe, a secure payment processor) and cash on delivery. All card transactions are encrypted and secure.',
+    answerRo: 'Acceptăm plata cu cardul (prin Stripe, procesor securizat de plăți), plata ramburs (la primirea coletului) și livrare la EasyBox/locker. Toate tranzacțiile cu cardul sunt criptate și sigure.',
+    answerEn: 'We accept card payments (via Stripe, a secure payment processor), cash on delivery, and delivery to EasyBox/parcel lockers. All card transactions are encrypted and secure.',
   },
 ];
 
