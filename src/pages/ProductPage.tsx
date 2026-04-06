@@ -15,7 +15,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart, PROMO_CONFIG } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
-import { Star, Minus, Plus, ShoppingCart, Loader2, CheckCircle, ImagePlus, X, Gift, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, Minus, Plus, ShoppingCart, Loader2, CheckCircle, ImagePlus, X, Gift, ArrowRight, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductSpecificationsDisplay, ProductSpecifications } from '@/components/product/ProductSpecifications';
 import { ImageGallery } from '@/components/product/ImageGallery';
@@ -113,6 +113,7 @@ const ProductPage = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+  const [showTestInfo, setShowTestInfo] = useState(false);
   const [reviewStats, setReviewStats] = useState<ReviewStats>({ averageRating: 0, reviewCount: 0 });
   const [reviews, setReviews] = useState<Review[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -707,7 +708,7 @@ const ProductPage = () => {
         type="product"
         jsonLd={[productJsonLd, breadcrumbJsonLd]}
       />
-      <section className="section-padding overflow-hidden">
+      <section className="py-10 overflow-hidden">
         <div className="container-custom">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
             {/* Image Gallery */}
@@ -741,18 +742,38 @@ const ProductPage = () => {
             {/* Product Details */}
             <div className="space-y-6 opacity-0 animate-fade-up animation-delay-200 overflow-hidden">
               <div>
-                <Badge className={`mb-4 ${
-                  isInStock 
-                    ? 'bg-green-500/10 text-green-600 border-green-500/20' 
-                    : 'bg-destructive/10 text-destructive border-destructive/20'
-                }`}>
-                  {isInStock ? t('common.inStock') : t('common.outOfStock')}
-                </Badge>
-                
+                <div className="flex items-center gap-2 mb-4 flex-wrap">
+                  <Badge className={`${
+                    isInStock
+                      ? 'bg-green-500/10 text-green-600 border-green-500/20'
+                      : 'bg-destructive/10 text-destructive border-destructive/20'
+                  }`}>
+                    {isInStock ? t('common.inStock') : t('common.outOfStock')}
+                  </Badge>
+
+                  {product.slug === 'pasta-dent-tastic' && (
+                    <button
+                      onClick={() => document.getElementById('free-test-section')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                    >
+                      {language === 'ro' ? 'Test inclus gratuit' : 'Free test included'}
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
                 <h1 className="font-display text-2xl sm:text-3xl md:text-4xl tracking-wide break-words">
                   {language === 'ro' ? product.name_ro : product.name_en}
                 </h1>
-                
+
+                {product.slug === 'pasta-dent-tastic' && (
+                  <p className="text-base sm:text-lg font-medium text-primary mt-2 px-3 py-1.5 bg-primary/5 rounded-lg border-l-4 border-primary">
+                    {language === 'ro'
+                      ? 'Te confrunți cu inflamații și sângerări gingivale?'
+                      : 'Struggling with gum inflammation and bleeding?'}
+                  </p>
+                )}
+
                 {/* Rating Stars under title */}
                 <button 
                   onClick={scrollToReviews}
@@ -887,225 +908,47 @@ const ProductPage = () => {
               )}
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Related Products Section - Carousel on mobile */}
-          {relatedProducts.length > 0 && (
-            <div className="mt-10 opacity-0 animate-fade-up animation-delay-300">
-              <h4 className="font-display text-sm md:text-base tracking-wide mb-4 text-muted-foreground text-center md:text-left">
-                {language === 'ro' ? 'Clienții au cumpărat și' : 'Customers also bought'}
-              </h4>
-              {/* Mobile: Full-width card with navigation inside (matching testimonials layout) */}
-              <div className="md:hidden">
-                <div 
-                  className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border border-primary/20 shadow-lg"
-                  onTouchStart={handleRelatedTouchStart}
-                  onTouchMove={handleRelatedTouchMove}
-                  onTouchEnd={handleRelatedTouchEnd}
-                >
-                  {relatedProducts[mobileRelatedIndex] && (() => {
-                    const relProd = relatedProducts[mobileRelatedIndex];
-                    return (
-                      <div className="group">
-                        {/* Image with Quick Add button */}
-                        <div className="relative">
-                          <a href={`/produse/${relProd.slug}`} className="block">
-                            <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10 p-6">
-                              {relProd.images?.[0] ? (
-                                <img
-                                  src={relProd.images[0]}
-                                  alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
-                                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <ShoppingCart className="w-10 h-10 text-muted-foreground" />
-                                </div>
-                              )}
-                            </div>
-                          </a>
-                          {/* Quick Add Button */}
-                          <button
-                            onClick={() => handleQuickAddRelated(relProd)}
-                            className="absolute bottom-0 right-4 translate-y-1/2 w-11 h-11 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
-                            title={language === 'ro' ? 'Adaugă în coș' : 'Add to cart'}
-                          >
-                            <ShoppingCart className="w-5 h-5" />
-                          </button>
-                        </div>
-                        
-                        {/* Content */}
-                        <div className="p-5 pt-7">
-                          <a href={`/produse/${relProd.slug}`} className="block">
-                            {/* Title */}
-                            <h5 className="font-semibold text-lg leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-                              {language === 'ro' ? relProd.name_ro : relProd.name_en}
-                            </h5>
-                            {/* Rating */}
-                            <div className="mt-2">
-                              {(() => {
-                                const rating = relatedProductRatings.get(relProd.id);
-                                if (!rating || rating.reviewCount === 0) {
-                                  return (
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                      <Star className="w-4 h-4" />
-                                      <span className="text-sm">{language === 'ro' ? 'Fără recenzii' : 'No reviews'}</span>
-                                    </div>
-                                  );
-                                }
-                                return (
-                                  <div className="flex items-center gap-1">
-                                    <div className="flex items-center gap-0.5">
-                                      {[1, 2, 3, 4, 5].map((star) => (
-                                        <Star key={star} className={`w-4 h-4 ${star <= Math.round(rating.averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`} />
-                                      ))}
-                                    </div>
-                                    <span className="text-sm font-medium">{rating.averageRating.toFixed(1)}</span>
-                                    <span className="text-sm text-muted-foreground">({rating.reviewCount})</span>
-                                  </div>
-                                );
-                              })()}
-                            </div>
-                            {/* Price and CTA */}
-                            <div className="flex items-center justify-between gap-2 pt-4 mt-4 border-t border-primary/20">
-                              <p className="text-primary font-bold text-xl">
-                                {formatPrice(relProd.price)}
-                              </p>
-                              <span className="text-primary font-medium text-base flex items-center gap-1">
-                                {language === 'ro' ? 'Vezi detalii' : 'View details'}
-                                <ArrowRight className="w-5 h-5" />
-                              </span>
-                            </div>
-                          </a>
-                        </div>
-
-                        {/* Navigation inside card */}
-                        {relatedProducts.length > 1 && (
-                          <div className="flex items-center justify-between px-5 pb-5 pt-2 border-t border-primary/10">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className={`h-9 px-3 ${mobileRelatedIndex <= 0 ? 'opacity-30' : ''}`}
-                              onClick={() => setMobileRelatedIndex(prev => Math.max(0, prev - 1))}
-                              disabled={mobileRelatedIndex <= 0}
-                            >
-                              <ChevronLeft className="w-4 h-4 mr-1" />
-                              {language === 'ro' ? 'Anterior' : 'Previous'}
-                            </Button>
-                            <div className="flex gap-1.5">
-                              {relatedProducts.map((_, index) => (
-                                <button
-                                  key={index}
-                                  onClick={() => setMobileRelatedIndex(index)}
-                                  className={`w-2 h-2 rounded-full transition-all ${
-                                    index === mobileRelatedIndex 
-                                      ? 'bg-primary w-4' 
-                                      : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className={`h-9 px-3 ${mobileRelatedIndex >= relatedProducts.length - 1 ? 'opacity-30' : ''}`}
-                              onClick={() => setMobileRelatedIndex(prev => Math.min(relatedProducts.length - 1, prev + 1))}
-                              disabled={mobileRelatedIndex >= relatedProducts.length - 1}
-                            >
-                              {language === 'ro' ? 'Următor' : 'Next'}
-                              <ChevronRight className="w-4 h-4 ml-1" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
+      {/* Free Test Section - Only for Dent-Tastic */}
+      {product.slug === 'pasta-dent-tastic' && (
+        <section className="py-10">
+          <div className="container-custom">
+            <div id="free-test-section" className="p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-amber-500/10 border border-amber-500/20 opacity-0 animate-fade-up">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                  <Gift className="w-6 h-6 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-display text-lg sm:text-xl font-bold text-amber-700 dark:text-amber-400">
+                    {language === 'ro' ? 'Test inclus gratuit' : 'Free test included'}
+                  </h3>
+                  <p className="mt-2 text-foreground leading-relaxed">
+                    {language === 'ro'
+                      ? 'Suntem atât de încrezători în Dent-Tastic încât îți oferim și un tub cu aromă de căpșune pentru test! Încearcă Dent-Tastic fără risc — dacă nu ești mulțumit în 15 zile → îți returnăm banii.'
+                      : 'We are so confident in Dent-Tastic that we also offer you a strawberry-flavored tube for testing! Try Dent-Tastic risk-free — if you are not satisfied within 15 days → we refund your money.'}
+                  </p>
                 </div>
               </div>
-              {/* Desktop: Grid layout */}
-              <div className="hidden md:grid md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {relatedProducts.map((relProd) => (
-                  <div
-                    key={relProd.id}
-                    className="group card-premium overflow-hidden hover:shadow-sm transition-all duration-300"
-                  >
-                    {/* Image with Quick Add button */}
-                    <div className="relative">
-                      <a href={`/produse/${relProd.slug}`} className="block">
-                        <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-3 rounded-t-2xl">
-                          {relProd.images?.[0] ? (
-                            <img
-                              src={relProd.images[0]}
-                              alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
-                              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <ShoppingCart className="w-4 h-4 text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-                      </a>
-                      {/* Quick Add Button */}
-                      <button
-                        onClick={() => handleQuickAddRelated(relProd)}
-                        className="absolute bottom-0 right-2 translate-y-1/2 w-8 h-8 rounded-full bg-primary text-primary-foreground shadow-md flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
-                        title={language === 'ro' ? 'Adaugă în coș' : 'Add to cart'}
-                      >
-                        <ShoppingCart className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <a href={`/produse/${relProd.slug}`} className="block p-3 pt-5">
-                      {/* Title - fixed height for 2 lines */}
-                      <h5 className="font-medium text-sm leading-snug line-clamp-2 h-10 group-hover:text-primary transition-colors">
-                        {language === 'ro' ? relProd.name_ro : relProd.name_en}
-                      </h5>
-                      {/* Rating - fixed height */}
-                      <div className="h-6 mt-1.5">
-                        {(() => {
-                          const rating = relatedProductRatings.get(relProd.id);
-                          if (!rating || rating.reviewCount === 0) {
-                            return (
-                              <div className="flex items-center gap-1 text-muted-foreground">
-                                <Star className="w-3 h-3" />
-                                <span className="text-xs">{language === 'ro' ? 'Fără recenzii' : 'No reviews'}</span>
-                              </div>
-                            );
-                          }
-                          return (
-                            <div className="flex items-center gap-1">
-                              <div className="flex items-center gap-0.5">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star key={star} className={`w-3 h-3 ${star <= Math.round(rating.averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`} />
-                                ))}
-                              </div>
-                              <span className="text-xs font-medium">{rating.averageRating.toFixed(1)}</span>
-                              <span className="text-xs text-muted-foreground">({rating.reviewCount})</span>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                      {/* Price and CTA */}
-                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-1 pt-2 mt-2 border-t border-border/50">
-                        <p className="text-primary font-semibold text-sm">
-                          {formatPrice(relProd.price)}
-                        </p>
-                        <span className="text-primary font-medium text-xs flex items-center gap-1">
-                          {language === 'ro' ? 'Vezi produsul' : 'View product'}
-                          <ArrowRight className="w-3 h-3" />
-                        </span>
-                      </div>
-                    </a>
-                  </div>
-                ))}
-              </div>
             </div>
-          )}
+          </div>
+        </section>
+      )}
 
-          {/* Professional Testimonials - Only for Product #1 (Dent-Tastic) */}
-          {product.product_number === 1 && <ProfessionalTestimonials />}
+      {/* Professional Testimonials - Only for Product #1 (Dent-Tastic) */}
+      {product.product_number === 1 && (
+        <section className="py-10">
+          <div className="container-custom">
+            <ProfessionalTestimonials />
+          </div>
+        </section>
+      )}
 
-
-          <div ref={mobileAccordionRef} className="mt-12 md:hidden opacity-0 animate-fade-up animation-delay-400">
+      {/* Description / Specifications / Reviews */}
+      <section className="py-10 overflow-hidden">
+        <div className="container-custom">
+          <div ref={mobileAccordionRef} className="md:hidden opacity-0 animate-fade-up">
             <Accordion type="single" collapsible value={mobileAccordionValue} onValueChange={(val) => setMobileAccordionValue(val || '')} className="w-full space-y-3">
               {/* Description Accordion */}
               <AccordionItem value="description" className="card-premium border-none">
@@ -1406,7 +1249,7 @@ const ProductPage = () => {
           </div>
 
           {/* Desktop: Tabs Section */}
-          <div ref={tabsRef} className="hidden md:block mt-16 opacity-0 animate-fade-up animation-delay-400">
+          <div ref={tabsRef} className="hidden md:block opacity-0 animate-fade-up animation-delay-400">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="w-full justify-start border-b border-border rounded-none bg-transparent h-auto p-0 mb-8 overflow-x-auto">
                 <TabsTrigger
@@ -1820,6 +1663,221 @@ const ProductPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Related Products Section - Always last */}
+      {relatedProducts.length > 0 && (
+        <section className="py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <div className="opacity-0 animate-fade-up animation-delay-300">
+              <h4 className="font-display text-sm md:text-base tracking-wide mb-4 text-muted-foreground text-center md:text-left">
+                {language === 'ro' ? 'Clienții au cumpărat și' : 'Customers also bought'}
+              </h4>
+              {/* Mobile: Full-width card with navigation inside (matching testimonials layout) */}
+              <div className="md:hidden">
+                <div 
+                  className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-background to-primary/10 border border-primary/20 shadow-lg"
+                  onTouchStart={handleRelatedTouchStart}
+                  onTouchMove={handleRelatedTouchMove}
+                  onTouchEnd={handleRelatedTouchEnd}
+                >
+                  {relatedProducts[mobileRelatedIndex] && (() => {
+                    const relProd = relatedProducts[mobileRelatedIndex];
+                    return (
+                      <div className="group">
+                        {/* Image with Quick Add button */}
+                        <div className="relative">
+                          <a href={`/produse/${relProd.slug}`} className="block">
+                            <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10 p-6">
+                              {relProd.images?.[0] ? (
+                                <img
+                                  src={relProd.images[0]}
+                                  alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
+                                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <ShoppingCart className="w-10 h-10 text-muted-foreground" />
+                                </div>
+                              )}
+                            </div>
+                          </a>
+                          {/* Quick Add Button */}
+                          <button
+                            onClick={() => handleQuickAddRelated(relProd)}
+                            className="absolute bottom-0 right-4 translate-y-1/2 w-11 h-11 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
+                            title={language === 'ro' ? 'Adaugă în coș' : 'Add to cart'}
+                          >
+                            <ShoppingCart className="w-5 h-5" />
+                          </button>
+                        </div>
+                        
+                        {/* Content */}
+                        <div className="p-5 pt-7">
+                          <a href={`/produse/${relProd.slug}`} className="block">
+                            {/* Title */}
+                            <h5 className="font-semibold text-lg leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                              {language === 'ro' ? relProd.name_ro : relProd.name_en}
+                            </h5>
+                            {/* Rating */}
+                            <div className="mt-2">
+                              {(() => {
+                                const rating = relatedProductRatings.get(relProd.id);
+                                if (!rating || rating.reviewCount === 0) {
+                                  return (
+                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                      <Star className="w-4 h-4" />
+                                      <span className="text-sm">{language === 'ro' ? 'Fără recenzii' : 'No reviews'}</span>
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-0.5">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star key={star} className={`w-4 h-4 ${star <= Math.round(rating.averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`} />
+                                      ))}
+                                    </div>
+                                    <span className="text-sm font-medium">{rating.averageRating.toFixed(1)}</span>
+                                    <span className="text-sm text-muted-foreground">({rating.reviewCount})</span>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                            {/* Price and CTA */}
+                            <div className="flex items-center justify-between gap-2 pt-4 mt-4 border-t border-primary/20">
+                              <p className="text-primary font-bold text-xl">
+                                {formatPrice(relProd.price)}
+                              </p>
+                              <span className="text-primary font-medium text-base flex items-center gap-1">
+                                {language === 'ro' ? 'Vezi detalii' : 'View details'}
+                                <ArrowRight className="w-5 h-5" />
+                              </span>
+                            </div>
+                          </a>
+                        </div>
+
+                        {/* Navigation inside card */}
+                        {relatedProducts.length > 1 && (
+                          <div className="flex items-center justify-between px-5 pb-5 pt-2 border-t border-primary/10">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={`h-9 px-3 ${mobileRelatedIndex <= 0 ? 'opacity-30' : ''}`}
+                              onClick={() => setMobileRelatedIndex(prev => Math.max(0, prev - 1))}
+                              disabled={mobileRelatedIndex <= 0}
+                            >
+                              <ChevronLeft className="w-4 h-4 mr-1" />
+                              {language === 'ro' ? 'Anterior' : 'Previous'}
+                            </Button>
+                            <div className="flex gap-1.5">
+                              {relatedProducts.map((_, index) => (
+                                <button
+                                  key={index}
+                                  onClick={() => setMobileRelatedIndex(index)}
+                                  className={`w-2 h-2 rounded-full transition-all ${
+                                    index === mobileRelatedIndex 
+                                      ? 'bg-primary w-4' 
+                                      : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={`h-9 px-3 ${mobileRelatedIndex >= relatedProducts.length - 1 ? 'opacity-30' : ''}`}
+                              onClick={() => setMobileRelatedIndex(prev => Math.min(relatedProducts.length - 1, prev + 1))}
+                              disabled={mobileRelatedIndex >= relatedProducts.length - 1}
+                            >
+                              {language === 'ro' ? 'Următor' : 'Next'}
+                              <ChevronRight className="w-4 h-4 ml-1" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+              {/* Desktop: Grid layout */}
+              <div className="hidden md:grid md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {relatedProducts.map((relProd) => (
+                  <div
+                    key={relProd.id}
+                    className="group card-premium overflow-hidden hover:shadow-sm transition-all duration-300"
+                  >
+                    {/* Image with Quick Add button */}
+                    <div className="relative">
+                      <a href={`/produse/${relProd.slug}`} className="block">
+                        <div className="aspect-square overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 p-3 rounded-t-2xl">
+                          {relProd.images?.[0] ? (
+                            <img
+                              src={relProd.images[0]}
+                              alt={language === 'ro' ? relProd.name_ro : relProd.name_en}
+                              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ShoppingCart className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                      </a>
+                      {/* Quick Add Button */}
+                      <button
+                        onClick={() => handleQuickAddRelated(relProd)}
+                        className="absolute bottom-0 right-2 translate-y-1/2 w-8 h-8 rounded-full bg-primary text-primary-foreground shadow-md flex items-center justify-center hover:bg-primary/90 hover:scale-110 transition-all duration-200 z-10"
+                        title={language === 'ro' ? 'Adaugă în coș' : 'Add to cart'}
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <a href={`/produse/${relProd.slug}`} className="block p-3 pt-5">
+                      {/* Title - fixed height for 2 lines */}
+                      <h5 className="font-medium text-sm leading-snug line-clamp-2 h-10 group-hover:text-primary transition-colors">
+                        {language === 'ro' ? relProd.name_ro : relProd.name_en}
+                      </h5>
+                      {/* Rating - fixed height */}
+                      <div className="h-6 mt-1.5">
+                        {(() => {
+                          const rating = relatedProductRatings.get(relProd.id);
+                          if (!rating || rating.reviewCount === 0) {
+                            return (
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <Star className="w-3 h-3" />
+                                <span className="text-xs">{language === 'ro' ? 'Fără recenzii' : 'No reviews'}</span>
+                              </div>
+                            );
+                          }
+                          return (
+                            <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-0.5">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star key={star} className={`w-3 h-3 ${star <= Math.round(rating.averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`} />
+                                ))}
+                              </div>
+                              <span className="text-xs font-medium">{rating.averageRating.toFixed(1)}</span>
+                              <span className="text-xs text-muted-foreground">({rating.reviewCount})</span>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                      {/* Price and CTA */}
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-1 pt-2 mt-2 border-t border-border/50">
+                        <p className="text-primary font-semibold text-sm">
+                          {formatPrice(relProd.price)}
+                        </p>
+                        <span className="text-primary font-medium text-xs flex items-center gap-1">
+                          {language === 'ro' ? 'Vezi produsul' : 'View product'}
+                          <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </div>
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+        </section>
+      )}
 
       {/* Review Image Lightbox */}
       <Dialog open={reviewLightboxOpen} onOpenChange={setReviewLightboxOpen}>

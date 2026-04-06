@@ -95,7 +95,7 @@ export function ProfessionalTestimonials() {
 
 
   return (
-    <div className="mt-12 opacity-0 animate-fade-up animation-delay-400">
+    <div className="opacity-0 animate-fade-up animation-delay-400">
       {/* Header with gradient background */}
       <div className="text-center mb-8">
         <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium tracking-wider uppercase mb-3">

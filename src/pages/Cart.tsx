@@ -103,11 +103,16 @@ const Cart = () => {
                         )}
                       </div>
                       <p className={`font-bold text-lg sm:text-xl mt-1 ${item.isGift ? 'text-green-600' : 'text-primary'}`}>
-                        {item.isGift 
+                        {item.isGift
                           ? (language === 'ro' ? 'GRATUIT' : 'FREE')
                           : formatPrice(item.price)
                         }
                       </p>
+                      {item.slug === 'pasta-dent-tastic' && !item.isGift && (
+                        <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                          {language === 'ro' ? '+ Test gratuit inclus' : '+ Free test included'}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center justify-between sm:flex-col sm:items-end sm:justify-between sm:ml-auto">
