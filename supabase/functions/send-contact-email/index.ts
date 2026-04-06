@@ -13,30 +13,30 @@ interface ContactEmailRequest {
   subject?: string;
   message: string;
   language: 'ro' | 'en';
-  recaptchaToken?: string;
+  turnstileToken?: string;
 }
 
-// Verify reCAPTCHA token with Google (v2 checkbox)
-async function verifyRecaptcha(token: string): Promise<{ success: boolean }> {
-  const secretKey = Deno.env.get("RECAPTCHA_SECRET_KEY");
+// Verify Cloudflare Turnstile token
+async function verifyTurnstile(token: string): Promise<{ success: boolean }> {
+  const secretKey = Deno.env.get("TURNSTILE_SECRET_KEY");
   if (!secretKey) {
-    console.log('RECAPTCHA_SECRET_KEY not configured, skipping verification');
+    console.log('TURNSTILE_SECRET_KEY not configured, skipping verification');
     return { success: true };
   }
 
   try {
-    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+    const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `secret=${secretKey}&response=${token}`,
     });
-    
+
     const data = await response.json();
-    console.log('reCAPTCHA verification result:', JSON.stringify(data));
-    
+    console.log('Turnstile verification result:', JSON.stringify(data));
+
     return { success: data.success };
   } catch (error) {
-    console.error('reCAPTCHA verification error:', error);
+    console.error('Turnstile verification error:', error);
     return { success: false };
   }
 }
@@ -50,24 +50,24 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const body: ContactEmailRequest = await req.json();
-    console.log('Request body:', JSON.stringify({ ...body, recaptchaToken: body.recaptchaToken ? '[PRESENT]' : '[MISSING]' }));
+    console.log('Request body:', JSON.stringify({ ...body, turnstileToken: body.turnstileToken ? '[PRESENT]' : '[MISSING]' }));
 
-    const { name, email, phone, subject, message, language, recaptchaToken } = body;
+    const { name, email, phone, subject, message, language, turnstileToken } = body;
     const isRo = language === 'ro';
 
-    // Verify reCAPTCHA token if provided
-    if (recaptchaToken) {
-      const recaptchaResult = await verifyRecaptcha(recaptchaToken);
-      if (!recaptchaResult.success) {
-        console.log('reCAPTCHA verification failed');
+    // Verify Turnstile token if provided
+    if (turnstileToken) {
+      const turnstileResult = await verifyTurnstile(turnstileToken);
+      if (!turnstileResult.success) {
+        console.log('Turnstile verification failed');
         return new Response(
-          JSON.stringify({ success: false, error: 'reCAPTCHA verification failed' }),
+          JSON.stringify({ success: false, error: 'Turnstile verification failed' }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      console.log('reCAPTCHA verified successfully');
+      console.log('Turnstile verified successfully');
     } else {
-      console.log('No reCAPTCHA token provided');
+      console.log('No Turnstile token provided');
     }
 
     const resendApiKey = Deno.env.get("RESEND_API_KEY");

@@ -11,34 +11,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
+import { Turnstile, type TurnstileInstance } from 'react-turnstile';
 
-declare global {
-  interface Window {
-    grecaptcha: {
-      render: (container: string | HTMLElement, parameters: {
-        sitekey: string;
-        callback?: (token: string) => void;
-        'expired-callback'?: () => void;
-        theme?: 'light' | 'dark';
-      }) => number;
-      getResponse: (widgetId?: number) => string;
-      reset: (widgetId?: number) => void;
-      ready: (callback: () => void) => void;
-    };
-    onRecaptchaLoad?: () => void;
-  }
-}
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '';
 
 const Contact = () => {
   const { language } = useLanguage();
   const isRo = language === 'ro';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ipAddress, setIpAddress] = useState<string | null>(null);
-  const [recaptchaSiteKey, setRecaptchaSiteKey] = useState<string | null>(null);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
-  const [recaptchaWidgetId, setRecaptchaWidgetId] = useState<number | null>(null);
-  const [recaptchaReady, setRecaptchaReady] = useState(false);
-  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -55,89 +38,6 @@ const Contact = () => {
     });
   }, []);
 
-  // Fetch reCAPTCHA site key and load script
-  useEffect(() => {
-    const loadRecaptcha = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('get-recaptcha-site-key');
-        if (error || !data?.siteKey) {
-          console.error('Failed to get reCAPTCHA site key:', error);
-          return;
-        }
-        
-        setRecaptchaSiteKey(data.siteKey);
-        
-        // Load reCAPTCHA v2 script if not already loaded
-        if (!document.querySelector('script[src*="recaptcha/api.js"]')) {
-          window.onRecaptchaLoad = () => {
-            console.log('reCAPTCHA script loaded');
-            setRecaptchaReady(true);
-          };
-          
-          const script = document.createElement('script');
-          script.src = 'https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit';
-          script.async = true;
-          script.defer = true;
-          document.head.appendChild(script);
-        } else if (window.grecaptcha?.render) {
-          // Script already loaded
-          setRecaptchaReady(true);
-        }
-      } catch (err) {
-        console.error('Error loading reCAPTCHA:', err);
-      }
-    };
-    
-    loadRecaptcha();
-  }, []);
-
-  // Render reCAPTCHA widget when everything is ready
-  useEffect(() => {
-    // Only render if we have all prerequisites and haven't rendered yet
-    if (!recaptchaSiteKey || !recaptchaReady || recaptchaWidgetId !== null) {
-      return;
-    }
-    
-    const container = recaptchaContainerRef.current;
-    if (!container) {
-      return;
-    }
-
-    // Clear any existing content
-    container.innerHTML = '';
-
-    const renderWidget = () => {
-      if (!window.grecaptcha?.render) {
-        console.log('grecaptcha.render not available yet, retrying...');
-        setTimeout(renderWidget, 200);
-        return;
-      }
-
-      try {
-        console.log('Rendering reCAPTCHA widget with sitekey:', recaptchaSiteKey);
-        const widgetId = window.grecaptcha.render(container, {
-          sitekey: recaptchaSiteKey,
-          callback: (token: string) => {
-            console.log('reCAPTCHA callback received token');
-            setRecaptchaToken(token);
-          },
-          'expired-callback': () => {
-            console.log('reCAPTCHA token expired');
-            setRecaptchaToken(null);
-          },
-          theme: 'light',
-        });
-        console.log('reCAPTCHA widget rendered with ID:', widgetId);
-        setRecaptchaWidgetId(widgetId);
-      } catch (err) {
-        console.error('Error rendering reCAPTCHA:', err);
-      }
-    };
-
-    // Small delay to ensure DOM is ready
-    setTimeout(renderWidget, 100);
-  }, [recaptchaSiteKey, recaptchaReady, recaptchaWidgetId]);
-
   const breadcrumbItems = [
     { label: isRo ? 'Contact' : 'Contact', labelEn: 'Contact', href: '/contact' }
   ];
@@ -150,9 +50,9 @@ const Contact = () => {
       return;
     }
 
-    // Validate reCAPTCHA
-    if (recaptchaSiteKey && !recaptchaToken) {
-      toast.error(isRo ? 'Vă rugăm să completați verificarea reCAPTCHA.' : 'Please complete the reCAPTCHA verification.');
+    // Validate Turnstile
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      toast.error(isRo ? 'Vă rugăm să completați verificarea de securitate.' : 'Please complete the security verification.');
       return;
     }
 
@@ -194,7 +94,7 @@ const Contact = () => {
         throw new Error('Failed to save submission');
       }
 
-      // Send emails via edge function with reCAPTCHA token
+      // Send emails via edge function with Turnstile token
       const { data: emailData, error: emailError } = await supabase.functions.invoke('send-contact-email', {
         body: {
           name: formData.name.trim(),
@@ -203,7 +103,7 @@ const Contact = () => {
           subject: formData.subject.trim() || null,
           message: formData.message.trim(),
           language: language,
-          recaptchaToken: recaptchaToken,
+          turnstileToken: turnstileToken,
         }
       });
 
@@ -212,14 +112,11 @@ const Contact = () => {
         // Don't fail the submission if email fails - the data is already saved
       }
       
-      // Check if reCAPTCHA verification failed
-      if (emailData && !emailData.success && emailData.error === 'reCAPTCHA verification failed') {
+      // Check if Turnstile verification failed
+      if (emailData && !emailData.success && emailData.error === 'Turnstile verification failed') {
         toast.error(isRo ? 'Verificarea de securitate a eșuat. Încercați din nou.' : 'Security verification failed. Please try again.');
-        // Reset reCAPTCHA
-        if (recaptchaWidgetId !== null && window.grecaptcha) {
-          window.grecaptcha.reset(recaptchaWidgetId);
-          setRecaptchaToken(null);
-        }
+        turnstileRef.current?.reset();
+        setTurnstileToken(null);
         return;
       }
 
@@ -228,12 +125,10 @@ const Contact = () => {
       });
       
       setFormData({ name: '', phone: '', email: '', subject: '', message: '', gdprConsent: false });
-      
-      // Reset reCAPTCHA after successful submission
-      if (recaptchaWidgetId !== null && window.grecaptcha) {
-        window.grecaptcha.reset(recaptchaWidgetId);
-        setRecaptchaToken(null);
-      }
+
+      // Reset Turnstile after successful submission
+      turnstileRef.current?.reset();
+      setTurnstileToken(null);
     } catch (error) {
       console.error('Submission error:', error);
       toast.error(isRo ? 'A apărut o eroare. Încercați din nou.' : 'An error occurred. Please try again.');
@@ -390,21 +285,18 @@ const Contact = () => {
                   </div>
                 </div>
 
-                {/* reCAPTCHA widget - aligned left like other form elements */}
-                <div>
-                  <div 
-                    ref={recaptchaContainerRef}
-                    className="min-h-[78px]"
-                    style={{ display: recaptchaSiteKey ? 'block' : 'none' }}
-                  />
-                  {recaptchaSiteKey && !recaptchaReady && (
-                    <div className="min-h-[78px] flex items-center">
-                      <span className="text-sm text-muted-foreground">
-                        {isRo ? 'Se încarcă verificarea...' : 'Loading verification...'}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                {/* Turnstile widget */}
+                {TURNSTILE_SITE_KEY && (
+                  <div className="min-h-[65px]">
+                    <Turnstile
+                      ref={turnstileRef}
+                      sitekey={TURNSTILE_SITE_KEY}
+                      onVerify={(token) => setTurnstileToken(token)}
+                      onExpire={() => setTurnstileToken(null)}
+                      theme="light"
+                    />
+                  </div>
+                )}
 
                 <div className="flex gap-3">
                   <Checkbox
