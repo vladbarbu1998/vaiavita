@@ -223,7 +223,7 @@ const AdminDashboard = () => {
                 />
               </div>
 
-              <div className="flex justify-center">
+              <div className="flex justify-start">
                 <Turnstile
                   ref={turnstileRef}
                   sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
