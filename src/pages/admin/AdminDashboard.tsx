@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Turnstile, { type BoundTurnstileObject } from 'react-turnstile';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -62,6 +63,8 @@ const AdminDashboard = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<BoundTurnstileObject>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -120,6 +123,10 @@ const AdminDashboard = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!turnstileToken) {
+      toast.error('Te rugăm să completezi verificarea de securitate');
+      return;
+    }
     setLoginLoading(true);
 
     try {
@@ -139,6 +146,8 @@ const AdminDashboard = () => {
       toast.error('Eroare la autentificare');
     } finally {
       setLoginLoading(false);
+      setTurnstileToken(null);
+      turnstileRef.current?.reset();
     }
   };
 
@@ -214,12 +223,22 @@ const AdminDashboard = () => {
                 />
               </div>
 
-              <Button 
-                type="submit" 
-                variant="hero" 
-                size="lg" 
-                className="w-full" 
-                disabled={loginLoading}
+              <div className="flex justify-center">
+                <Turnstile
+                  ref={turnstileRef}
+                  sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                  onVerify={(token) => setTurnstileToken(token)}
+                  onExpire={() => setTurnstileToken(null)}
+                  theme="dark"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                variant="hero"
+                size="lg"
+                className="w-full"
+                disabled={loginLoading || !turnstileToken}
               >
                 {loginLoading ? (
                   <>
