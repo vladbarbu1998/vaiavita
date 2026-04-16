@@ -189,6 +189,7 @@ type Intent =
   | "goodbye"
   | "supplements"
   | "toothbrush"
+  | "ordering"
   | "other";
 
 interface IntentPattern {
@@ -260,6 +261,10 @@ const INTENT_PATTERNS: IntentPattern[] = [
   {
     intent: "toothbrush",
     keywords: ["periuță", "periuta", "periuța", "toothbrush", "brush"],
+  },
+  {
+    intent: "ordering",
+    keywords: ["cum comand", "cum pot comanda", "cum comandă", "cum plasez", "cum fac o comandă", "cum fac o comanda", "how to order", "how do i order", "how can i order", "place order", "vreau să comand", "vreau sa comand", "doresc să comand", "doresc sa comand", "comanda online", "comandă online", "cumpăr", "cumpar", "cum cumpăr", "cum cumpar", "how to buy", "quero comprar"],
   },
   {
     intent: "product_info",
@@ -373,6 +378,11 @@ function generateResponse(intent: Intent, lang: "ro" | "en"): string {
         ? "Periuța VAIAVITA costă 7.99 RON și o primești GRATUIT la achiziția a 2+ paste Dent-Tastic!"
         : "The VAIAVITA toothbrush costs 7.99 RON and you get it FREE when purchasing 2+ Dent-Tastic toothpastes!";
     }
+
+    case "ordering":
+      return lang === "ro"
+        ? "Poți comanda direct de pe site-ul nostru vaiavita.ro:\n\n1. Mergi la pagina produsului dorit\n2. Selectează cantitatea și apasă \"Adaugă în coș\"\n3. Mergi la coș și apasă \"Finalizează comanda\"\n4. Completează datele de livrare\n5. Alege metoda de plată (card online sau ramburs)\n6. Confirmă comanda\n\nLivrare standard: 19.99 RON | Gratuită la 4+ paste Dent-Tastic!\nRidicare personală din Brașov: GRATUITĂ"
+        : "You can order directly from our website vaiavita.ro:\n\n1. Go to the desired product page\n2. Select the quantity and click \"Add to cart\"\n3. Go to cart and click \"Checkout\"\n4. Fill in your delivery details\n5. Choose payment method (card or cash on delivery)\n6. Confirm your order\n\nStandard shipping: 19.99 RON | Free with 4+ Dent-Tastic toothpastes!\nPersonal pickup in Brașov: FREE";
 
     case "live_agent":
       return lang === "ro"
